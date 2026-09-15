@@ -8,8 +8,10 @@ from app.api.v1.hazards import router as hazards_router
 from app.api.v1.reports import router as reports_router
 from app.api.v1.citizen_map import router as citizen_map_router
 from app.api.v1.dispatch import router as dispatch_router
+from app.waysignal.api import router as mobile_router
 
 api_router = APIRouter()
+api_router.include_router(mobile_router, prefix="/mobile", tags=["waysignal"])
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(safety_router, prefix="/safety", tags=["safety"])
 api_router.include_router(emergencies_router, prefix="/emergencies", tags=["emergencies"])

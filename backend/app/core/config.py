@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     # Optional; keys stay on the backend. Alerts/contacts do not require AI.
     openai_api_key: SecretStr = SecretStr("")
     dispatch_ai_model: str = ""
+    mcp_internal_url: str = "http://127.0.0.1:8000/mcp/"
 
     # Configured demo accounts. Render supplies private passwords in production.
     # Use example.com so Pydantic EmailStr accepts the addresses during validation.

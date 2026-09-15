@@ -35,7 +35,7 @@ test('all clients use the authenticated shared feed, never browser storage', asy
   globalThis.fetch = async (url, options) => {
     calls++;
     assert.equal(String(url), 'http://test/api/v1/hazards?status=active');
-    assert.equal((options?.headers as Record<string, string>).Authorization, 'Bearer one-token');
+    assert.equal(new Headers(options?.headers).get('Authorization'), 'Bearer one-token');
     return response([report()]);
   };
   signIn('one');

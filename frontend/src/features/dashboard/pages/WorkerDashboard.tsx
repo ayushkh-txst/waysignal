@@ -6,10 +6,11 @@ import './WorkerMapEnhancements.css';
 import './GOneAdminBrand.css';
 import ResponderOperationsMap from './ResponderOperationsMap';
 import OperationalReports from './OperationalReports';
+import CommunityReview from './CommunityReview';
 import { DispatchNotifications, IncidentDispatchCard } from './DispatchAssistant';
 
 type IconName = 'dashboard' | 'map' | 'incident' | 'queue' | 'report';
-type ViewName = 'queue' | 'map' | 'dashboard' | 'reports';
+type ViewName = 'queue' | 'map' | 'dashboard' | 'reports' | 'community';
 type IncidentFilter = 'all' | 'new' | 'assigned' | 'en_route' | 'resolved' | 'live' | 'demo';
 
 const incidentFilters: Array<{ key: IncidentFilter; label: string }> = [
@@ -176,6 +177,7 @@ export default function WorkerDashboard() {
             ['dashboard', 'Dashboard', 'dashboard'], ['map', 'Live Map', 'map'],
             ['queue', 'Incident Queue', 'queue'],
             ['reports', 'Reports', 'report'],
+            ['community', 'Community Review', 'incident'],
           ] as Array<[ViewName, string, IconName]>).map(([view, label, icon]) => (
             <button key={view} type="button" data-worker-nav={view}
               className={activeView === view ? 'active' : ''}
@@ -262,7 +264,7 @@ export default function WorkerDashboard() {
             </div>
           </>}
         </section>
-      </> : activeView === 'map' ? <section className="ops-map-page">
+      </> : activeView === 'community' ? <CommunityReview/> : activeView === 'map' ? <section className="ops-map-page">
         <header className="ops-map-header">
           <div><span className="ops-card-label">LIVE OPERATIONS MAP</span><h1>Active emergency response</h1><p>Geographic SOS positions and shared user-reported hazards. Reports are unverified; no official flood-zone or shelter-status feed is connected.</p></div>
           <div className="ops-map-live">● LIVE · AUTO-REFRESH 5s</div>

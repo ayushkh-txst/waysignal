@@ -8,14 +8,16 @@ from app.api.v1.emergencies import seed_demo_emergencies
 from app.core import database
 from app.core.config import settings
 from app.web import mount_frontend
+from app.waysignal.mcp_server import AuthenticatedMCP, build_mcp
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(app: FastAPI):
     database.initialize_database()
     with database.SessionLocal() as db:
         seed_demo_emergencies(db)
-    yield
+    async with app.state.mcp_server.session_manager.run():
+        yield
 
 
 def create_app() -> FastAPI:
@@ -36,6 +38,8 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(api_router, prefix="/api/v1")
+    app.state.mcp_server = build_mcp()
+    app.mount("/mcp", AuthenticatedMCP(app.state.mcp_server.streamable_http_app()))
 
     @app.get("/health", tags=["system"])
     def health() -> dict[str, str]:

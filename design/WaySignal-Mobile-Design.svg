@@ -1,0 +1,441 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1780" height="2130" viewBox="0 0 1780 2130"><title>WaySignal design reference — synthetic demo data</title>
+<rect width="1780" height="2130" fill="#F5F7FB"/>
+<text x="44" y="60" font-family="DejaVu Sans, Inter, sans-serif" font-size="42" font-weight="700" fill="#14253D">WaySignal</text>
+<text x="46" y="99" font-family="DejaVu Sans, Inter, sans-serif" font-size="20" font-weight="400" fill="#56657A">Know the route. Share the signal.</text>
+<rect x="45" y="124" width="339" height="26" rx="13" fill="#EAF0FF"/>
+<text x="56" y="142" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#155EEF">NAVIGATION × SOCIAL MEDIA × PRODUCTIVITY</text>
+<text x="45" y="190" font-family="DejaVu Sans, Inter, sans-serif" font-size="19" font-weight="700" fill="#14253D">01  /  A route becomes useful when the community can update it.</text>
+<text x="44" y="220" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">M01 · Map home</text>
+<g id="M01-·-Map-home">
+<rect x="44" y="240" width="390" height="844" rx="30" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="66" y="271" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">9:41</text>
+<rect x="190" y="252" width="98" height="24" rx="12" fill="#14253D"/>
+<text x="374" y="271" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">•••</text>
+<text x="64" y="325" font-family="DejaVu Sans, Inter, sans-serif" font-size="25" font-weight="700" fill="#14253D">WaySignal</text>
+<text x="64" y="349" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Demo area · Demo data</text>
+<polyline points="44,1000 434,1000" fill="none" stroke="#DCE3ED" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="82,1020 88,1017 96,1021 103,1018 103,1036 96,1039 88,1035 82,1038 82,1020" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="88,1017 88,1035" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="96,1021 96,1039" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="79.875" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="700" fill="#155EEF">Map</text>
+<rect x="179" y="1017" width="22" height="17" rx="5" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="184,1034 183,1039 189,1034" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="158.15625" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Community</text>
+<circle cx="287" cy="1028" r="11" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="287,1022 287,1034" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="281,1028 293,1028" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="274.4609375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Help</text>
+<polyline points="384,1017 387,1025 395,1028 387,1031 384,1039 381,1031 373,1028 381,1025 384,1017" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="367.84375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Guide</text>
+<rect x="181" y="1072" width="116" height="4" rx="2" fill="#14253D"/>
+<rect x="56" y="366" width="366" height="361" rx="16" fill="#EAF0F1"/>
+<rect x="71" y="384" width="91" height="64" rx="8" fill="#D8E6DD"/>
+<rect x="213.38" y="390" width="95" height="57" rx="8" fill="#D8E6DD"/>
+<rect x="74" y="506.78999999999996" width="87" height="72" rx="8" fill="#D8E6DD"/>
+<rect x="260.96000000000004" y="503.18" width="109" height="72" rx="8" fill="#D8E6DD"/>
+<rect x="99.92" y="618.7" width="113" height="64" rx="8" fill="#D8E6DD"/>
+<polyline points="323.18,376 268.28,503.18 312.2,607.87 268.28,717" fill="none" stroke="#B8DDEB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="61,477.90999999999997 176.78,474.3 275.6,467.08000000000004 417,463.47" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="173.12,374 173.12,568.1600000000001 169.45999999999998,719" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="64,600.65 253.64000000000001,597.04 414,654.8" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="64,600.65 253.64000000000001,597.04 414,654.8" fill="none" stroke="#C7D1DD" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="129.2,662.02 169.45999999999998,600.65 173.12,477.90999999999997 363.44,463.47" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="129.2,662.02 169.45999999999998,600.65 173.12,477.90999999999997 363.44,463.47" fill="none" stroke="#155EEF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="129.2" cy="662.02" r="8" fill="#155EEF" stroke="#FFFFFF" stroke-width="3"/>
+<circle cx="363.44" cy="463.47" r="8" fill="#FFFFFF" stroke="#155EEF" stroke-width="3"/>
+<circle cx="173.12" cy="535.67" r="14" fill="#B42318" stroke="#FFFFFF" stroke-width="3"/>
+<polyline points="168.12,535.67 178.12,535.67" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="66" y="698" width="151" height="21" rx="6" fill="#FFFFFF"/>
+<text x="73" y="713" font-family="DejaVu Sans, Inter, sans-serif" font-size="10" font-weight="400" fill="#56657A">Illustrative demo map</text>
+<rect x="72" y="383" width="334" height="52" rx="14" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="89" y="416" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="400" fill="#56657A">Where do you need to go?</text>
+<rect x="56" y="701" width="366" height="283" rx="23" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<rect x="213" y="711" width="52" height="4" rx="2" fill="#DCE3ED"/>
+<text x="74" y="746" font-family="DejaVu Sans, Inter, sans-serif" font-size="22" font-weight="700" fill="#14253D">Know what is ahead</text>
+<text x="74" y="773" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="400" fill="#56657A">Community updates for your journey.</text>
+<rect x="74" y="792" width="330" height="63" rx="12" fill="#FFF3D6"/>
+<polyline points="98,807 109,827 87,827 98,807" fill="none" stroke="#9A5700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="98,814 98,819" fill="none" stroke="#9A5700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="98" cy="823" r="1" fill="#9A5700"/>
+<text x="121" y="818" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="700" fill="#14253D">Road blockage reported</text>
+<text x="121" y="840" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#9A5700">R-104 · Awaiting review</text>
+<rect x="74" y="872" width="330" height="52" rx="13" fill="#155EEF"/>
+<text x="152.09375" y="904.0" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">Choose destination</text>
+<rect x="74" y="933" width="330" height="40" rx="13" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="166.609375" y="959.0" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#155EEF">Report a hazard</text>
+</g>
+<text x="478" y="220" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">M03 · Route options</text>
+<g id="M03-·-Route-options">
+<rect x="478" y="240" width="390" height="844" rx="30" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="500" y="271" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">9:41</text>
+<rect x="624" y="252" width="98" height="24" rx="12" fill="#14253D"/>
+<text x="808" y="271" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">•••</text>
+<text x="498" y="325" font-family="DejaVu Sans, Inter, sans-serif" font-size="25" font-weight="700" fill="#14253D">Your route</text>
+<text x="498" y="349" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Community Center · demo location</text>
+<polyline points="478,1000 868,1000" fill="none" stroke="#DCE3ED" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="516,1020 522,1017 530,1021 537,1018 537,1036 530,1039 522,1035 516,1038 516,1020" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="522,1017 522,1035" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="530,1021 530,1039" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="513.875" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="700" fill="#155EEF">Map</text>
+<rect x="613" y="1017" width="22" height="17" rx="5" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="618,1034 617,1039 623,1034" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="592.15625" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Community</text>
+<circle cx="721" cy="1028" r="11" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="721,1022 721,1034" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="715,1028 727,1028" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="708.4609375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Help</text>
+<polyline points="818,1017 821,1025 829,1028 821,1031 818,1039 815,1031 807,1028 815,1025 818,1017" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="801.84375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Guide</text>
+<rect x="615" y="1072" width="116" height="4" rx="2" fill="#14253D"/>
+<rect x="490" y="366" width="366" height="259" rx="16" fill="#EAF0F1"/>
+<rect x="505" y="384" width="91" height="46" rx="8" fill="#D8E6DD"/>
+<rect x="647.38" y="390" width="95" height="41" rx="8" fill="#D8E6DD"/>
+<rect x="508" y="467.01" width="87" height="51" rx="8" fill="#D8E6DD"/>
+<rect x="694.96" y="464.42" width="109" height="51" rx="8" fill="#D8E6DD"/>
+<rect x="533.92" y="547.3" width="113" height="46" rx="8" fill="#D8E6DD"/>
+<polyline points="757.1800000000001,376 702.28,464.42 746.2,539.53 702.28,615" fill="none" stroke="#B8DDEB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="495,446.29 610.78,443.7 709.6,438.52 851,435.93" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="607.12,374 607.12,511.04 603.46,617" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="498,534.35 687.64,531.76 848,573.2" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="498,534.35 687.64,531.76 848,573.2" fill="none" stroke="#C7D1DD" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="563.2,578.38 603.46,534.35 607.12,446.29 797.44,435.93" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="563.2,578.38 603.46,534.35 607.12,446.29 797.44,435.93" fill="none" stroke="#155EEF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="563.2" cy="578.38" r="8" fill="#155EEF" stroke="#FFFFFF" stroke-width="3"/>
+<circle cx="797.44" cy="435.93" r="8" fill="#FFFFFF" stroke="#155EEF" stroke-width="3"/>
+<circle cx="607.12" cy="487.73" r="14" fill="#B42318" stroke="#FFFFFF" stroke-width="3"/>
+<polyline points="602.12,487.73 612.12,487.73" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="500" y="596" width="151" height="21" rx="6" fill="#FFFFFF"/>
+<text x="507" y="611" font-family="DejaVu Sans, Inter, sans-serif" font-size="10" font-weight="400" fill="#56657A">Illustrative demo map</text>
+<rect x="506" y="381" width="95" height="26" rx="13" fill="#EAF0FF"/>
+<text x="517" y="399" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#155EEF">Demo data</text>
+<rect x="498" y="639" width="350" height="117" rx="16" fill="#FEECEB"/>
+<text x="514" y="668" font-family="DejaVu Sans, Inter, sans-serif" font-size="17" font-weight="700" fill="#14253D">Route A</text>
+<text x="745" y="668" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">15 min</text>
+<text x="514" y="692" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="400" fill="#B42318">1.2 km · Reviewed closure</text>
+<text x="514" y="728" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">R-104 affects this route</text>
+<rect x="498" y="769" width="350" height="129" rx="16" fill="#EAF0FF" stroke="#155EEF" stroke-width="2"/>
+<text x="514" y="800" font-family="DejaVu Sans, Inter, sans-serif" font-size="17" font-weight="700" fill="#14253D">Route B</text>
+<text x="744" y="800" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">22 min</text>
+<text x="514" y="826" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#155EEF">1.8 km · Avoids reported blockage</text>
+<text x="514" y="856" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Conditions may change.</text>
+<rect x="498" y="917" width="350" height="52" rx="13" fill="#155EEF"/>
+<text x="624.1953125" y="949.0" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">View route</text>
+<text x="615" y="988" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#155EEF">Why this route?</text>
+</g>
+<text x="912" y="220" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">M05 · Community</text>
+<g id="M05-·-Community">
+<rect x="912" y="240" width="390" height="844" rx="30" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="934" y="271" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">9:41</text>
+<rect x="1058" y="252" width="98" height="24" rx="12" fill="#14253D"/>
+<text x="1242" y="271" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">•••</text>
+<text x="932" y="325" font-family="DejaVu Sans, Inter, sans-serif" font-size="25" font-weight="700" fill="#14253D">Community</text>
+<text x="932" y="349" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Reports that matter to your journey</text>
+<polyline points="912,1000 1302,1000" fill="none" stroke="#DCE3ED" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="950,1020 956,1017 964,1021 971,1018 971,1036 964,1039 956,1035 950,1038 950,1020" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="956,1017 956,1035" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="964,1021 964,1039" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="949.3984375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Map</text>
+<rect x="1047" y="1017" width="22" height="17" rx="5" fill="#FFFFFF" stroke="#155EEF" stroke-width="2"/>
+<polyline points="1052,1034 1051,1039 1057,1034" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1022.78125" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="700" fill="#155EEF">Community</text>
+<circle cx="1155" cy="1028" r="11" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="1155,1022 1155,1034" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1149,1028 1161,1028" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1142.4609375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Help</text>
+<polyline points="1252,1017 1255,1025 1263,1028 1255,1031 1252,1039 1249,1031 1241,1028 1249,1025 1252,1017" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1235.84375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Guide</text>
+<rect x="1049" y="1072" width="116" height="4" rx="2" fill="#14253D"/>
+<rect x="932" y="370" width="126" height="26" rx="13" fill="#EAF0FF"/>
+<text x="943" y="388" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#155EEF">Along my route</text>
+<rect x="1072" y="370" width="70" height="26" rx="13" fill="#F5F7FB"/>
+<text x="1083" y="388" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#56657A">Nearby</text>
+<rect x="1159" y="370" width="95" height="26" rx="13" fill="#F5F7FB"/>
+<text x="1170" y="388" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#56657A">My reports</text>
+<text x="932" y="428" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Demo data · 2 reports shown</text>
+<rect x="932" y="449" width="350" height="150" rx="16" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<rect x="948" y="464" width="132" height="26" rx="13" fill="#FEECEB"/>
+<text x="959" y="482" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#B42318">Reviewed active</text>
+<text x="1220" y="482" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">R-104</text>
+<text x="948" y="515" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">Road blockage reported</text>
+<text x="948" y="540" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Riverside Road · demo location</text>
+<text x="948" y="568" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#155EEF">Observed 3:12 pm · View updates →</text>
+<rect x="932" y="617" width="350" height="150" rx="16" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<rect x="948" y="632" width="102" height="26" rx="13" fill="#FFF3D6"/>
+<text x="959" y="650" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#9A5700">Unreviewed</text>
+<text x="1220" y="650" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">R-105</text>
+<text x="948" y="683" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">Water over the walkway</text>
+<text x="948" y="708" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Riverside Road · demo location</text>
+<text x="948" y="736" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#155EEF">Observed 3:12 pm · View updates →</text>
+<rect x="932" y="791" width="350" height="81" rx="14" fill="#EAF0FF"/>
+<text x="948" y="820" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="700" fill="#14253D">Your route shapes this feed</text>
+<text x="948" y="845" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Reports appear here when they are relevant to</text>
+<text x="948" y="863" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">your selected route.</text>
+<rect x="932" y="923" width="350" height="52" rx="13" fill="#155EEF"/>
+<text x="1022.328125" y="955.0" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">+  Report a hazard</text>
+</g>
+<text x="1346" y="220" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">M07 · Report a hazard</text>
+<g id="M07-·-Report-a-hazard">
+<rect x="1346" y="240" width="390" height="844" rx="30" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="1368" y="271" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">9:41</text>
+<rect x="1492" y="252" width="98" height="24" rx="12" fill="#14253D"/>
+<text x="1676" y="271" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">•••</text>
+<text x="1366" y="325" font-family="DejaVu Sans, Inter, sans-serif" font-size="25" font-weight="700" fill="#14253D">Report a hazard</text>
+<text x="1366" y="349" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Demo data · Your report will be reviewed</text>
+<polyline points="1346,1000 1736,1000" fill="none" stroke="#DCE3ED" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1384,1020 1390,1017 1398,1021 1405,1018 1405,1036 1398,1039 1390,1035 1384,1038 1384,1020" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1390,1017 1390,1035" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1398,1021 1398,1039" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1383.3984375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Map</text>
+<rect x="1481" y="1017" width="22" height="17" rx="5" fill="#FFFFFF" stroke="#155EEF" stroke-width="2"/>
+<polyline points="1486,1034 1485,1039 1491,1034" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1456.78125" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="700" fill="#155EEF">Community</text>
+<circle cx="1589" cy="1028" r="11" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="1589,1022 1589,1034" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1583,1028 1595,1028" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1576.4609375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Help</text>
+<polyline points="1686,1017 1689,1025 1697,1028 1689,1031 1686,1039 1683,1031 1675,1028 1683,1025 1686,1017" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1669.84375" y="1057" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Guide</text>
+<rect x="1483" y="1072" width="116" height="4" rx="2" fill="#14253D"/>
+<text x="1366" y="391" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">What did you observe?</text>
+<rect x="1366" y="409" width="121" height="26" rx="13" fill="#EAF0FF"/>
+<text x="1377" y="427" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#155EEF">Road blockage</text>
+<rect x="1522" y="409" width="80" height="26" rx="13" fill="#F5F7FB"/>
+<text x="1533" y="427" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#56657A">Flooding</text>
+<rect x="1631" y="409" width="60" height="26" rx="13" fill="#F5F7FB"/>
+<text x="1642" y="427" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#56657A">Other</text>
+<text x="1366" y="475" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="700" fill="#14253D">Location</text>
+<rect x="1366" y="493" width="350" height="137" rx="16" fill="#EAF0F1"/>
+<rect x="1381" y="511" width="87" height="24" rx="8" fill="#D8E6DD"/>
+<rect x="1516.5" y="517" width="91" height="21" rx="8" fill="#D8E6DD"/>
+<rect x="1384" y="546.4300000000001" width="84" height="27" rx="8" fill="#D8E6DD"/>
+<rect x="1562.0" y="545.06" width="105" height="27" rx="8" fill="#D8E6DD"/>
+<rect x="1408.0" y="588.9" width="108" height="24" rx="8" fill="#D8E6DD"/>
+<polyline points="1621.5,503 1569.0,545.06 1611.0,584.79 1569.0,620" fill="none" stroke="#B8DDEB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1371,535.47 1481.5,534.1 1576.0,531.36 1711,529.99" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1478.0,501 1478.0,569.72 1474.5,622" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1374,582.05 1555.0,580.6800000000001 1708,602.6" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1374,582.05 1555.0,580.6800000000001 1708,602.6" fill="none" stroke="#C7D1DD" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1376" y="601" width="151" height="21" rx="6" fill="#FFFFFF"/>
+<text x="1383" y="616" font-family="DejaVu Sans, Inter, sans-serif" font-size="10" font-weight="400" fill="#56657A">Illustrative demo map</text>
+<circle cx="1538" cy="548" r="7" fill="#FFFFFF" stroke="#155EEF" stroke-width="2"/>
+<polyline points="1532,553 1538,563 1544,553" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="1538" cy="548" r="2" fill="#155EEF"/>
+<text x="1366" y="660" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="700" fill="#14253D">Riverside Road · demo location</text>
+<text x="1366" y="689" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#155EEF">Change pin</text>
+<text x="1536" y="689" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#155EEF">Enter coordinates</text>
+<text x="1366" y="735" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="700" fill="#14253D">Observation</text>
+<rect x="1366" y="753" width="350" height="94" rx="12" fill="#F5F7FB" stroke="#DCE3ED" stroke-width="1"/>
+<text x="1381" y="780" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="400" fill="#14253D">A fallen branch is blocking this section of</text>
+<text x="1381" y="803" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="400" fill="#14253D">the road.</text>
+<text x="1366" y="881" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">Observed now · Public community report</text>
+<rect x="1366" y="923" width="350" height="52" rx="13" fill="#155EEF"/>
+<text x="1477.7421875" y="955.0" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">Submit report</text>
+</g>
+<text x="45" y="1150" font-family="DejaVu Sans, Inter, sans-serif" font-size="19" font-weight="700" fill="#14253D">02  /  The report stays connected to the route, the response, and the explanation.</text>
+<text x="44" y="1180" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">M06 · Report detail</text>
+<g id="M06-·-Report-detail">
+<rect x="44" y="1200" width="390" height="844" rx="30" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="66" y="1231" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">9:41</text>
+<rect x="190" y="1212" width="98" height="24" rx="12" fill="#14253D"/>
+<text x="374" y="1231" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">•••</text>
+<text x="64" y="1285" font-family="DejaVu Sans, Inter, sans-serif" font-size="25" font-weight="700" fill="#14253D">Report R-104</text>
+<text x="64" y="1309" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Demo data · Riverside Road</text>
+<polyline points="44,1960 434,1960" fill="none" stroke="#DCE3ED" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="82,1980 88,1977 96,1981 103,1978 103,1996 96,1999 88,1995 82,1998 82,1980" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="88,1977 88,1995" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="96,1981 96,1999" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="81.3984375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Map</text>
+<rect x="179" y="1977" width="22" height="17" rx="5" fill="#FFFFFF" stroke="#155EEF" stroke-width="2"/>
+<polyline points="184,1994 183,1999 189,1994" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="154.78125" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="700" fill="#155EEF">Community</text>
+<circle cx="287" cy="1988" r="11" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="287,1982 287,1994" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="281,1988 293,1988" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="274.4609375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Help</text>
+<polyline points="384,1977 387,1985 395,1988 387,1991 384,1999 381,1991 373,1988 381,1985 384,1977" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="367.84375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Guide</text>
+<rect x="181" y="2032" width="116" height="4" rx="2" fill="#14253D"/>
+<rect x="64" y="1333" width="132" height="26" rx="13" fill="#FEECEB"/>
+<text x="75" y="1351" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#B42318">Reviewed active</text>
+<text x="64" y="1395" font-family="DejaVu Sans, Inter, sans-serif" font-size="23" font-weight="700" fill="#14253D">Road blockage</text>
+<rect x="64" y="1417" width="350" height="175" rx="16" fill="#EAF0F1"/>
+<rect x="79" y="1435" width="87" height="31" rx="8" fill="#D8E6DD"/>
+<rect x="214.5" y="1441" width="91" height="28" rx="8" fill="#D8E6DD"/>
+<rect x="82" y="1485.25" width="84" height="35" rx="8" fill="#D8E6DD"/>
+<rect x="260.0" y="1483.5" width="105" height="35" rx="8" fill="#D8E6DD"/>
+<rect x="106.0" y="1539.5" width="108" height="31" rx="8" fill="#D8E6DD"/>
+<polyline points="319.5,1427 267.0,1483.5 309.0,1534.25 267.0,1582" fill="none" stroke="#B8DDEB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="69,1471.25 179.5,1469.5 274.0,1466.0 409,1464.25" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="176.0,1425 176.0,1515.0 172.5,1584" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="72,1530.75 253.0,1529.0 406,1557.0" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="72,1530.75 253.0,1529.0 406,1557.0" fill="none" stroke="#C7D1DD" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="134.0,1560.5 172.5,1530.75 176.0,1471.25 358.0,1464.25" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="134.0,1560.5 172.5,1530.75 176.0,1471.25 358.0,1464.25" fill="none" stroke="#155EEF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="134.0" cy="1560.5" r="8" fill="#155EEF" stroke="#FFFFFF" stroke-width="3"/>
+<circle cx="358.0" cy="1464.25" r="8" fill="#FFFFFF" stroke="#155EEF" stroke-width="3"/>
+<circle cx="176.0" cy="1499.25" r="14" fill="#B42318" stroke="#FFFFFF" stroke-width="3"/>
+<polyline points="171.0,1499.25 181.0,1499.25" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="74" y="1563" width="151" height="21" rx="6" fill="#FFFFFF"/>
+<text x="81" y="1578" font-family="DejaVu Sans, Inter, sans-serif" font-size="10" font-weight="400" fill="#56657A">Illustrative demo map</text>
+<text x="64" y="1627" font-family="DejaVu Sans, Inter, sans-serif" font-size="18" font-weight="700" fill="#14253D">Latest updates</text>
+<circle cx="75" cy="1663" r="7" fill="#9A5700"/>
+<text x="95" y="1668" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="700" fill="#14253D">Reported</text>
+<text x="95" y="1694" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">3:12 pm · Community observation</text>
+<circle cx="75" cy="1744" r="7" fill="#B42318"/>
+<text x="95" y="1749" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="700" fill="#14253D">Reviewed active</text>
+<text x="95" y="1775" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">3:16 pm · Demo responder</text>
+<polyline points="75,1673 75,1733" fill="none" stroke="#DCE3ED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="64" y="1826" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="400" fill="#56657A">Route A intersects this report.</text>
+<rect x="64" y="1856" width="350" height="52" rx="13" fill="#155EEF"/>
+<text x="150.3671875" y="1888.0" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">View affected route</text>
+<text x="201" y="1942" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#155EEF">Ask Guide</text>
+</g>
+<text x="478" y="1180" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">M08 · Request assistance</text>
+<g id="M08-·-Request-assistance">
+<rect x="478" y="1200" width="390" height="844" rx="30" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="500" y="1231" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">9:41</text>
+<rect x="624" y="1212" width="98" height="24" rx="12" fill="#14253D"/>
+<text x="808" y="1231" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">•••</text>
+<text x="498" y="1285" font-family="DejaVu Sans, Inter, sans-serif" font-size="25" font-weight="700" fill="#14253D">Request assistance</text>
+<text x="498" y="1309" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Share your location with responders</text>
+<polyline points="478,1960 868,1960" fill="none" stroke="#DCE3ED" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="516,1980 522,1977 530,1981 537,1978 537,1996 530,1999 522,1995 516,1998 516,1980" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="522,1977 522,1995" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="530,1981 530,1999" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="515.3984375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Map</text>
+<rect x="613" y="1977" width="22" height="17" rx="5" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="618,1994 617,1999 623,1994" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="592.15625" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Community</text>
+<circle cx="721" cy="1988" r="11" fill="#FFFFFF" stroke="#155EEF" stroke-width="2"/>
+<polyline points="721,1982 721,1994" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="715,1988 727,1988" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="706.8515625" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="700" fill="#155EEF">Help</text>
+<polyline points="818,1977 821,1985 829,1988 821,1991 818,1999 815,1991 807,1988 815,1985 818,1977" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="801.84375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Guide</text>
+<rect x="615" y="2032" width="116" height="4" rx="2" fill="#14253D"/>
+<rect x="498" y="1330" width="350" height="61" rx="12" fill="#FFF3D6"/>
+<text x="512" y="1353" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#9A5700">Demo only — no emergency services will be</text>
+<text x="512" y="1372" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#9A5700">contacted.</text>
+<text x="498" y="1426" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">Your location</text>
+<rect x="498" y="1443" width="350" height="135" rx="16" fill="#EAF0F1"/>
+<rect x="513" y="1461" width="87" height="24" rx="8" fill="#D8E6DD"/>
+<rect x="648.5" y="1467" width="91" height="21" rx="8" fill="#D8E6DD"/>
+<rect x="516" y="1495.65" width="84" height="27" rx="8" fill="#D8E6DD"/>
+<rect x="694.0" y="1494.3" width="105" height="27" rx="8" fill="#D8E6DD"/>
+<rect x="540.0" y="1537.5" width="108" height="24" rx="8" fill="#D8E6DD"/>
+<polyline points="753.5,1453 701.0,1494.3 743.0,1533.45 701.0,1568" fill="none" stroke="#B8DDEB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="503,1484.85 613.5,1483.5 708.0,1480.8 843,1479.45" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="610.0,1451 610.0,1518.6 606.5,1570" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="506,1530.75 687.0,1529.4 840,1551.0" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="506,1530.75 687.0,1529.4 840,1551.0" fill="none" stroke="#C7D1DD" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="508" y="1549" width="151" height="21" rx="6" fill="#FFFFFF"/>
+<text x="515" y="1564" font-family="DejaVu Sans, Inter, sans-serif" font-size="10" font-weight="400" fill="#56657A">Illustrative demo map</text>
+<circle cx="668" cy="1492" r="7" fill="#FFFFFF" stroke="#155EEF" stroke-width="2"/>
+<polyline points="662,1497 668,1507 674,1497" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="668" cy="1492" r="2" fill="#155EEF"/>
+<text x="498" y="1606" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="700" fill="#14253D">Riverside Road · demo location</text>
+<text x="498" y="1633" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#155EEF">Change location</text>
+<text x="498" y="1674" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">What do you need?</text>
+<rect x="498" y="1692" width="350" height="47" rx="12" fill="#EAF0FF" stroke="#155EEF" stroke-width="1"/>
+<circle cx="518" cy="1716" r="7" fill="#155EEF"/>
+<text x="535" y="1722" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="700" fill="#155EEF">Cannot continue</text>
+<rect x="498" y="1750" width="350" height="73" rx="12" fill="#F5F7FB" stroke="#DCE3ED" stroke-width="1"/>
+<text x="512" y="1778" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="400" fill="#14253D">Our route is blocked. We need help reaching</text>
+<text x="512" y="1799" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="400" fill="#14253D">the destination.</text>
+<text x="498" y="1850" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">Shared only with authorized responders.</text>
+<rect x="498" y="1882" width="350" height="56" rx="13" fill="#B42318"/>
+<text x="562.453125" y="1916.0" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">Send assistance request</text>
+</g>
+<text x="912" y="1180" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">M09 · Assistance status</text>
+<g id="M09-·-Assistance-status">
+<rect x="912" y="1200" width="390" height="844" rx="30" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="934" y="1231" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">9:41</text>
+<rect x="1058" y="1212" width="98" height="24" rx="12" fill="#14253D"/>
+<text x="1242" y="1231" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">•••</text>
+<text x="932" y="1285" font-family="DejaVu Sans, Inter, sans-serif" font-size="25" font-weight="700" fill="#14253D">Request H-208</text>
+<text x="932" y="1309" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Demo data · Last updated 3:20 pm</text>
+<polyline points="912,1960 1302,1960" fill="none" stroke="#DCE3ED" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="950,1980 956,1977 964,1981 971,1978 971,1996 964,1999 956,1995 950,1998 950,1980" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="956,1977 956,1995" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="964,1981 964,1999" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="949.3984375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Map</text>
+<rect x="1047" y="1977" width="22" height="17" rx="5" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="1052,1994 1051,1999 1057,1994" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1026.15625" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Community</text>
+<circle cx="1155" cy="1988" r="11" fill="#FFFFFF" stroke="#155EEF" stroke-width="2"/>
+<polyline points="1155,1982 1155,1994" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1149,1988 1161,1988" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1140.8515625" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="700" fill="#155EEF">Help</text>
+<polyline points="1252,1977 1255,1985 1263,1988 1255,1991 1252,1999 1249,1991 1241,1988 1249,1985 1252,1977" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1235.84375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Guide</text>
+<rect x="1049" y="2032" width="116" height="4" rx="2" fill="#14253D"/>
+<rect x="932" y="1330" width="350" height="136" rx="18" fill="#EAF0FF"/>
+<rect x="948" y="1348" width="83" height="26" rx="13" fill="#EAF0FF"/>
+<text x="959" y="1366" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#155EEF">Assigned</text>
+<text x="948" y="1409" font-family="DejaVu Sans, Inter, sans-serif" font-size="21" font-weight="700" fill="#14253D">Your request is assigned</text>
+<text x="948" y="1440" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="400" fill="#56657A">Team 2 · Demo responder</text>
+<text x="932" y="1505" font-family="DejaVu Sans, Inter, sans-serif" font-size="18" font-weight="700" fill="#14253D">Request progress</text>
+<polyline points="944,1542 944,1782" fill="none" stroke="#DCE3ED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="944" cy="1542" r="8" fill="#155EEF" stroke="#155EEF" stroke-width="2"/>
+<text x="966" y="1547" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">Requested</text>
+<text x="966" y="1572" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">3:18 pm · Request received</text>
+<circle cx="944" cy="1622" r="8" fill="#155EEF" stroke="#155EEF" stroke-width="2"/>
+<text x="966" y="1627" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">Assigned</text>
+<text x="966" y="1652" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">3:20 pm · Team 2</text>
+<circle cx="944" cy="1702" r="8" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="2"/>
+<text x="966" y="1707" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="400" fill="#56657A">In progress</text>
+<text x="966" y="1732" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">Waiting for an update</text>
+<circle cx="944" cy="1782" r="8" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="2"/>
+<text x="966" y="1787" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="400" fill="#56657A">Completed</text>
+<text x="966" y="1812" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="400" fill="#56657A">No completion recorded</text>
+<rect x="932" y="1835" width="350" height="43" rx="10" fill="#F5F7FB"/>
+<text x="946" y="1862" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Arrival estimate: not provided</text>
+<rect x="932" y="1896" width="350" height="42" rx="13" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="1041.015625" y="1923.0" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#155EEF">Refresh status</text>
+</g>
+<text x="1346" y="1180" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">M10 · Guide</text>
+<g id="M10-·-Guide">
+<rect x="1346" y="1200" width="390" height="844" rx="30" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="1368" y="1231" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">9:41</text>
+<rect x="1492" y="1212" width="98" height="24" rx="12" fill="#14253D"/>
+<text x="1676" y="1231" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="700" fill="#14253D">•••</text>
+<text x="1366" y="1285" font-family="DejaVu Sans, Inter, sans-serif" font-size="25" font-weight="700" fill="#14253D">Guide</text>
+<text x="1366" y="1309" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Answers grounded in route information</text>
+<polyline points="1346,1960 1736,1960" fill="none" stroke="#DCE3ED" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1384,1980 1390,1977 1398,1981 1405,1978 1405,1996 1398,1999 1390,1995 1384,1998 1384,1980" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1390,1977 1390,1995" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1398,1981 1398,1999" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1383.3984375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Map</text>
+<rect x="1481" y="1977" width="22" height="17" rx="5" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="1486,1994 1485,1999 1491,1994" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1460.15625" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Community</text>
+<circle cx="1589" cy="1988" r="11" fill="#FFFFFF" stroke="#56657A" stroke-width="2"/>
+<polyline points="1589,1982 1589,1994" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1583,1988 1595,1988" fill="none" stroke="#56657A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1576.4609375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Help</text>
+<polyline points="1686,1977 1689,1985 1697,1988 1689,1991 1686,1999 1683,1991 1675,1988 1683,1985 1686,1977" fill="none" stroke="#155EEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1668.0234375" y="2017" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="700" fill="#155EEF">Guide</text>
+<rect x="1483" y="2032" width="116" height="4" rx="2" fill="#14253D"/>
+<rect x="1366" y="1330" width="95" height="26" rx="13" fill="#EAF0FF"/>
+<text x="1377" y="1348" font-family="DejaVu Sans, Inter, sans-serif" font-size="12" font-weight="700" fill="#155EEF">Demo data</text>
+<rect x="1404" y="1383" width="312" height="71" rx="16" fill="#EAF0FF"/>
+<text x="1421" y="1411" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="400" fill="#14253D">Why is this route flagged?</text>
+<rect x="1366" y="1477" width="350" height="243" rx="18" fill="#F5F7FB"/>
+<text x="1383" y="1511" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">Route A crosses a reviewed</text>
+<text x="1383" y="1536" font-family="DejaVu Sans, Inter, sans-serif" font-size="16" font-weight="700" fill="#14253D">road blockage.</text>
+<text x="1383" y="1572" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="400" fill="#14253D">Route B avoids the segment in report</text>
+<text x="1383" y="1595" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="400" fill="#14253D">R-104. Conditions elsewhere may still be</text>
+<text x="1383" y="1618" font-family="DejaVu Sans, Inter, sans-serif" font-size="15" font-weight="400" fill="#14253D">unknown.</text>
+<rect x="1383" y="1643" width="316" height="59" rx="12" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="1397" y="1668" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="700" fill="#155EEF">Source: R-104  →</text>
+<text x="1397" y="1690" font-family="DejaVu Sans, Inter, sans-serif" font-size="11" font-weight="400" fill="#56657A">Reviewed active · Updated 3:16 pm</text>
+<text x="1366" y="1760" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="400" fill="#56657A">You can also ask</text>
+<rect x="1366" y="1777" width="350" height="46" rx="12" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="1381" y="1806" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="400" fill="#155EEF">What is my request status?</text>
+<rect x="1366" y="1885" width="350" height="51" rx="14" fill="#FFFFFF" stroke="#DCE3ED" stroke-width="1"/>
+<text x="1380" y="1917" font-family="DejaVu Sans, Inter, sans-serif" font-size="14" font-weight="400" fill="#56657A">Ask about your route…</text>
+<circle cx="1689" cy="1910" r="16" fill="#155EEF"/>
+<text x="1683" y="1916" font-family="DejaVu Sans, Inter, sans-serif" font-size="17" font-weight="700" fill="#FFFFFF">↑</text>
+</g>
+<text x="45" y="2090" font-family="DejaVu Sans, Inter, sans-serif" font-size="13" font-weight="400" fill="#56657A">Static design references · Schematic maps · Synthetic incidents · See the full brief for remaining screens, variants, and wiring.</text>
+</svg>

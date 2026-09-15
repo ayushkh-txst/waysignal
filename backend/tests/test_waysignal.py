@@ -1,0 +1,206 @@
+"""Integration contracts: review -> route, authorized MCP, source-summary host."""
+import asyncio
+import os
+from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone
+from uuid import uuid4
+
+os.environ.setdefault("DATABASE_URL", "sqlite://")
+os.environ.setdefault("JWT_SECRET", "isolated-test-secret-not-for-deployment-0123456789")
+
+import httpx
+import jwt
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from mcp.client.streamable_http import streamablehttp_client
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from app.api.v1 import hazards, emergencies
+from app.core import database
+from app.core.config import settings
+from app.waysignal import api, guide
+from app.waysignal.domain import AssessmentInput, distance_to_route
+from app.waysignal.mcp_server import AuthenticatedMCP, build_mcp
+from app.waysignal.routes import GOneRouteProvider, RouteAssessmentService
+
+
+def auth(subject="alice", role="citizen"):
+    now = datetime.now(timezone.utc)
+    token = jwt.encode({"sub": subject, "role": role, "iat": now, "exp": now + timedelta(minutes=5)},
+                       settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    return {"Authorization": "Bearer " + token}
+
+
+@pytest.fixture
+def app_api(tmp_path, monkeypatch):
+    engine = create_engine(f"sqlite:///{tmp_path / 'waysignal.db'}", connect_args={"check_same_thread": False})
+    database.Base.metadata.create_all(engine)
+    sessions = sessionmaker(bind=engine, expire_on_commit=False)
+    monkeypatch.setattr(database, "SessionLocal", sessions)
+    mcp = build_mcp()
+
+    @asynccontextmanager
+    async def lifespan(app):
+        async with mcp.session_manager.run():
+            yield
+
+    app = FastAPI(lifespan=lifespan)
+    app.include_router(hazards.router, prefix="/hazards")
+    app.include_router(emergencies.router, prefix="/emergencies")
+    app.include_router(api.router, prefix="/mobile")
+    app.mount("/mcp", AuthenticatedMCP(mcp.streamable_http_app()))
+    def db():
+        with sessions() as session:
+            yield session
+    app.dependency_overrides[database.get_db] = db
+    with TestClient(app) as client:
+        yield app, client, sessions
+    engine.dispose()
+
+
+def report(client):
+    response = client.post("/hazards", headers=auth(), json={"client_request_id": str(uuid4()),
+        "kind": "road_blocked", "latitude": 29.7, "longitude": -95.4})
+    assert response.status_code == 201, response.text
+    return response.json()["id"]
+
+
+def routes():
+    return [
+        {"geometry": {"coordinates": [[-95.41, 29.7], [-95.39, 29.7]]}, "distance": 2000, "duration": 240},
+        {"geometry": {"coordinates": [[-95.41, 29.701], [-95.39, 29.701]]}, "distance": 2200, "duration": 300},
+    ]
+
+
+INPUT = {"origin": {"latitude": 29.7, "longitude": -95.41},
+         "destination": {"latitude": 29.7, "longitude": -95.39}, "destination_name": "Demo destination"}
+
+
+def test_review_authorization_version_history_and_reopen(app_api):
+    _, client, _ = app_api
+    key = report(client)
+    path = f"/mobile/community/{key}/review"
+    body = {"decision": "reviewed_active", "note": "Reviewed by demo responder", "expected_version": 0}
+    assert client.post(path, headers=auth(), json=body).status_code == 403
+    reviewed = client.post(path, headers=auth("worker", "worker"), json=body)
+    assert reviewed.status_code == 200, reviewed.text
+    assert reviewed.json()["review_state"] == "reviewed_active"
+    assert reviewed.json()["review_version"] == 1
+    assert client.post(path, headers=auth("worker", "worker"), json=body).status_code == 409
+    history = client.get(f"/mobile/community/{key}/history", headers=auth()).json()
+    assert len(history) == 1 and "actor" not in history[0]
+    client.patch(f"/hazards/{key}", headers=auth("worker", "worker"), json={"status": "resolved"})
+    assert client.get("/mobile/community", headers=auth()).json()[0]["review_state"] == "resolved"
+    client.patch(f"/hazards/{key}", headers=auth("worker", "worker"), json={"status": "active"})
+    assert client.get("/mobile/community", headers=auth()).json()[0]["review_state"] == "unreviewed"
+
+
+def test_rejected_report_removes_legacy_active_marker(app_api):
+    _, client, _ = app_api
+    key = report(client)
+    result = client.post(f"/mobile/community/{key}/review", headers=auth("worker", "worker"),
+        json={"decision": "rejected", "note": "Duplicate demo observation", "expected_version": 0})
+    assert result.json()["review_state"] == "rejected"
+    assert result.json()["status"] == "resolved"
+    assert client.get("/hazards", headers=auth()).json() == []
+
+
+def test_route_screening_changes_after_review_and_uses_segments(app_api, monkeypatch):
+    _, client, _ = app_api
+    async def candidates(self, request): return routes()
+    monkeypatch.setattr(GOneRouteProvider, "candidates", candidates)
+    key = report(client)
+    first = client.post("/mobile/routes/assess", headers=auth(), json=INPUT).json()
+    assert first["candidates"][0]["findings"][0]["disposition"] == "review_needed"
+    assert not first["candidates"][0]["excluded"]
+    client.post(f"/mobile/community/{key}/review", headers=auth("worker", "worker"),
+        json={"decision": "reviewed_active", "expected_version": 0})
+    second = client.post("/mobile/routes/assess", headers=auth(), json=INPUT).json()
+    assert second["candidates"][0]["excluded"]
+    assert second["selected_id"] == "route-2"
+    assert distance_to_route(29.7, -95.4, [[29.7, -95.41], [29.7, -95.39]]) < 0.01
+    assert "not guaranteed safe" in second["notice"]
+
+
+def test_all_routes_excluded_and_provider_failure_have_no_selected_route(app_api, monkeypatch):
+    _, client, _ = app_api
+    key = report(client)
+    client.post(f"/mobile/community/{key}/review", headers=auth("worker", "worker"),
+        json={"decision": "reviewed_active", "expected_version": 0})
+    async def one(self, request): return routes()[:1]
+    monkeypatch.setattr(GOneRouteProvider, "candidates", one)
+    result = client.post("/mobile/routes/assess", headers=auth(), json=INPUT)
+    assert result.json()["selected_id"] is None
+    async def broken(self, request): raise httpx.ConnectError("offline")
+    monkeypatch.setattr(GOneRouteProvider, "candidates", broken)
+    failed = client.post("/mobile/routes/assess", headers=auth(), json=INPUT)
+    assert failed.status_code == 502 and "selected_id" not in failed.json()
+
+
+def test_stale_review_requires_new_evidence(app_api):
+    _, client, sessions = app_api
+    key = report(client)
+    with sessions() as db:
+        row = db.get(hazards.Hazard, key)
+        row.created_at = datetime.now(timezone.utc) - timedelta(days=2)
+        row.updated_at = row.created_at
+        db.commit()
+    assert client.get("/mobile/community", headers=auth()).json()[0]["review_state"] == "expired"
+    result = client.post(f"/mobile/community/{key}/review", headers=auth("worker", "worker"),
+        json={"decision": "reviewed_active", "expected_version": 0})
+    assert result.json()["review_state"] == "reviewed_active"
+
+
+def rpc(client, method, params, actor=None):
+    return client.post("/mcp/", headers={**(actor or auth()), "Accept": "application/json, text/event-stream"},
+        json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
+
+
+def test_real_mcp_discovery_and_shared_reports(app_api):
+    _, client, _ = app_api
+    report(client)
+    assert client.post("/mcp/", json={}).status_code == 401
+    init = rpc(client, "initialize", {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "contract-test", "version": "1"}})
+    assert init.status_code == 200, init.text
+    discovered = rpc(client, "tools/list", {}).json()["result"]
+    assert {t["name"] for t in discovered["tools"]} == {"assess_route", "list_route_reports", "get_assistance_status"}
+    call = rpc(client, "tools/call", {"name": "list_route_reports", "arguments": {}}).json()["result"]
+    assert not call.get("isError"), call
+    assert call["structuredContent"]["reports"] == client.get("/mobile/community", headers=auth()).json()
+
+
+def test_mcp_enforces_request_ownership_and_completion_does_not_clear_report(app_api):
+    _, client, _ = app_api
+    key = report(client)
+    created = client.post("/emergencies", headers=auth(), json={"citizen_id": "alice", "citizen_name": "Demo participant",
+        "emergency_type": "evacuation", "latitude": 29.7, "longitude": -95.4, "people_count": 1, "notes": "Demo only"})
+    assert created.status_code == 201, created.text
+    request_id = created.json()["id"]
+    own = rpc(client, "tools/call", {"name": "get_assistance_status", "arguments": {"request_id": request_id}}).json()["result"]
+    assert not own.get("isError"), own
+    assert own["structuredContent"]["status"] == "submitted"
+    assert "notes" not in own["structuredContent"] and "latitude" not in own["structuredContent"]
+    other = rpc(client, "tools/call", {"name": "get_assistance_status", "arguments": {"request_id": request_id}}, auth("bob")).json()["result"]
+    assert other["isError"]
+    assert client.get(f"/emergencies/{request_id}", headers=auth("bob")).status_code == 404
+    done = client.patch(f"/emergencies/{request_id}", headers=auth("worker", "worker"), json={"status": "resolved"})
+    assert done.status_code == 200
+    assert client.get("/mobile/community", headers=auth()).json()[0]["status"] == "active"
+
+
+def test_guide_uses_real_mcp_client_and_source_records(app_api, monkeypatch):
+    app, client, _ = app_api
+    key = report(client)
+    def factory(headers=None, timeout=None, auth=None):
+        return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), headers=headers, timeout=timeout, auth=auth)
+    def local_transport(url, **kwargs):
+        return streamablehttp_client("http://testserver/mcp/", httpx_client_factory=factory, **kwargs)
+    monkeypatch.setattr(guide, "streamablehttp_client", local_transport)
+    response = client.post("/mobile/guide", headers=auth(), json={"action": "reports"})
+    assert response.status_code == 200, response.text
+    assert response.json()["mode"] == "source_summary"
+    assert response.json()["sources"][0]["id"] == key
+    assert response.json()["tool_used"] == "list_route_reports"
+    assert client.post("/mobile/guide", headers=auth(), json={"action": "route"}).status_code == 422

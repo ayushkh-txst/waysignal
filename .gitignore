@@ -42,3 +42,9 @@ htmlcov/
 .coverage.*
 *.log
 .DS_Store
+
+# Xcode user state and build products
+DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
