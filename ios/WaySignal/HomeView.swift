@@ -44,6 +44,13 @@ struct HomeView: View {
                         }
                     }
                 }.buttonStyle(.plain)
+                NavigationLink { EmergencyContactsView() } label: {
+                    SignalCard { HStack(spacing: 14) {
+                        Image(systemName: "phone.fill").font(.title2).foregroundStyle(SignalStyle.gold)
+                        VStack(alignment: .leading, spacing: 4) { Text("Emergency contacts").font(.headline); Text("Police, fire, ambulance and rescue services.").font(.caption).foregroundStyle(.secondary) }
+                        Spacer(); Image(systemName: "arrow.up.right")
+                    } }
+                }.buttonStyle(.plain)
                 Text("Places nearby").font(.title3.bold())
                 if let places = context.places {
                     ForEach(places.facilities.prefix(4)) { place in

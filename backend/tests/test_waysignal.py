@@ -538,3 +538,20 @@ def test_image_provider_sends_responses_multimodal_content(monkeypatch):
     assert sent['store'] is False
     assert [item['type'] for item in sent['input'][0]['content']] == ['input_text','input_image']
     assert sent['input'][0]['content'][1]['image_url'].startswith('data:image/jpeg;base64,')
+
+
+
+def test_shelter_closed_during_routing_is_not_returned_as_available(demo_api, monkeypatch):
+    from app.waysignal.scenario import DemoRouteProvider
+    from app.waysignal.map_state import Shelter
+    _, client, sessions = demo_api
+    original = DemoRouteProvider.candidates
+    async def closes_during_route(self, request):
+        routes = await original(self, request)
+        with sessions() as db:
+            site = db.get(Shelter, 'WS-DEMO-S1'); site.status = 'closed'; db.commit()
+        return routes
+    monkeypatch.setattr(DemoRouteProvider, 'candidates', closes_during_route)
+    response = client.post('/mobile/routes/shelter', headers=auth('citizen-demo'), json=demo_input()['origin'])
+    assert response.status_code == 409, response.text
+    assert 'availability changed' in response.json()['detail']

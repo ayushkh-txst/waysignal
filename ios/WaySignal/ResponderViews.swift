@@ -37,7 +37,16 @@ struct OperationsOverview: View {
                 HStack { Text("Awaiting assignment").font(.title3.bold()); Spacer(); if operations.busy { ProgressView() } }
                 ForEach(active.filter { $0.status == "submitted" }.prefix(4)) { request in NavigationLink { IncidentDetail(initial: request, account: account) } label: { IncidentCard(request: request) }.buttonStyle(.plain) }
                 if let conditions = context.conditions { Text("Forecast context").font(.title3.bold()); ConditionsCard(conditions: conditions) }
-                NavigationLink { GuideView() } label: { Label("Ask Nav AI", systemImage: "sparkles") }.buttonStyle(.bordered)
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        NavigationLink { GuideView() } label: { Label("Ask Nav AI", systemImage: "sparkles") }.buttonStyle(.bordered)
+                        NavigationLink { EmergencyContactsView() } label: { Label("Emergency contacts", systemImage: "phone.fill") }.buttonStyle(.bordered)
+                    }.fixedSize(horizontal: true, vertical: false)
+                    VStack(alignment: .leading, spacing: 12) {
+                        NavigationLink { GuideView() } label: { Label("Ask Nav AI", systemImage: "sparkles") }.buttonStyle(.bordered)
+                        NavigationLink { EmergencyContactsView() } label: { Label("Emergency contacts", systemImage: "phone.fill") }.buttonStyle(.bordered)
+                    }
+                }
             }.padding(20)
         }.background(SignalStyle.background).navigationTitle("Operations").navigationBarTitleDisplayMode(.inline)
             .toolbar {

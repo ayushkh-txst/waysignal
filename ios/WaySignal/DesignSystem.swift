@@ -2,6 +2,7 @@ import SwiftUI
 import MapKit
 
 enum SignalStyle {
+    static let shelterGreen = Color(red: 0.08, green: 0.55, blue: 0.28)
     static let blue = Color(red: 0.04, green: 0.14, blue: 0.25)
     static let gold = Color(red: 0.48, green: 0.36, blue: 0.10)
     static let signInButton = Color(red: 105.0 / 255, green: 94.0 / 255, blue: 66.0 / 255)

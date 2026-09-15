@@ -121,5 +121,11 @@ class MapStateService:
             raise HTTPException(503 if provider_errors else 409,
                 'Route service unavailable. Try again or request assistance.' if provider_errors else
                 'No reachable open shelter is currently recorded. Request assistance or ask an admin to confirm a shelter.')
+        # Availability may change while a route provider is responding.
+        self.db.expire_all()
+        current = {site['id']: site for site in self.snapshot()['shelters'] if site['available']}
+        options = [option for option in options if option[2]['id'] in current]
+        if not options:
+            raise HTTPException(409, 'Shelter availability changed. Refresh to find another open shelter.')
         _, _, shelter, assessment = min(options, key=lambda x: x[:2])
-        return {'shelter': shelter, 'assessment': assessment}
+        return {'shelter': current[shelter['id']], 'assessment': assessment}

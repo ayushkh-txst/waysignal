@@ -10,20 +10,32 @@ struct JourneyView: View {
     @EnvironmentObject private var navigation: AppNavigation
     @State private var position: MapCameraPosition = .automatic
     @State private var showSearch = false; @State private var showRoutes = false
+    @State private var showAlternatives = false
     @State private var showReport = false; @State private var satellite = false; @State private var showPlaces = true
     @State private var selectedReport: CommunityReport?
     var body: some View {
         Map(position: $position) {
             MapRiskLayer(snapshot: community.mapState)
+            if let assessment = journey.assessment {
+                if showAlternatives || journey.shelter == nil {
+                    ForEach(assessment.candidates.filter { $0.id != assessment.selectedId }) { route in
+                        MapPolyline(coordinates: route.coordinates).stroke(route.excluded ? Color.red.opacity(0.55) : Color.gray.opacity(0.6), lineWidth: 3)
+                    }
+                }
+                if let selected = assessment.selected, !selected.excluded {
+                    MapPolyline(coordinates: selected.coordinates).stroke(.white.opacity(0.95), lineWidth: 9)
+                    MapPolyline(coordinates: selected.coordinates).stroke(journey.shelter == nil ? SignalStyle.blue : SignalStyle.shelterGreen, lineWidth: 6)
+                }
+            }
             ForEach((community.mapState?.shelters ?? []).filter { $0.available }) { site in
                 Annotation(site.name, coordinate: site.coordinate.location) {
-                    Button { Task { await journey.routeToShelter(site.id); position = .automatic; showRoutes = journey.assessment != nil } } label: {
+                    Button { Task { await journey.routeToShelter(site.id); showAlternatives = false; frameSelectedRoute() } } label: {
                         Image(systemName: "house.lodge.fill").foregroundStyle(.white).padding(10).background(.green, in: Circle())
                     }.accessibilityLabel("Open shelter: " + site.name)
                 }
             }
             if let origin = journey.origin { Marker("Starting point", systemImage: "location.fill", coordinate: origin.location).tint(SignalStyle.blue) }
-            if let destination = journey.destination { Marker(journey.destinationName, systemImage: "flag.fill", coordinate: destination.location).tint(.indigo) }
+            if journey.shelter == nil, let destination = journey.destination { Marker(journey.destinationName, systemImage: "flag.fill", coordinate: destination.location).tint(.indigo) }
             ForEach(community.reports.filter { $0.status == "active" }) { report in
                 Annotation(report.label, coordinate: report.coordinate.location) {
                     Button { selectedReport = report } label: {
@@ -33,17 +45,12 @@ struct JourneyView: View {
                 }
             }
             if showPlaces {
-                ForEach(context.places?.facilities ?? []) { place in
+                ForEach((context.places?.facilities ?? []).filter { $0.coordinate != journey.shelter?.coordinate }) { place in
                     Annotation(place.name, coordinate: place.coordinate.location) {
                         Button { journey.destination = place.coordinate; journey.destinationName = place.name } label: {
                             Image(systemName: place.icon).foregroundStyle(SignalStyle.gold).padding(8).background(.white, in: Circle())
                         }.accessibilityLabel("Route to " + place.name)
                     }
-                }
-            }
-            if let assessment = journey.assessment {
-                ForEach(assessment.candidates) { route in
-                    MapPolyline(coordinates: route.coordinates).stroke(route.excluded ? Color.red.opacity(0.65) : route.id == assessment.selectedId ? SignalStyle.blue : Color.gray, lineWidth: 5)
                 }
             }
         }.mapStyle(satellite ? .hybrid : .standard(elevation: .flat))
@@ -76,7 +83,18 @@ struct JourneyView: View {
                         Button { navigation.tab = "help" } label: { Label("Help", systemImage: "hand.raised") }
                     }.font(.subheadline.bold())
                     PrimaryButton(title: "Route to shelter", icon: "location.north.line.fill", busy: journey.busy, disabled: journey.origin == nil) {
-                        Task { await community.load(); await journey.routeToShelter(); position = .automatic; showRoutes = journey.assessment != nil }
+                        Task { await community.load(); await journey.routeToShelter(); showAlternatives = false; frameSelectedRoute() }
+                    }
+                    if let site = journey.shelter, let selected = journey.assessment?.selected {
+                        HStack(alignment: .top) {
+                            Image(systemName: "house.lodge.fill").foregroundStyle(SignalStyle.shelterGreen)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("To " + site.name).font(.subheadline.bold()).foregroundStyle(SignalStyle.shelterGreen)
+                                Text("\(max(1, Int(ceil(selected.durationS / 60)))) min · \((selected.distanceM / 1000).formatted(.number.precision(.fractionLength(1)))) km").font(.caption)
+                            }
+                            Spacer()
+                            Button { showAlternatives.toggle(); frameSelectedRoute() } label: { Image(systemName: showAlternatives ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle") }.accessibilityLabel(showAlternatives ? "Hide alternative routes" : "Show alternative routes")
+                        }
                     }
                     HStack {
                         Button("Assess destination") { Task { await journey.assess(); position = .automatic; showRoutes = journey.assessment != nil } }.disabled(journey.input == nil || journey.busy)
@@ -93,7 +111,16 @@ struct JourneyView: View {
             .sheet(isPresented: $showRoutes) { NavigationStack { RouteComparisonView() }.presentationDetents([.medium, .large]) }
             .sheet(item: $selectedReport) { report in NavigationStack { ReportDetailView(report: report) }.presentationDetents([.medium, .large]) }
             .task { await community.load(); if let origin = journey.origin, context.places == nil { await context.load(origin) } }
+            .onChange(of: journey.assessment?.generatedAt) { _, _ in if journey.shelter != nil { frameSelectedRoute() } }
             .onChange(of: journey.origin) { _, value in if let value { position = .region(.init(center: value.location, span: .init(latitudeDelta: 0.025, longitudeDelta: 0.025))) } }
+    }
+    private func frameSelectedRoute() {
+        guard let selected = journey.assessment?.selected, !selected.coordinates.isEmpty else { position = .automatic; return }
+        let points = selected.coordinates
+        let minLat = points.map(\.latitude).min()!, maxLat = points.map(\.latitude).max()!
+        let minLon = points.map(\.longitude).min()!, maxLon = points.map(\.longitude).max()!
+        position = .region(.init(center: .init(latitude: (minLat + maxLat) / 2, longitude: (minLon + maxLon) / 2),
+            span: .init(latitudeDelta: max(0.006, (maxLat - minLat) * 1.65), longitudeDelta: max(0.006, (maxLon - minLon) * 1.65))))
     }
     private func mapButton(_ icon: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) { Image(systemName: icon).frame(width: 44, height: 44).background(.regularMaterial, in: Circle()) }.accessibilityLabel(label)
@@ -112,7 +139,7 @@ struct RouteComparisonView: View {
                     ForEach(assessment.candidates) { route in
                         SignalCard {
                             VStack(alignment: .leading, spacing: 12) {
-                                Label(route.excluded ? "Avoid reported hazard" : route.id == assessment.selectedId ? "Selected candidate" : "Alternative candidate", systemImage: route.excluded ? "xmark.octagon" : "arrow.triangle.turn.up.right.diamond").font(.headline).foregroundStyle(route.excluded ? .red : SignalStyle.blue)
+                                Label(route.excluded ? "Avoid reported hazard" : route.id == assessment.selectedId ? (journey.shelter == nil ? "Selected candidate" : "Selected shelter route") : "Alternative candidate", systemImage: route.excluded ? "xmark.octagon" : "arrow.triangle.turn.up.right.diamond").font(.headline).foregroundStyle(route.excluded ? .red : journey.shelter != nil && route.id == assessment.selectedId ? SignalStyle.shelterGreen : SignalStyle.blue)
                                 Text("\(Int((route.durationS / 60).rounded(.up))) min \(scenario.enabled ? "simulated" : "driving") · \((route.distanceM / 1000).formatted(.number.precision(.fractionLength(1)))) km").font(.title3.bold())
                                 if route.findings.isEmpty { Text("No nearby reports found. Conditions remain unknown.").font(.footnote).foregroundStyle(.secondary) }
                                 ForEach(route.findings) { finding in

@@ -76,6 +76,7 @@ struct GuideView: View {
 
         }.navigationTitle("Nav AI").navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarTrailing) { NavigationLink { EmergencyContactsView() } label: { Image(systemName: "phone.fill") }.accessibilityLabel("Emergency contacts") }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Toggle("Read new replies aloud", isOn: $readAloud)

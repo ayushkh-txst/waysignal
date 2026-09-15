@@ -160,3 +160,10 @@ Open **Incidents → a request → Route to [name]**, then choose **Use my locat
 For the Riverside walkthrough, choose **Use Riverside response base**. This is an explicit fictional base and schematic route with simulated times, documented in route source details; it is never substituted for real GPS. Device/manual routing uses OSRM even when the scenario server is running. Provider failures and blocked candidates show an error/no-route result; they do not produce a fabricated road route. Apple map tiles require internet access.
 
 The scenario now uses fictional characters Arun Shrestha, Maya Gurung, Ravi Thapa, and admin Asha Karki. Existing placeholder names and untouched seeded notes migrate on startup. Request IDs, ownership, coordinates, status history, custom names/notes, and database contents are preserved. These are story characters, not real incident victims.
+
+
+## Emergency contacts and green shelter routes
+
+Open **Emergency contacts** beside Nav AI in admin Overview, below the citizen Home Nav AI card, or from the phone button in Nav AI. Choose your service area or use device/map location. The directory covers Nepal and the United States, with Houston/San Marcos information links; it includes police, fire, ambulance, rescue coordination and support resources. Phone calls require user action and are disabled in simulator builds. See [sources and area behavior](docs/EMERGENCY-CONTACTS.md).
+
+**Route to shelter** now keeps the map open and highlights the selected route in green, ending at the selected open shelter. The map fits the route and shows its distance/time. Alternatives are optional. Failed routing, blocked candidates, and shelters that close during calculation do not produce a green route.
