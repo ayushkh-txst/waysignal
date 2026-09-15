@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from app.api.v1.routing import _osrm_routes
 from app.core.config import settings
 from app.waysignal.domain import (AssessmentInput, HazardPolicy, ReportSource, RouteProvider,
-    ReviewedClosurePolicy, UnreviewedHazardPolicy, distance_to_route)
+    ReportedHazardPolicy, distance_to_route)
 
 
 class GOneRouteProvider:
@@ -29,7 +29,7 @@ class RouteAssessmentService:
     def __init__(self, provider: RouteProvider, reports: ReportSource,
                  policies: list[HazardPolicy] | None = None):
         self.provider, self.reports = provider, reports
-        self.policies = policies if policies is not None else [ReviewedClosurePolicy(), UnreviewedHazardPolicy()]
+        self.policies = policies if policies is not None else [ReportedHazardPolicy()]
 
     async def assess(self, request: AssessmentInput) -> dict:
         try:
@@ -38,7 +38,8 @@ class RouteAssessmentService:
             raise HTTPException(502, "Route provider is unavailable. No route assessment was made.") from None
         reports = self.reports.reports()
         candidates = []
-        for item in raw[:3]:
+        # Include outer alternatives; each is screened independently before selection.
+        for item in raw[:8]:
             try:
                 coords = item["geometry"]["coordinates"]
                 if not 2 <= len(coords) <= 10000:

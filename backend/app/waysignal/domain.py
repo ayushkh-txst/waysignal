@@ -54,17 +54,21 @@ def finding(report: dict, distance_m: float, disposition: str) -> dict:
             "reason": "Reported hazard is near this route; location accuracy is limited."}
 
 
-class ReviewedClosurePolicy:
-    def evaluate(self, report: dict, distance_m: float) -> dict | None:
-        radius = max(25.0, min(report.get("accuracy_m") or 25.0, 250.0))
-        if report["review_state"] == "reviewed_active" and distance_m <= radius:
-            return finding(report, distance_m, "exclude")
-        return None
+def report_radius(report):
+    """Use the same buffer for map circles and route-segment screening."""
+    return max(120.0 if report['kind'] == 'flooded_road' else 60.0,
+               min(report.get('accuracy_m') or 0, 250.0))
 
 
-class UnreviewedHazardPolicy:
+class ReportedHazardPolicy:
+    """Physical obstacles block a route while review is pending, including debris."""
     def evaluate(self, report: dict, distance_m: float) -> dict | None:
-        radius = max(50.0, min(report.get("accuracy_m") or 50.0, 250.0))
-        if report["review_state"] in {"unreviewed", "expired"} and distance_m <= radius:
-            return finding(report, distance_m, "review_needed")
-        return None
+        if report['status'] != 'active' or report['review_state'] in ('rejected', 'resolved'):
+            return None
+        if distance_m > report_radius(report):
+            return None
+        excludes = report['review_state'] == 'reviewed_active' or report['kind'] in ('flooded_road', 'road_blocked', 'debris')
+        result = finding(report, distance_m, 'exclude' if excludes else 'review_needed')
+        result['reason'] = ('Avoid this reported flood or obstruction; review may still be pending.' if excludes
+                            else 'An unverified observation is near this route. Check its details.')
+        return result

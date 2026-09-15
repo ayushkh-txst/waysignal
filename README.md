@@ -71,12 +71,12 @@ Use the URL printed by Vite, normally `http://127.0.0.1:5173`. For normal develo
 
 ## Demonstration sequence
 
-1. In the responder web workspace, open the exercise and reset the fixtures. Sign in to the iPhone app as the demo citizen.
-2. Show Home and Map. Assess the default demo journey and inspect observation **R104**.
-3. As responder, confirm R104 as an active hazard with a review note.
-4. Reassess the same journey as citizen: the direct candidate is excluded and the alternative is selected.
-5. Ask Nav AI why the route changed and open its linked report record.
-6. Submit a clearly marked demo assistance request. As responder, assign it, mark en route, then complete it. Show the matching citizen timeline.
+1. Sign in to the iPhone app as citizen and open Map → Route to shelter. The selected green route avoids the three blocked inner corridors, including pending debris R105.
+2. Submit an obstruction report with a photo at a point on the selected outer corridor. Refreshing shared map evidence switches the route to the remaining outer corridor before admin review.
+3. As admin, inspect and review the new report. Confirming it keeps the corridor excluded; resolving or rejecting it makes that corridor eligible again.
+4. If every candidate is blocked, show the no-route result. No green line is retained.
+5. Ask Nav AI why the route was selected and open the linked report records.
+6. Submit an assistance request. As admin, open it, show directions from the labelled starting point, assign it and update its progress. Show the matching citizen timeline.
 
 Account explains the active simulation; route and source details identify synthetic evidence. Repeated toolbar badges are removed. Map tiles and some inherited integrations still require network access. See the [native guide](docs/NATIVE-UPGRADE.md) and [demo scenario](docs/DEMO-SCENARIO.md).
 
@@ -85,9 +85,9 @@ Account explains the active simulation; route and source details identify synthe
 - **Report blocked route** is visible on the citizen Map and Community screens. Choose a photo, preview it, place the observation pin on the map, and submit. Photos are private to the reporter and admins.
 - Both native maps read the same `/mobile/map-state` endpoint. Red circles identify reviewed active hazards; amber circles identify pending or stale observations. Circles are conservative report buffers, not measured flood boundaries.
 - Green safe points identify currently open, admin-recorded shelter sites. Admins can add and close sites in **Map → Manage safe points & shelters**. Confirmations expire; nearby active hazards suppress green status. No shelters are invented in live mode.
-- **Route to shelter** screens up to three nearby recorded open shelters. Flood and blocked-road observations are avoided immediately, including those awaiting review. If all candidates fail, the app offers Help instead of inventing a safe route. The selected candidate includes provider directions when available.
+- **Route to shelter** screens up to three nearby recorded open shelters. Flood, blocked-road and debris observations are avoided immediately, including those awaiting review. If all candidates fail, the app offers Help instead of inventing a safe route. The selected candidate includes provider directions when available.
 - Reports and map state refresh every eight seconds while the app is active; changed evidence refreshes an existing route assessment. This is polling, not push navigation.
-- Nav AI's `find_shelter_route` MCP tool uses the same shelter-selection service as the Map button. General destination comparison retains the earlier review-driven policy; shelter routing applies the stricter closure policy.
+- Nav AI's `find_shelter_route` MCP tool uses the same shelter-selection service as the Map button. General destination, shelter and admin request routes all use the same obstacle policy, also shared with Nav AI.
 - The seeded Hilltop shelter and schematic directions belong to the isolated simulation. Live routing uses OSRM driving routes and recorded shelter confirmations; it is not certified emergency navigation.
 
 ## Architecture and MCP
@@ -155,9 +155,9 @@ WaySignal is a hackathon prototype. Route screening uses reported points and doe
 
 Overview counts open their corresponding lists; **Assigned** shows open requests assigned to the signed-in admin. The top-right profile opens Account; the duplicate bottom Account button is removed. Reports use `/api/v1/admin/reports` and its `/export` endpoint, with report failures isolated from incident loading.
 
-Open **Incidents → a request → Route to [name]**, then choose **Use my location** and allow location access. The map shows the origin, requester’s saved location, a screened driving route, distance, approximate travel time, and provider directions. A manually chosen starting point also uses the road provider. A response never accepts a client-supplied destination: the authenticated worker endpoint resolves it from the selected request. Closed or concurrently moved requests require a refresh. New report/location data invalidates displayed directions.
+Open **Incidents → a request → Route to [name]**, then choose **Use my location** and allow location access. The map shows the origin, requester’s saved location, a screened driving route, distance, approximate travel time, and provider directions. A manually chosen starting point also uses the road provider. A response never accepts a client-supplied destination: the authenticated worker endpoint resolves it from the selected request. Closed or concurrently moved requests require a refresh. New report/location data clears and recalculates displayed directions from the selected starting point. A Refresh directions button supports retry after failure.
 
-For the Riverside walkthrough, choose **Use Riverside response base**. This is an explicit fictional base and schematic route with simulated times, documented in route source details; it is never substituted for real GPS. Device/manual routing uses OSRM even when the scenario server is running. Provider failures and blocked candidates show an error/no-route result; they do not produce a fabricated road route. Apple map tiles require internet access.
+In the simulator with the Riverside scenario enabled, request directions load automatically **from Riverside response base**, with that origin named above the map. On other devices you can choose **Use Riverside response base**. This is a fictional base and schematic route with simulated times, documented in route source details. It is not labelled as device GPS. **Use my location** still requests a real device location; if acquisition fails, the existing labelled base route remains visible. Temporary location failures receive two short retries, then an actionable message. Device/manual routing uses OSRM even when the scenario server is running. Provider failures and blocked candidates show an error/no-route result; they do not produce a fabricated road route. Apple map tiles require internet access.
 
 The scenario now uses fictional characters Arun Shrestha, Maya Gurung, Ravi Thapa, and admin Asha Karki. Existing placeholder names and untouched seeded notes migrate on startup. Request IDs, ownership, coordinates, status history, custom names/notes, and database contents are preserved. These are story characters, not real incident victims.
 
@@ -167,3 +167,5 @@ The scenario now uses fictional characters Arun Shrestha, Maya Gurung, Ravi Thap
 Open **Emergency contacts** beside Nav AI in admin Overview, below the citizen Home Nav AI card, or from the phone button in Nav AI. Choose your service area or use device/map location. The directory covers Nepal and the United States, with Houston/San Marcos information links; it includes police, fire, ambulance, rescue coordination and support resources. Phone calls require user action and are disabled in simulator builds. See [sources and area behavior](docs/EMERGENCY-CONTACTS.md).
 
 **Route to shelter** now keeps the map open and highlights the selected route in green, ending at the selected open shelter. The map fits the route and shows its distance/time. Alternatives are optional. Failed routing, blocked candidates, and shelters that close during calculation do not produce a green route.
+
+The obstacle-avoidance regression and simulator walkthrough are documented in [ROUTING-FIX.md](docs/ROUTING-FIX.md).

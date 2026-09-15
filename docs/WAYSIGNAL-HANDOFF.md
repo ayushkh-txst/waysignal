@@ -58,9 +58,9 @@ Configure `MCP_INTERNAL_URL` for the actual loopback port. The provided startup 
 
 ## Route evidence rules
 
-The service measures distance to every route segment, not just its vertices. Current reviewed active reports exclude nearby candidates. Unreviewed and expired reports generate warnings; resolved/rejected reports do not exclude routes. Review evidence expires after 24 hours in this prototype. Reopening a resolved report invalidates its previous review.
+The service measures distance to every route segment, not just its vertices. Active flood, blocked-road and debris reports exclude nearby candidates even while unreviewed or expired. Other unreviewed observations generate warnings; reviewed active observations exclude routes. Resolved/rejected reports do not exclude routes. Review evidence expires after 24 hours in this prototype. Reopening a resolved report invalidates its previous review.
 
-Default proximity thresholds are 25 metres for reviewed reports and 50 metres for unreviewed/stale reports, expanded by reported location accuracy up to 250 metres. This is a local point-distance approximation, not flood polygons, road-network closure propagation or official certification. OSRM returns a limited set of driving candidates and is not asked to reroute around every report. If every candidate is excluded, the service returns no selected route. Provider failures do not become hazard-free results.
+Default proximity thresholds match the map buffers: 120 metres for flood reports and 60 metres for other reports, expanded by reported location accuracy up to 250 metres. This is a local point-distance approximation, not flood polygons, road-network closure propagation or official certification. OSRM returns a limited set of driving candidates and is not asked to reroute around every report. If every candidate is excluded, the service returns no selected route. Provider failures do not become hazard-free results.
 
 Community observations are visible to signed-in citizens and responders. Photos retain G-one's access rule: reporter or worker only. Responder notes are public to signed-in users. Assistance records remain private to their owner and workers. Completing assistance never resolves a road report.
 

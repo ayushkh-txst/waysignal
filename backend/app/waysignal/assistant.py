@@ -134,7 +134,7 @@ def summarize(name: str, data: dict):
         rows = data['reports']
         text = f"{len(rows)} community reports in this view. "
         text += '\n'.join(f"{r['id']}: {r['label']} — {r['review_state'].replace('_', ' ')}." for r in rows[:8])
-        text += '\nUnreviewed observations flag uncertainty; reviewed active reports can exclude a route.'
+        text += '\nReported floods, blocked roads and debris exclude nearby routes even while review is pending. Review status is shown separately.'
         sources = [{'id':r['id'], 'kind':'report', 'status':r['review_state']} for r in rows[:8]]
     return text, sources
 

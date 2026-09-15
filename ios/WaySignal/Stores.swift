@@ -50,6 +50,9 @@ import CoreLocation
     @Published var destinationName = "Selected destination" { didSet { if destinationName != oldValue { assessment = nil } } }
     @Published var assessment: RouteAssessment?; @Published var error: String?; @Published var busy = false
     @Published var shelter: ShelterSite?
+    private var refreshPending = false
+    private var shelterRequested = false
+    private var requestedShelterId: String?
     private let service: any RouteServing
     init(service: any RouteServing) { self.service = service }
     var input: RouteInput? {
@@ -58,26 +61,39 @@ import CoreLocation
     }
     func assess() async {
         guard let input, !busy else { return }; busy = true; error = nil; assessment = nil; shelter = nil
-        defer { busy = false }
+        shelterRequested = false
+        defer { finishRouteRequest() }
         do {
             let result = try await service.assess(input)
-            guard origin == input.origin, destination == input.destination else { return }
+            guard !refreshPending, origin == input.origin, destination == input.destination else { return }
             assessment = result
         } catch { self.error = error.localizedDescription }
     }
     func routeToShelter(_ shelterId: String? = nil) async {
-        guard let origin, !busy else { error = "Set your starting point first."; return }
+        guard !busy else { return }
+        guard let origin else { error = "Set your starting point first."; return }
         busy = true; error = nil; assessment = nil; shelter = nil
-        defer { busy = false }
+        shelterRequested = true; requestedShelterId = shelterId
+        defer { finishRouteRequest() }
         do {
             let result = try await service.shelterRoute(origin, shelterId: shelterId)
-            guard self.origin == origin else { return }
+            guard !refreshPending, self.origin == origin else { return }
             destination = result.shelter.coordinate; destinationName = result.shelter.name
             shelter = result.shelter; assessment = result.assessment
         } catch { self.error = error.localizedDescription }
     }
     func refreshRoute() async {
-        if shelter != nil { await routeToShelter() } else if assessment != nil { await assess() }
+        if busy { refreshPending = true; assessment = nil; return }
+        if shelter != nil { await routeToShelter(requestedShelterId) } else if assessment != nil { await assess() }
+    }
+    private func finishRouteRequest() {
+        busy = false
+        guard refreshPending else { return }
+        refreshPending = false
+        Task {
+            if shelterRequested { await routeToShelter(requestedShelterId) }
+            else { await assess() }
+        }
     }
 }
 @MainActor final class CommunityStore: ObservableObject {
@@ -126,27 +142,56 @@ import CoreLocation
     @Published var coordinate: Coordinate?; @Published var error: String?
     @Published var updatedAt: Date?
     private let manager = CLLocationManager()
+    private var requested = false
+    private var retries = 0
+    private var retryTask: Task<Void, Never>?
     override init() { super.init(); manager.delegate = self; manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters }
     func request() {
-        error = nil
+        cancel(); error = nil; requested = true; retries = 0
         switch manager.authorizationStatus {
         case .notDetermined: manager.requestWhenInUseAuthorization()
         case .authorizedAlways, .authorizedWhenInUse: manager.requestLocation()
-        default: error = "Location is unavailable. Enter coordinates manually or enable access in Settings."
+        default: requested = false; error = "Location access is off. Enable it in Settings or choose a starting point."
         }
     }
+    func cancel() { requested = false; retryTask?.cancel(); retryTask = nil; manager.stopUpdatingLocation() }
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        guard requested else { return }
         if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways { manager.requestLocation() }
-        else if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted { error = "Location access is off. Enable it in Settings or choose a starting point." }
+        else if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted { cancel(); error = "Location access is off. Enable it in Settings or choose a starting point." }
     }
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard requested else { return }
         guard let last = locations.last, last.horizontalAccuracy >= 0, abs(last.timestamp.timeIntervalSinceNow) < 60 else {
-            error = "A recent location was not available. Enter coordinates manually."; return
+            cancel(); error = "A recent location was not available. Choose a starting point or retry."; return
         }
+        cancel(); error = nil
         coordinate = .init(latitude: last.coordinate.latitude, longitude: last.coordinate.longitude)
         updatedAt = Date()
     }
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) { self.error = error.localizedDescription }
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        guard requested else { return }
+        let code = (error as? CLError)?.code
+        if code == .locationUnknown, retries < 2 {
+            retries += 1
+            retryTask = Task { [weak self] in
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled, let self, self.requested else { return }
+                self.manager.requestLocation()
+            }
+            return
+        }
+        cancel()
+        if code == .denied {
+            self.error = "Location access is off. Enable it in Settings or choose a starting point."
+        } else {
+            #if targetEnvironment(simulator)
+            self.error = "The simulator has no location available. Choose a starting point, or use Riverside response base for request directions."
+            #else
+            self.error = "Your location is unavailable right now. Retry or choose a starting point on the map."
+            #endif
+        }
+    }
 }
 
 @MainActor final class ScenarioStore: ObservableObject {

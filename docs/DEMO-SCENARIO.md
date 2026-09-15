@@ -1,6 +1,6 @@
 # WaySignal demo scenario
 
-This update adds a repeatable exercise to the existing WaySignal codebase. Everything in this mode is visibly labelled synthetic. It uses a separate local `backend/waysignal-demo.db`; normal development data and yesterday's G-one folder are preserved.
+This update adds a repeatable exercise to the existing WaySignal codebase. Account and route/source details identify this mode as synthetic. It uses a separate local `backend/waysignal-demo.db`; normal development data and yesterday's G-one folder are preserved.
 
 ## Start on your Mac
 
@@ -33,23 +33,23 @@ Use separate browser windows/profiles for the two roles. Reloading currently req
 ## What is populated
 
 - Five community observations: two awaiting review, two reviewed active, and one resolved.
-- Three schematic route candidates with simulated distances and travel times.
+- Five schematic route candidates with simulated distances and travel times.
 - Four fictional facilities in the map data endpoint.
 - Six assistance requests across submitted, assigned, en-route and resolved states. The demo citizen can see their four requests; the responder can see all six.
 - Synthetic rain, river trend and risk context; operational reports calculated from these saved exercise records.
 - Guide explanations retrieved through the actual MCP client/server and the same route policy service used by REST.
 
-The new exercise page is the reliable presentation flow. The native app loads the exercise origin, destination, reports, requests and route assessment after login, with a persistent demo banner. Native compilation and simulator testing still require Xcode on your Mac. Basemap tiles and inherited external-service features may require connectivity. Shelter capacity, alert delivery analytics and other unconnected modules are still unimplemented; the exercise does not claim to make those integrations real.
+The new exercise page is the reliable presentation flow. The native app loads the exercise origin, destination, reports, requests and route assessment after login, with simulation information in Account and source details. Native compilation and simulator testing still require Xcode on your Mac. Basemap tiles and inherited external-service features may require connectivity. Shelter capacity, alert delivery analytics and other unconnected modules are still unimplemented; the exercise does not claim to make those integrations real.
 
 ## A 90-second demonstration
 
-1. Sign in as responder, click **Open exercise**, then **Reset exercise**. Route 1 is selected. Route 3 is excluded by reviewed report R101.
-2. Point out unreviewed report **R104** beside the direct candidate. Click **Confirm active hazard**.
-3. Route 1 becomes excluded and Route 2 becomes selected. Explain: community review directly changes navigation.
-4. Click **Explain with source records**. The Guide returns an MCP-backed source summary with report IDs; it is not an LLM-generated answer.
-5. Under **Assistance progress**, assign the demo team to **H208**. Refresh the citizen view to show the assigned status. Explain: the report informs the next route and the next response task.
-6. Complete a request in the full responder workspace if needed. The road report keeps its independent state.
-7. Reset before the next demonstration. Reset replaces only the fixed fixture IDs, preserving custom reports and requests in the demo database.
+1. Open Map → Route to shelter. The initial selected route is the outer northern corridor (route 4); the direct, inner northern and southern corridors are excluded by R104, R105 and R101.
+2. Submit an obstruction at **27.7206, 85.327**, on the selected corridor. The shared route assessment changes to the outer southern corridor (route 5) before review.
+3. Confirm the report as active as admin; the route stays excluded. Resolve or reject it to make that corridor eligible again.
+4. Open Nav AI and ask why the route changed. Its MCP-backed answer refers to the same records and route service.
+5. Open assistance request H208 as admin. Simulator directions load from the explicitly named Riverside response base to Arun's request location. Device GPS and manually chosen points use the road provider instead.
+6. Assign and complete a request. Its progress does not clear road reports.
+7. Reset only if you intend to restore fixture statuses before another presentation. Reset replaces fixed fixture IDs and preserves custom records. Updates do not reset the database.
 
 The exercise is grounded at fixed coordinates near Kathmandu for continuity with G-one. Place names, people, weather and route lines are fictional. Lines are schematic and are not actual driving directions. Real-location queries outside the exercise area return a clear error.
 

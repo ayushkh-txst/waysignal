@@ -84,6 +84,10 @@ class DemoRouteProvider:
             ([start, [85.327, 27.7172], end], 1400, 300),
             ([start, [85.321, 27.7192], [85.327, 27.7192], [85.333, 27.7192], end], 1900, 420),
             ([start, [85.321, 27.7148], [85.327, 27.7148], [85.333, 27.7148], end], 2100, 480),
+            # Separate outer corridors, also screened against every active report.
+            # These remain schematic exercise geometry, never live road directions.
+            ([start, [85.321, 27.7206], [85.327, 27.7206], [85.332, 27.7206], [85.332, 27.7172], end], 2400, 600),
+            ([start, [85.321, 27.7128], [85.327, 27.7128], [85.333, 27.7128], end], 2600, 660),
         ]
         return [{"geometry": {"coordinates": deepcopy(points)}, "distance": distance, "duration": duration,
                  "legs": [{"steps": [{"distance": distance, "duration": duration, "name": "Demo route",

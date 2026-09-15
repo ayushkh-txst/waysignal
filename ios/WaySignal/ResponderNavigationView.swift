@@ -25,11 +25,14 @@ struct ResponderNavigationView: View {
     @State private var error: String?; @State private var source = "device"
     @State private var latitude = ""; @State private var longitude = ""
     @State private var manual = false; @State private var pickPin = false
+    @State private var initialRouteLoaded = false
+    @State private var lastInput: ResponderRouteInput?
+    @State private var refreshPending = false
     var request: AssistanceRequest { operations.incidents.first { $0.id == initial.id } ?? initial }
     var closed: Bool { ["resolved", "cancelled"].contains(request.status) }
     var originTitle: String {
         switch result?.originSource ?? source {
-        case "response_base": return "Response base"
+        case "response_base": return "Riverside response base"
         case "manual": return "Chosen starting point"
         default: return "Your location"
         }
@@ -39,6 +42,9 @@ struct ResponderNavigationView: View {
             VStack(alignment: .leading, spacing: 18) {
                 Text("Reach \(request.citizenName)").font(.title2.bold())
                 Text("\(request.emergencyType.capitalized) · \(request.peopleCount) \(request.peopleCount == 1 ? "person" : "people")").foregroundStyle(.secondary)
+                if result != nil || busy {
+                    Label("From \(originTitle)", systemImage: "location.circle.fill").font(.subheadline.bold())
+                }
                 map
                 if closed {
                     Label("This request is closed", systemImage: "checkmark.circle").font(.headline)
@@ -51,24 +57,33 @@ struct ResponderNavigationView: View {
         }.background(SignalStyle.background).navigationTitle("Directions").navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $pickPin) { ReportPinPicker(latitude: $latitude, longitude: $longitude) }
             .onAppear { frameMap() }
+            .task(id: scenario.enabled) {
+                #if targetEnvironment(simulator)
+                // An explicitly named base provides the walkthrough origin without pretending it is GPS.
+                if scenario.enabled, !initialRouteLoaded, !closed {
+                    initialRouteLoaded = true
+                    await load(origin: nil, source: "response_base")
+                }
+                #endif
+            }
             .onChange(of: gps.updatedAt) { _, _ in
                 guard waitingForGPS, let point = gps.coordinate else { return }
                 waitingForGPS = false
                 Task { await load(origin: point, source: "device") }
             }
             .onChange(of: gps.error) { _, value in if value != nil { waitingForGPS = false } }
-            .onChange(of: request.coordinate) { _, _ in invalidate("The requester’s location changed. Refresh directions.") }
+            .onChange(of: request.coordinate) { _, _ in refreshDirections() }
             .onChange(of: closed) { _, value in if value { result = nil } }
             .onChange(of: hazardRevision) { old, new in
-                if old != new, result != nil { invalidate("Map reports changed. Refresh directions to check the route again.") }
+                if old != new { refreshDirections() }
             }
             .task(id: waitingForGPS) {
                 guard waitingForGPS else { return }
                 try? await Task.sleep(for: .seconds(20))
                 guard !Task.isCancelled, waitingForGPS else { return }
-                waitingForGPS = false; error = "Location is taking too long. Retry or choose a starting point."
+                waitingForGPS = false; gps.cancel(); error = "Location is taking too long. Retry or choose a starting point."
             }
-            .onDisappear { waitingForGPS = false }
+            .onDisappear { waitingForGPS = false; gps.cancel() }
     }
     private var hazardRevision: String {
         community.reports.map { "\($0.id):\($0.status):\($0.reviewVersion):\($0.updatedAt)" }.sorted().joined(separator: "|")
@@ -89,10 +104,11 @@ struct ResponderNavigationView: View {
     private var locationControls: some View {
         VStack(alignment: .leading, spacing: 12) {
             PrimaryButton(title: waitingForGPS ? "Finding your location…" : "Use my location", icon: "location.fill", busy: busy || waitingForGPS) {
-                error = nil; result = nil; source = "device"; waitingForGPS = true; gps.request()
+                // Retain a clearly labelled base/manual route until a new GPS origin succeeds.
+                error = nil; waitingForGPS = true; gps.request()
             }
             if scenario.enabled {
-                Button { waitingForGPS = false; Task { await load(origin: nil, source: "response_base") } } label: {
+                Button { waitingForGPS = false; gps.cancel(); Task { await load(origin: nil, source: "response_base") } } label: {
                     Label("Use Riverside response base", systemImage: "building.2")
                 }.buttonStyle(.bordered).disabled(busy)
             }
@@ -103,9 +119,14 @@ struct ResponderNavigationView: View {
                     TextField("Longitude", text: $longitude).keyboardType(.numbersAndPunctuation)
                     Button("Get directions from this point") {
                         guard let point = Coordinate.parse(latitude, longitude) else { return }
-                        waitingForGPS = false; Task { await load(origin: point, source: "manual") }
+                        waitingForGPS = false; gps.cancel(); Task { await load(origin: point, source: "manual") }
                     }.disabled(busy || Coordinate.parse(latitude, longitude) == nil)
                 }.textFieldStyle(.roundedBorder).padding(.top, 10)
+            }
+            if let lastInput {
+                Button { Task { await load(origin: lastInput.origin, source: lastInput.originSource) } } label: {
+                    Label("Refresh directions", systemImage: "arrow.clockwise")
+                }.disabled(busy || waitingForGPS)
             }
         }
     }
@@ -150,7 +171,12 @@ struct ResponderNavigationView: View {
             }.padding(.top, 8)
         }
     }
-    private func invalidate(_ message: String) { result = nil; error = message; frameMap() }
+    private func refreshDirections() {
+        guard lastInput != nil, !closed else { return }
+        result = nil
+        if busy { refreshPending = true; return }
+        if let lastInput { Task { await load(origin: lastInput.origin, source: lastInput.originSource) } }
+    }
     private func frameMap() {
         let points = (result?.assessment.selected?.coordinates ?? []) + [request.coordinate.location] + (result.map { [$0.origin.location] } ?? [])
         let lats = points.map(\.latitude), lons = points.map(\.longitude)
@@ -160,12 +186,22 @@ struct ResponderNavigationView: View {
     }
     private func load(origin: Coordinate?, source: String) async {
         guard !busy, let client = session.client else { return }
+        guard !closed else { result = nil; return }
         busy = true; error = nil; gps.error = nil; result = nil; self.source = source
-        defer { busy = false }
+        lastInput = ResponderRouteInput(origin: origin, originSource: source)
+        let destination = request.coordinate
+        let revision = hazardRevision
+        defer {
+            busy = false
+            if refreshPending { refreshPending = false; refreshDirections() }
+        }
         do {
             let response: ResponderRoute = try await client.request("mobile/incidents/\(initial.id)/route", method: "POST",
                 body: Wire.encode(ResponderRouteInput(origin: origin, originSource: source)))
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, !closed else { return }
+            guard !refreshPending, destination == request.coordinate, revision == hazardRevision else {
+                refreshPending = true; return
+            }
             result = response; frameMap()
         } catch { self.error = error.localizedDescription }
     }

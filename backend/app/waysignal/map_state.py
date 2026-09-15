@@ -8,14 +8,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 from app.core.config import settings
 from app.api.v1.hazards import utc
-from app.waysignal.domain import Coordinate, AssessmentInput, distance_to_route, finding
+from app.waysignal.domain import Coordinate, AssessmentInput, distance_to_route, report_radius, ReportedHazardPolicy
 from app.waysignal.community import CommunityService
 from app.waysignal.routes import RouteAssessmentService, route_provider
-
-
-def report_radius(report):
-    return max(120.0 if report['kind'] == 'flooded_road' else 60.0,
-               min(report.get('accuracy_m') or 0, 250.0))
 
 
 def active_reports(reports):
@@ -46,16 +41,8 @@ class ShelterInput(Coordinate):
     valid_hours: int = Field(default=4, ge=1, le=12)
 
 
-class ShelterRoutePolicy:
-    """Avoid reported floods/closures immediately; distinguish review status in findings."""
-    def evaluate(self, report, distance_m):
-        if report['status'] != 'active' or report['review_state'] in ('rejected', 'resolved') or distance_m > report_radius(report):
-            return None
-        disposition = 'exclude' if report['review_state'] == 'reviewed_active' or report['kind'] in ('flooded_road', 'road_blocked') else 'review_needed'
-        result = finding(report, distance_m, disposition)
-        result['reason'] = ('Avoid this reported flood or obstruction; review may still be pending.' if disposition == 'exclude'
-                            else 'An unverified observation is near this route. Check its details.')
-        return result
+# General journeys, shelter routes, Nav AI and responder routes share one policy.
+ShelterRoutePolicy = ReportedHazardPolicy
 
 
 class MapStateService:

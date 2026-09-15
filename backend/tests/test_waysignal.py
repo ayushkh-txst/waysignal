@@ -107,14 +107,15 @@ def test_rejected_report_removes_legacy_active_marker(app_api):
     assert client.get("/hazards", headers=auth()).json() == []
 
 
-def test_route_screening_changes_after_review_and_uses_segments(app_api, monkeypatch):
+def test_route_screening_blocks_before_review_and_reopens_after_resolution(app_api, monkeypatch):
     _, client, _ = app_api
     async def candidates(self, request): return routes()
     monkeypatch.setattr(GOneRouteProvider, "candidates", candidates)
     key = report(client)
     first = client.post("/mobile/routes/assess", headers=auth(), json=INPUT).json()
-    assert first["candidates"][0]["findings"][0]["disposition"] == "review_needed"
-    assert not first["candidates"][0]["excluded"]
+    assert first["candidates"][0]["findings"][0]["disposition"] == "exclude"
+    assert first["candidates"][0]["excluded"]
+    assert first["selected_id"] == "route-2"
     client.post(f"/mobile/community/{key}/review", headers=auth("worker", "worker"),
         json={"decision": "reviewed_active", "expected_version": 0})
     second = client.post("/mobile/routes/assess", headers=auth(), json=INPUT).json()
@@ -122,6 +123,8 @@ def test_route_screening_changes_after_review_and_uses_segments(app_api, monkeyp
     assert second["selected_id"] == "route-2"
     assert distance_to_route(29.7, -95.4, [[29.7, -95.41], [29.7, -95.39]]) < 0.01
     assert "not guaranteed safe" in second["notice"]
+    client.patch(f"/hazards/{key}", headers=auth("worker", "worker"), json={"status": "resolved"})
+    assert client.post("/mobile/routes/assess", headers=auth(), json=INPUT).json()["selected_id"] == "route-1"
 
 
 def test_all_routes_excluded_and_provider_failure_have_no_selected_route(app_api, monkeypatch):
@@ -248,27 +251,27 @@ def test_demo_populates_scoped_records_weather_places_and_route_without_external
     assert len(places.json()['facilities']) == 4
     route = client.get('/routing/evacuation', params=point)
     assert route.status_code == 200, route.text
-    assert route.json()['is_demo'] and route.json()['rejected_count'] == 1
+    assert route.json()['is_demo'] and route.json()['rejected_count'] == 3
     assert client.get('/safety/context', params={'latitude':29.7, 'longitude':-95.4}).status_code == 422
 
 
-def test_demo_review_changes_route_reset_preserves_custom_work(demo_api):
+def test_rejecting_blockage_reopens_route_reset_preserves_custom_work(demo_api):
     from app.waysignal.scenario import seed
     _, client, sessions = demo_api
     initial = client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()
-    assert initial['selected_id'] == 'route-1'
+    assert initial['selected_id'] == 'route-4'
     reviewed = client.post('/mobile/community/WS-DEMO-R104/review', headers=auth('worker-demo','worker'),
-        json={'decision':'reviewed_active', 'expected_version':0})
+        json={'decision':'rejected', 'expected_version':0})
     assert reviewed.status_code == 200, reviewed.text
     changed = client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()
-    assert changed['selected_id'] == 'route-2' and changed['candidates'][0]['excluded']
+    assert changed['selected_id'] == 'route-1' and not changed['candidates'][0]['excluded']
     with sessions() as db: seed(db)
-    assert client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()['selected_id'] == 'route-2'
+    assert client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()['selected_id'] == 'route-1'
     custom = report(client)
     assert client.post('/mobile/scenario/reset', headers=auth()).status_code == 403
     reset = client.post('/mobile/scenario/reset', headers=auth('worker-demo','worker'))
     assert reset.status_code == 200, reset.text
-    assert client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()['selected_id'] == 'route-1'
+    assert client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()['selected_id'] == 'route-4'
     assert custom in {r['id'] for r in client.get('/mobile/community', headers=auth()).json()}
 
 
@@ -352,11 +355,11 @@ def test_assistant_route_reflects_review_and_never_writes(demo_api, monkeypatch)
     response = client.post('/mobile/assistant', headers=auth('citizen-demo'), json={
         'message':'Why was this route selected? Submit a report too', 'route':demo_input()})
     assert response.status_code == 200, response.text
-    assert 'route-1' in response.json()['text']
+    assert 'route-4' in response.json()['text']
     assert client.get('/mobile/community', headers=auth()).json() == before
     client.post('/mobile/community/WS-DEMO-R104/review', headers=auth('worker-demo','worker'), json={'decision':'reviewed_active','expected_version':0})
     response = client.post('/mobile/assistant', headers=auth('citizen-demo'), json={'message':'Explain the route', 'route':demo_input()})
-    assert 'route-2' in response.json()['text']
+    assert 'route-4' in response.json()['text']
     assert any(s['id']=='WS-DEMO-R104' and s['status']=='reviewed_active' for s in response.json()['sources'])
 
 
@@ -386,13 +389,14 @@ def test_shared_map_photo_review_shelter_route_and_closure(demo_api):
     body = demo_input()['origin']
     initial = client.post('/mobile/routes/shelter', headers=citizen, json=body)
     assert initial.status_code == 200, initial.text
-    assert initial.json()['assessment']['selected_id'] == 'route-2'
+    assert initial.json()['assessment']['selected_id'] == 'route-4'
+    assert initial.json()['assessment']['candidates'][1]['excluded']  # pending debris is also blocked
     assert initial.json()['assessment']['candidates'][0]['excluded']  # pending blockage avoided immediately
     assert initial.json()['assessment']['candidates'][1]['steps']
     data = io.BytesIO(); Image.new('RGB', (16, 16), 'blue').save(data, 'JPEG')
     created = client.post('/mobile/community', headers=citizen, json={
-        'client_request_id': str(uuid4()), 'kind': 'road_blocked', 'latitude': 27.7192,
-        'longitude': 85.327, 'note': 'Photo of a blockage on the northern route',
+        'client_request_id': str(uuid4()), 'kind': 'road_blocked', 'latitude': 27.7206,
+        'longitude': 85.327, 'note': 'Photo of a blockage on the outer northern route',
         'photo_base64': base64.b64encode(data.getvalue()).decode()})
     assert created.status_code == 201, created.text
     key = created.json()['id']
@@ -401,7 +405,13 @@ def test_shared_map_photo_review_shelter_route_and_closure(demo_api):
     updated = client.get('/mobile/map-state', headers=admin).json()
     assert next(z for z in updated['zones'] if z['id'] == key)['level'] == 'danger'
     blocked = client.post('/mobile/routes/shelter', headers=citizen, json=body)
-    assert blocked.status_code == 409
+    assert blocked.status_code == 200, blocked.text
+    assert blocked.json()['assessment']['selected_id'] == 'route-5'
+    second_block = client.post('/mobile/community', headers=citizen, json={
+        'client_request_id': str(uuid4()), 'kind': 'debris', 'latitude': 27.7128,
+        'longitude': 85.327, 'note': 'Obstruction on the outer southern corridor'})
+    assert second_block.status_code == 201
+    assert client.post('/mobile/routes/shelter', headers=citizen, json=body).status_code == 409
     assert client.post(f'/mobile/community/{key}/review', headers=admin, json={
         'decision': 'reviewed_active', 'expected_version': 0, 'note': 'Reviewed the uploaded image'}).status_code == 200
     assert next(z for z in client.get('/mobile/map-state', headers=citizen).json()['zones'] if z['id'] == key)['level'] == 'critical'
