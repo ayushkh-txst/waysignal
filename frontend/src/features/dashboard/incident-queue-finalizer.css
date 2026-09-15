@@ -1,0 +1,79 @@
+.ops-queue-pane .command-center-filters{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:12px!important;
+  padding:18px 20px 20px!important;
+  border-bottom:1px solid #e7dccd!important;
+  background:#fffdf9!important;
+}
+
+.ops-queue-pane .command-center-filters [data-incident-filter]{
+  min-height:48px!important;
+  padding:10px 18px!important;
+  gap:10px!important;
+  border:1.5px solid #dfd2bf!important;
+  border-radius:999px!important;
+  background:#fff!important;
+  color:#6f655a!important;
+  font:700 13px 'DM Sans',sans-serif!important;
+  line-height:1!important;
+  cursor:pointer!important;
+  pointer-events:auto!important;
+  position:relative!important;
+  z-index:20!important;
+  transition:background .14s ease,border-color .14s ease,color .14s ease,transform .14s ease,box-shadow .14s ease!important;
+}
+
+.ops-queue-pane .command-center-filters [data-incident-filter]:hover{
+  transform:translateY(-1px)!important;
+  border-color:#9b8650!important;
+  box-shadow:0 4px 12px rgba(83,68,41,.08)!important;
+}
+
+.ops-queue-pane .command-center-filters [data-incident-filter]:focus-visible{
+  outline:3px solid rgba(61,132,255,.28)!important;
+  outline-offset:2px!important;
+}
+
+.ops-queue-pane .command-center-filters [data-incident-filter] b{
+  min-width:30px!important;
+  height:30px!important;
+  padding:0 8px!important;
+  border-radius:999px!important;
+  display:grid!important;
+  place-items:center!important;
+  background:#f2ece2!important;
+  color:#73695c!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+
+.ops-queue-pane .command-center-filters [data-incident-filter].active{
+  background:#88723f!important;
+  border-color:#88723f!important;
+  color:#fff!important;
+  box-shadow:0 5px 14px rgba(90,72,34,.16)!important;
+}
+
+.ops-queue-pane .command-center-filters [data-incident-filter].active b{
+  background:rgba(255,255,255,.22)!important;
+  color:#fff!important;
+}
+
+.incident-filter-empty-final{
+  margin:18px 14px!important;
+  padding:22px 16px!important;
+  border:1px dashed #d8cbb8!important;
+  border-radius:12px!important;
+  background:#fffaf3!important;
+  color:#8b7e70!important;
+  text-align:center!important;
+  font-size:12px!important;
+  line-height:1.5!important;
+}
+
+@media(max-width:1100px){
+  .ops-queue-pane .command-center-filters{gap:9px!important;padding:14px!important}
+  .ops-queue-pane .command-center-filters [data-incident-filter]{min-height:43px!important;padding:9px 14px!important;font-size:12px!important}
+  .ops-queue-pane .command-center-filters [data-incident-filter] b{min-width:26px!important;height:26px!important;font-size:11px!important}
+}

@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: g-one-app
+    runtime: docker
+    branch: feature/login-page-ui
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: APP_NAME
+        value: G-One API
+      - key: DATABASE_URL
+        fromDatabase:
+          name: g-one-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEMO_CITIZEN_PASSWORD
+        sync: false
+      - key: DEMO_WORKER_PASSWORD
+        sync: false
+      - key: DEMO_CITIZEN_2_PASSWORD
+        generateValue: true
+      - key: DEMO_CITIZEN_3_PASSWORD
+        generateValue: true
+      - key: DEMO_WORKER_2_PASSWORD
+        generateValue: true
+
+databases:
+  - name: g-one-db
+    plan: free
+    region: oregon
+    databaseName: gone
+    user: gone
+    ipAllowList: []

@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1400" viewBox="0 0 1600 1400" role="img" aria-labelledby="title desc">
+<title id="title">G-One system architecture</title>
+<desc id="desc">Citizen and admin React dashboards call a FastAPI backend with JWT authentication and up to five configured demo accounts. Safety and routing use Open-Meteo, OSRM, Overpass, and ArcGIS. Emergencies, hazards, and dispatch reviews are stored in PostgreSQL; reports query saved records. OpenAI note analysis is optional. Browser maps load external tiles and embeds. The release path builds the frontend and Python server into one Docker web service on Render with a managed PostgreSQL database.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9" fill="none" stroke="#d6b765" stroke-width="1.5"/></marker>
+<marker id="blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9" fill="none" stroke="#87c7e6" stroke-width="1.5"/></marker>
+</defs>
+<rect width="1600" height="1400" rx="24" fill="#101516"/>
+<g font-family="Arial, Helvetica, sans-serif">
+<rect x="56" y="47" width="68" height="68" rx="18" fill="#302b1c" stroke="#756336" stroke-width="1.5"/>
+<g transform="translate(72 59) scale(1.5833333333333333)" fill="none" stroke="#d6b765" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 21 6v6c0 6-9 10-9 10S3 18 3 12V6z"/><path d="M5 13c3-4 5 4 8 0s5 0 6-1"/></g>
+<text x="144" y="92" font-size="50" font-weight="700" fill="#f4f1e9">G-One</text>
+<text x="146" y="126" font-size="17" font-weight="700" fill="#d6b765" letter-spacing="2">FLOOD AWARENESS · EMERGENCY COORDINATION</text>
+<text x="1050" y="74" font-size="24" font-weight="700" fill="#f4f1e9" letter-spacing="1">SYSTEM ARCHITECTURE</text>
+<text x="1050" y="108" font-size="19" font-weight="400" fill="#b0bec1">HackRice 16 · demo hosted on Render</text>
+<path d="M56 157H1544" stroke="#354247"/>
+<rect x="56" y="196" width="360" height="684" rx="14" fill="#171e20" stroke="#665c3c" stroke-width="1.5"/>
+<rect x="524" y="196" width="540" height="684" rx="14" fill="#171e20" stroke="#665c3c" stroke-width="1.5"/>
+<rect x="1172" y="196" width="372" height="684" rx="14" fill="#171e20" stroke="#385565" stroke-width="1.5"/>
+<text x="80" y="233" font-size="17" font-weight="700" fill="#d6b765" letter-spacing="2">01</text>
+<text x="121" y="234" font-size="24" font-weight="700" fill="#f4f1e9">Browser clients</text>
+<text x="80" y="271" font-size="20" font-weight="400" fill="#b0bec1">React · TypeScript · Vite</text>
+<path d="M80 293H392" stroke="#354247"/>
+<text x="548" y="233" font-size="17" font-weight="700" fill="#d6b765" letter-spacing="2">02</text>
+<text x="589" y="234" font-size="24" font-weight="700" fill="#f4f1e9">Application backend</text>
+<text x="548" y="271" font-size="20" font-weight="400" fill="#b0bec1">FastAPI · Python · /api/v1</text>
+<path d="M548 293H1040" stroke="#354247"/>
+<text x="1196" y="233" font-size="17" font-weight="700" fill="#d6b765" letter-spacing="2">03</text>
+<text x="1237" y="234" font-size="24" font-weight="700" fill="#f4f1e9">External services</text>
+<text x="1196" y="271" font-size="20" font-weight="400" fill="#b0bec1">HTTP integrations</text>
+<path d="M1196 293H1520" stroke="#354247"/>
+<rect x="80" y="320" width="312" height="157" rx="14" fill="#20292c" stroke="#354247" stroke-width="1.5"/>
+<g transform="translate(100 343) scale(1.1666666666666667)" fill="none" stroke="#d6b765" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></g>
+<text x="142" y="366" font-size="23" font-weight="700" fill="#f4f1e9">Citizen dashboard</text>
+<text x="100" y="407" font-size="21" font-weight="400" fill="#b0bec1">GPS + nearby facilities</text>
+<text x="100" y="437" font-size="21" font-weight="400" fill="#b0bec1">Routes · hazards · SOS</text>
+<rect x="80" y="501" width="312" height="157" rx="14" fill="#20292c" stroke="#354247" stroke-width="1.5"/>
+<g transform="translate(100 524) scale(1.1666666666666667)" fill="none" stroke="#d6b765" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16V9a7 7 0 0 1 14 0v7l2 3H3zM9 22h6"/></g>
+<text x="142" y="547" font-size="23" font-weight="700" fill="#f4f1e9">Admin dashboard</text>
+<text x="100" y="588" font-size="21" font-weight="400" fill="#b0bec1">Incident queue + alerts</text>
+<text x="100" y="618" font-size="21" font-weight="400" fill="#b0bec1">Coordination · reports</text>
+<text x="80" y="706" font-size="21" font-weight="700" fill="#f4f1e9">Maps + browser GPS</text>
+<text x="80" y="745" font-size="20" font-weight="400" fill="#b0bec1">Updates through REST polling</text>
+<text x="80" y="776" font-size="20" font-weight="400" fill="#b0bec1">Incidents / dispatch: 5 seconds</text>
+<text x="80" y="807" font-size="20" font-weight="400" fill="#b0bec1">Reports: 15 seconds</text>
+<rect x="548" y="320" width="492" height="103" rx="14" fill="#2c2a20" stroke="#756336" stroke-width="1.5"/>
+<g transform="translate(568 343) scale(1.1666666666666667)" fill="none" stroke="#d6b765" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M7 10V6a5 5 0 0 1 10 0v4M12 15v3"/></g>
+<text x="610" y="366" font-size="23" font-weight="700" fill="#f4f1e9">JWT auth + role checks</text>
+<text x="568" y="401" font-size="20" font-weight="400" fill="#b0bec1">Up to five demo accounts in server memory</text>
+<rect x="548" y="452" width="492" height="104" rx="14" fill="#20292c" stroke="#354247" stroke-width="1.5"/>
+<text x="570" y="487" font-size="25" font-weight="700" fill="#f4f1e9">Safety + routing</text>
+<text x="570" y="522" font-size="21" font-weight="400" fill="#b0bec1">Weather context · facilities · road routes</text>
+<rect x="548" y="584" width="492" height="104" rx="14" fill="#20292c" stroke="#354247" stroke-width="1.5"/>
+<text x="570" y="619" font-size="25" font-weight="700" fill="#f4f1e9">Emergency + hazard records</text>
+<text x="570" y="655" font-size="21" font-weight="400" fill="#b0bec1">SOS · location updates · incident lifecycle</text>
+<rect x="548" y="716" width="492" height="111" rx="14" fill="#20292c" stroke="#354247" stroke-width="1.5"/>
+<text x="570" y="752" font-size="25" font-weight="700" fill="#f4f1e9">Dispatch assistance + reports</text>
+<text x="570" y="788" font-size="21" font-weight="400" fill="#b0bec1">Contact directory · note review · CSV</text>
+<text x="548" y="859" font-size="19" font-weight="400" fill="#b0bec1">Logical modules within one FastAPI service</text>
+<rect x="1196" y="320" width="324" height="147" rx="14" fill="#20292c" stroke="#354247" stroke-width="1.5"/>
+<g transform="translate(1216 342) scale(1.1666666666666667)" fill="none" stroke="#87c7e6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18a5 5 0 1 1 1-10 7 7 0 0 1 13 2 4 4 0 0 1-1 8zM7 21l-1 2M13 21l-1 2M19 21l-1 2"/></g>
+<text x="1258" y="365" font-size="25" font-weight="700" fill="#f4f1e9">Open-Meteo</text>
+<text x="1216" y="407" font-size="20" font-weight="400" fill="#b0bec1">Weather + Flood APIs</text>
+<text x="1216" y="437" font-size="20" font-weight="400" fill="#b0bec1">Rainfall / river forecasts</text>
+<rect x="1196" y="495" width="324" height="167" rx="14" fill="#20292c" stroke="#354247" stroke-width="1.5"/>
+<g transform="translate(1216 518) scale(1.1666666666666667)" fill="none" stroke="#87c7e6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 5 7-3 6 3 7-3v17l-7 3-6-3-7 3zM9 2v17M15 5v17"/></g>
+<text x="1258" y="541" font-size="23" font-weight="700" fill="#f4f1e9">Location + routes</text>
+<text x="1216" y="584" font-size="20" font-weight="400" fill="#b0bec1">OSRM road routing</text>
+<text x="1216" y="612" font-size="20" font-weight="400" fill="#b0bec1">Overpass / OSM facilities</text>
+<text x="1216" y="640" font-size="20" font-weight="400" fill="#b0bec1">ArcGIS reverse geocoding</text>
+<rect x="1196" y="690" width="324" height="159" rx="14" fill="#1b272e" stroke="#54839b" stroke-width="1.5" stroke-dasharray="7 6"/>
+<g transform="translate(1216 711) scale(1.1666666666666667)" fill="none" stroke="#87c7e6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></g>
+<text x="1258" y="735" font-size="23" font-weight="700" fill="#f4f1e9">OpenAI · optional</text>
+<text x="1216" y="776" font-size="19" font-weight="400" fill="#b0bec1">Evidence from citizen notes</text>
+<text x="1216" y="803" font-size="19" font-weight="400" fill="#b0bec1">Enabled with key + model</text>
+<text x="1216" y="830" font-size="19" font-weight="400" fill="#b0bec1">Contacts work without AI</text>
+<path d="M416 371 H548" fill="none" stroke="#d6b765" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<text x="426" y="340" font-size="17" font-weight="700" fill="#d6b765">REST</text>
+<text x="426" y="362" font-size="17" font-weight="700" fill="#d6b765">+ JWT</text>
+<path d="M794 423 V452" fill="none" stroke="#d6b765" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M1040 478 H1100 V393 H1196" fill="none" stroke="#87c7e6" stroke-width="2" stroke-linejoin="round" marker-end="url(#blue-arrow)"/>
+<path d="M1040 535 H1135 V575 H1196" fill="none" stroke="#87c7e6" stroke-width="2" stroke-linejoin="round" marker-end="url(#blue-arrow)"/>
+<path d="M1040 769 H1196" fill="none" stroke="#87c7e6" stroke-width="2" stroke-linejoin="round" marker-end="url(#blue-arrow)" stroke-dasharray="7 6"/>
+<text x="1075" y="745" font-size="16" font-weight="400" fill="#87c7e6">on request</text>
+<rect x="56" y="961" width="360" height="143" rx="14" fill="#171e20" stroke="#385565" stroke-width="1.5"/>
+<g transform="translate(80 982) scale(1.1666666666666667)" fill="none" stroke="#87c7e6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 5 7-3 6 3 7-3v17l-7 3-6-3-7 3zM9 2v17M15 5v17"/></g>
+<text x="124" y="1006" font-size="23" font-weight="700" fill="#f4f1e9">Map tiles + embeds</text>
+<text x="80" y="1048" font-size="20" font-weight="400" fill="#b0bec1">OpenStreetMap · Esri tiles</text>
+<text x="80" y="1078" font-size="20" font-weight="400" fill="#b0bec1">Google Maps county embeds</text>
+<path d="M236 880 V961" fill="none" stroke="#87c7e6" stroke-width="2" stroke-linejoin="round" marker-end="url(#blue-arrow)"/>
+<text x="250" y="923" font-size="18" font-weight="400" fill="#87c7e6">Browser requests</text>
+<rect x="524" y="961" width="540" height="143" rx="14" fill="#1b2924" stroke="#456c58" stroke-width="1.5"/>
+<g transform="translate(548 982) scale(1.1666666666666667)" fill="none" stroke="#8dd4b0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 4 18 4 18 0V5M3 12c0 4 18 4 18 0"/></g>
+<text x="592" y="1007" font-size="28" font-weight="700" fill="#f4f1e9">PostgreSQL</text>
+<text x="805" y="1007" font-size="19" font-weight="400" fill="#b0bec1">SQLAlchemy + psycopg</text>
+<text x="548" y="1050" font-size="20" font-weight="400" fill="#b0bec1">Emergencies · shared hazards · dispatch reviews</text>
+<text x="548" y="1080" font-size="20" font-weight="400" fill="#b0bec1">Reports aggregate stored incident records</text>
+<path d="M794 880 V961" fill="none" stroke="#d6b765" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<text x="810" y="923" font-size="19" font-weight="400" fill="#d6b765">Read / write</text>
+<text x="1172" y="937" font-size="17" font-weight="700" fill="#d6b765" letter-spacing="1.2">READING THIS DIAGRAM</text>
+<path d="M1176 973 H1217" fill="none" stroke="#d6b765" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="1235" y="980" font-size="20" font-weight="400" fill="#b0bec1">App / storage traffic</text>
+<path d="M1176 1015 H1217" fill="none" stroke="#87c7e6" stroke-width="2" stroke-linejoin="round" marker-end="url(#blue-arrow)"/>
+<text x="1235" y="1022" font-size="20" font-weight="400" fill="#b0bec1">External requests</text>
+<path d="M1176 1057 H1217" fill="none" stroke="#87c7e6" stroke-width="2" stroke-linejoin="round" marker-end="url(#blue-arrow)" stroke-dasharray="7 6"/>
+<text x="1235" y="1064" font-size="20" font-weight="400" fill="#b0bec1">Optional integration</text>
+<rect x="56" y="1152" width="1488" height="192" rx="14" fill="#211f18" stroke="#756336" stroke-width="1.5"/>
+<text x="80" y="1189" font-size="17" font-weight="700" fill="#d6b765" letter-spacing="2">RELEASE PATH</text>
+<text x="267" y="1189" font-size="20" font-weight="400" fill="#b0bec1">Dockerfile + render.yaml · frontend and API share one HTTPS URL</text>
+<rect x="80" y="1215" width="394" height="102" rx="14" fill="#20292c" stroke="#665c3c" stroke-width="1.5"/>
+<g transform="translate(101 1238) scale(1.1666666666666667)" fill="none" stroke="#d6b765" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M18 9v2c0 5-12 0-12 6"/></g>
+<text x="145" y="1259" font-size="25" font-weight="700" fill="#f4f1e9">GitHub source</text>
+<text x="101" y="1294" font-size="21" font-weight="400" fill="#b0bec1">feature/login-page-ui</text>
+<rect x="593" y="1215" width="394" height="102" rx="14" fill="#20292c" stroke="#665c3c" stroke-width="1.5"/>
+<g transform="translate(614 1238) scale(1.1666666666666667)" fill="none" stroke="#d6b765" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5v10l-10 5-10-5V7zM2 7l10 5 10-5M12 12v10M7 4.5l10 5"/></g>
+<text x="658" y="1259" font-size="25" font-weight="700" fill="#f4f1e9">Docker build</text>
+<text x="614" y="1294" font-size="21" font-weight="400" fill="#b0bec1">Vite assets + Python API</text>
+<rect x="1106" y="1215" width="414" height="102" rx="14" fill="#20292c" stroke="#665c3c" stroke-width="1.5"/>
+<g transform="translate(1127 1238) scale(1.1666666666666667)" fill="none" stroke="#d6b765" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="7" rx="2"/><rect x="2" y="14" width="20" height="7" rx="2"/><path d="M6 6h.1M6 17h.1M10 6h8M10 17h8"/></g>
+<text x="1171" y="1259" font-size="25" font-weight="700" fill="#f4f1e9">Render Blueprint</text>
+<text x="1127" y="1294" font-size="21" font-weight="400" fill="#b0bec1">One HTTPS app + PostgreSQL</text>
+<path d="M474 1266 H593" fill="none" stroke="#d6b765" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M987 1266 H1106" fill="none" stroke="#d6b765" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="56" y="1376" font-size="18" font-weight="400" fill="#b0bec1">G-One · HackRice 16</text>
+<text x="1030" y="1376" font-size="16" font-weight="400" fill="#b0bec1">Forecasts and reported hazards are not verified flood zones.</text>
+</g></svg>

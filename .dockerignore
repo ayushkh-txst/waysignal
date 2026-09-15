@@ -1,0 +1,14 @@
+.git
+**/node_modules
+**/dist
+**/__pycache__
+**/*.pyc
+**/.venv
+**/.env
+**/.env.*
+**/*.db
+**/*.sqlite*
+**/tests
+**/check-*.mjs
+**/*.tsbuildinfo
+docs
