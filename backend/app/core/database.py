@@ -70,7 +70,7 @@ def initialize_database() -> str:
         _ensure_emergency_navigation_columns()
         return active_database_url
     except SQLAlchemyError:
-        if settings.environment == "production":
+        if settings.environment == "production" or settings.waysignal_demo_mode:
             raise
 
         fallback_url = "sqlite:///./jalrakshak-dev.db"

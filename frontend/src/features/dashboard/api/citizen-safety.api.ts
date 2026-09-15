@@ -98,6 +98,7 @@ export type ScreenedRoute = {
 };
 
 export type EvacuationRoute = {
+  is_demo?: boolean;
   destination_name: string;
   destination_type: string;
   destination_latitude: number;
@@ -148,6 +149,7 @@ export const citizenSafetyApi = {
     const params = new URLSearchParams({ latitude: latitude.toString(), longitude: longitude.toString() });
     const request = apiRequest<EvacuationRoute>(`/routing/evacuation?${params.toString()}`, undefined, 15_000)
       .then(async (route) => {
+        if (route.is_demo) { publishRouteAnalysis(route); return route; }
         publishRouteAnalysis({ ...route, screening_status: 'pending', recommended_count: 0 });
         const screenedRoute = await screenEvacuationRoute(latitude, longitude, route);
         publishRouteAnalysis(screenedRoute);

@@ -1,3 +1,4 @@
+import { useScenario } from '../../scenario/ScenarioContext';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { citizenSafetyApi, type EmergencyRecord, type EmergencyType, type SafetyContext } from '../api/citizen-safety.api';
 import './CitizenEmergencyHelp.css';
@@ -26,7 +27,8 @@ const TRACKING_STEPS = [
 ] as const;
 
 export default function CitizenEmergencyHelp({ citizenId, citizenName, fallbackLatitude, fallbackLongitude, hasLocation = false, onBack }: Props) {
-  const [position, setPosition] = useState<PositionState>({ latitude: fallbackLatitude, longitude: fallbackLongitude, accuracy: null, label: hasLocation ? 'Last selected GPS location' : 'Location not shared' });
+  const scenario = useScenario();
+  const [position, setPosition] = useState<PositionState>({ latitude: fallbackLatitude, longitude: fallbackLongitude, accuracy: null, label: scenario.enabled ? 'Demo exercise location' : hasLocation ? 'Last selected GPS location' : 'Location not shared' });
   const [locationConfirmed, setLocationConfirmed] = useState(hasLocation);
   const [safety, setSafety] = useState<SafetyContext | null>(null);
   const [safetyError, setSafetyError] = useState('');
@@ -76,6 +78,7 @@ export default function CitizenEmergencyHelp({ citizenId, citizenName, fallbackL
       setGpsLive(false);
       return;
     }
+    if (scenario.enabled) { setGpsLive(false); setGpsMessage('Demo scenario uses a scripted location.'); return; }
     if (!navigator.geolocation) {
       setGpsMessage('Live GPS is not supported by this browser. Responders will use the last known location.');
       return;
@@ -123,6 +126,10 @@ export default function CitizenEmergencyHelp({ citizenId, citizenName, fallbackL
   }, [record?.id, record?.status]);
 
   const useMyLocation = () => {
+    if (scenario.enabled && scenario.origin) {
+      setPosition({ ...scenario.origin, accuracy: null, label: 'Demo exercise location' });
+      setLocationConfirmed(true); void refreshSafety(scenario.origin.latitude, scenario.origin.longitude); return;
+    }
     if (!navigator.geolocation) return;
     setPosition((current) => ({ ...current, label: 'Locating…' }));
     navigator.geolocation.getCurrentPosition(

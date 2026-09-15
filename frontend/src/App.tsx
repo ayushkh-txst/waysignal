@@ -11,6 +11,8 @@ import { authSession } from './features/auth/auth-session';
 import type { LoginResponse } from './features/auth/types/auth.types';
 import CitizenDashboard from './features/dashboard/pages/CitizenDashboard';
 import WorkerDashboard from './features/dashboard/pages/WorkerDashboard';
+import { ScenarioProvider } from './features/scenario/ScenarioContext';
+import ScenarioPage from './features/scenario/ScenarioPage';
 
 function AuthRedirectBridge() {
   const navigate = useNavigate();
@@ -48,8 +50,10 @@ function ProtectedRoute({ role, children }: { role: 'citizen' | 'worker'; childr
 export default function App() {
   return (
     <BrowserRouter>
+      <ScenarioProvider>
       <AuthRedirectBridge />
       <Routes>
+        <Route path="/scenario" element={<ScenarioPage />} />
         <Route path="/" element={<LoginPage />} />
         <Route
           path="/citizen"
@@ -70,6 +74,7 @@ export default function App() {
         <Route path="/admin" element={<Navigate to="/responder" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </ScenarioProvider>
     </BrowserRouter>
   );
 }

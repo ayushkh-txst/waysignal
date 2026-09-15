@@ -13,9 +13,14 @@ from app.waysignal.mcp_server import AuthenticatedMCP, build_mcp
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from app.waysignal.scenario import validate_demo_database, seed
+    validate_demo_database()
     database.initialize_database()
     with database.SessionLocal() as db:
-        seed_demo_emergencies(db)
+        if settings.waysignal_demo_mode:
+            seed(db)
+        else:
+            seed_demo_emergencies(db)
     async with app.state.mcp_server.session_manager.run():
         yield
 
@@ -31,7 +36,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[settings.frontend_origin],
+        allow_origins=list(dict.fromkeys([settings.frontend_origin] + (["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8000", "http://127.0.0.1:8000"] if settings.environment != "production" else []))),
         allow_credentials=True,
         allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"],

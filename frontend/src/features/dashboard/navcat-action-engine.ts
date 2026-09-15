@@ -1,3 +1,4 @@
+import { demoOrigin } from '../scenario/scenario-state';
 import { citizenSafetyApi, type EvacuationRoute, type SafetyContext } from './api/citizen-safety.api';
 
 export type NavCatIntent =
@@ -112,6 +113,7 @@ function classify(input: string, context: NavCatContext): NavCatIntent {
 }
 
 function position(): Promise<PositionSnapshot | null> {
+  const demo = demoOrigin(); if (demo) return Promise.resolve({ ...demo, accuracy: null });
   if (!navigator.geolocation) return Promise.resolve(null);
   return new Promise((resolve) => navigator.geolocation.getCurrentPosition(
     (result) => resolve({

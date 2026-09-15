@@ -13,7 +13,7 @@ from app.api.v1.hazards import signed_reporter
 from app.core import database
 from app.waysignal.community import CommunityService
 from app.waysignal.domain import AssessmentInput, Coordinate, distance_to_route
-from app.waysignal.routes import GOneRouteProvider, RouteAssessmentService
+from app.waysignal.routes import route_provider, RouteAssessmentService
 
 
 class AuthenticatedMCP:
@@ -56,7 +56,7 @@ def build_mcp() -> FastMCP:
         actor = actor_from_context(ctx)
         with database.SessionLocal() as db:
             request = AssessmentInput(origin=origin, destination=destination, destination_name=destination_name)
-            return await RouteAssessmentService(GOneRouteProvider(), CommunityService(db, actor)).assess(request)
+            return await RouteAssessmentService(route_provider(), CommunityService(db, actor)).assess(request)
 
     @server.tool()
     def list_route_reports(ctx: Context,

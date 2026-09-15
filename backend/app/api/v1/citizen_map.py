@@ -1,4 +1,4 @@
-"""Authenticated citizen map data. No demo locations or other citizens' SOS records."""
+"""Authenticated citizen map data; explicit demo fixtures retain ownership filtering."""
 from __future__ import annotations
 
 import asyncio
@@ -15,6 +15,7 @@ from app.api.v1.emergencies import Emergency, EmergencyRecord
 from app.api.v1.hazards import signed_reporter
 from app.api.v1.routing import _nearby_destinations
 from app.core.database import get_db
+from app.core.config import settings
 
 router = APIRouter()
 GEOCODE_URL = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode"
@@ -77,6 +78,13 @@ async def places(response: Response,
                  longitude: float = Query(..., ge=-180, le=180, allow_inf_nan=False),
                  _: dict = Depends(citizen)) -> MapPlaces:
     response.headers["Cache-Control"] = "no-store"
+    if settings.waysignal_demo_mode:
+        from app.waysignal.scenario import facilities, assert_demo_area, NOTICE
+        assert_demo_area(latitude, longitude)
+        return MapPlaces(latitude=latitude, longitude=longitude, retrieved_at=datetime.now(timezone.utc),
+            location=PlaceLabel(primary="Riverside demo area", secondary="Fictional storm exercise · coordinates are not live GPS", source="coordinates"),
+            facilities=[Facility(id=f["id"], name=f["name"], kind=f["type"], latitude=f["latitude"], longitude=f["longitude"]) for f in facilities()],
+            facilities_status="available", facilities_source="Synthetic demo fixtures", notice=NOTICE)
     location, destinations = await asyncio.gather(
         location_label(latitude, longitude),
         _nearby_destinations(latitude, longitude), return_exceptions=True,
@@ -102,7 +110,7 @@ def my_incidents(response: Response, reporter: dict = Depends(citizen),
     response.headers["Cache-Control"] = "no-store"
     # Identity comes only from the signed token. Never accept a citizen_id query filter.
     rows = db.scalars(select(Emergency).where(
-        Emergency.citizen_id == reporter["sub"], Emergency.is_demo.is_(False),
+        Emergency.citizen_id == reporter["sub"], Emergency.is_demo.is_(settings.waysignal_demo_mode),
         Emergency.status.in_(["submitted", "assigned", "en_route"]),
     ).order_by(Emergency.created_at.desc())).all()
     return [EmergencyRecord.model_validate(row) for row in rows]

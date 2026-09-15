@@ -46,6 +46,7 @@ struct SignInView: View {
 }
 struct Workspace: View {
     let client: APIClient; let account: Account
+    @StateObject private var scenario: ScenarioStore
     @StateObject private var journey: JourneyStore
     @StateObject private var community: CommunityStore
     @StateObject private var assistance: AssistanceStore
@@ -53,20 +54,46 @@ struct Workspace: View {
     @StateObject private var location = LocationProvider()
     init(client: APIClient, account: Account) {
         self.client = client; self.account = account
+        _scenario = StateObject(wrappedValue: ScenarioStore(client: client))
         _journey = StateObject(wrappedValue: JourneyStore(service: RouteService(client: client)))
         _community = StateObject(wrappedValue: CommunityStore(service: CommunityService(client: client)))
         _assistance = StateObject(wrappedValue: AssistanceStore(service: AssistanceService(client: client)))
         _guide = StateObject(wrappedValue: GuideStore(service: GuideService(client: client)))
     }
     var body: some View {
-        TabView {
+        Group {
+          if scenario.info == nil {
+            VStack(spacing: 16) {
+                Text("Checking server connection…")
+                ErrorNotice(message: scenario.error)
+                if scenario.error != nil { Button("Retry") { Task { await scenario.load() } } }
+            }.padding()
+          } else {
+           VStack(spacing: 0) {
+            if scenario.enabled {
+                VStack(spacing: 2) {
+                    Text("DEMO SCENARIO").font(.caption.bold())
+                    Text("Synthetic conditions, routes and people").font(.caption2)
+                }.frame(maxWidth: .infinity).padding(8).background(Color.orange.opacity(0.18))
+            }
+            TabView {
             NavigationStack { JourneyView() }.tabItem { Label("Map", systemImage: "map") }
             NavigationStack { CommunityView() }.tabItem { Label("Community", systemImage: "person.2") }
             NavigationStack { AssistanceView(account: account) }.tabItem { Label("Help", systemImage: "hand.raised") }
             NavigationStack { GuideView() }.tabItem { Label("Guide", systemImage: "sparkle.magnifyingglass") }
+            }
+           }
+          }
         }.environmentObject(journey).environmentObject(community).environmentObject(assistance)
-            .environmentObject(guide).environmentObject(location)
-            .onChange(of: location.coordinate) { _, value in if let value { journey.origin = value } }
+            .environmentObject(guide).environmentObject(location).environmentObject(scenario)
+            .task { await scenario.load() }
+            .onChange(of: scenario.info?.enabled) { _, enabled in
+                if enabled == true {
+                    scenario.useStart(journey)
+                    Task { await community.load(); await assistance.load(); await journey.assess() }
+                }
+            }
+            .onChange(of: location.coordinate) { _, value in if !scenario.enabled, let value { journey.origin = value } }
     }
 }
 struct AccountView: View {

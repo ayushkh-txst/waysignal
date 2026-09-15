@@ -2,6 +2,7 @@ import SwiftUI
 import MapKit
 
 struct JourneyView: View {
+    @EnvironmentObject private var scenario: ScenarioStore
     @EnvironmentObject private var journey: JourneyStore
     @EnvironmentObject private var community: CommunityStore
     @EnvironmentObject private var location: LocationProvider
@@ -16,8 +17,8 @@ struct JourneyView: View {
                         Text("Community signals for your next step.").font(.subheadline).foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Button { location.request() } label: { Image(systemName: "location.fill").padding(12) }
-                        .buttonStyle(.bordered).accessibilityLabel("Use my current location")
+                    Button { if scenario.enabled { scenario.useStart(journey) } else { location.request() } } label: { Image(systemName: "location.fill").padding(12) }
+                        .buttonStyle(.bordered).accessibilityLabel(scenario.enabled ? "Use demo starting point" : "Use my current location")
                 }
                 Map(position: $position) {
                     if let origin = journey.origin { Marker("Starting point", systemImage: "location.fill", coordinate: origin.location).tint(SignalStyle.blue) }
@@ -59,7 +60,7 @@ struct JourneyView: View {
                                           systemImage: route.excluded ? "xmark.octagon" : "arrow.triangle.turn.up.right.diamond")
                                         .font(.headline).foregroundStyle(route.excluded ? Color.red : SignalStyle.blue)
                                 }
-                                Text("\(Int((route.durationS / 60).rounded(.up))) min driving · \((route.distanceM / 1000).formatted(.number.precision(.fractionLength(1)))) km")
+                                Text("\(Int((route.durationS / 60).rounded(.up))) min \(scenario.enabled ? "simulated" : "driving") · \((route.distanceM / 1000).formatted(.number.precision(.fractionLength(1)))) km")
                                 if route.findings.isEmpty { Text("No nearby reports found. Conditions remain unknown.").font(.footnote).foregroundStyle(.secondary) }
                                 ForEach(route.findings) { finding in
                                     VStack(alignment: .leading, spacing: 5) {
@@ -88,6 +89,7 @@ struct JourneyView: View {
     }
 }
 struct RouteForm: View {
+    @EnvironmentObject private var scenario: ScenarioStore
     @EnvironmentObject private var journey: JourneyStore
     @Environment(\.dismiss) private var dismiss
     @State private var startLat = ""; @State private var startLon = ""

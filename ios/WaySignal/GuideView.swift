@@ -78,7 +78,7 @@ struct SourceDetailView: View {
             } else if source.kind == "assistance", let request = assistance.requests.first(where: { $0.id == source.id }) {
                 Section("Assistance") {
                     StatusPill(state: request.status)
-                    Text("Updated \(Wire.date(request.updatedAt))")
+                    Text("Updated \(Wire.date(request.updatedAt ?? request.createdAt))")
                     if let name = request.responderName { Text("Responder: \(name)") }
                 }
             } else { Text("Refreshing this source. If it remains unavailable, return to Community or Help and refresh.") }

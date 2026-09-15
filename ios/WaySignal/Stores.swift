@@ -113,3 +113,20 @@ import CoreLocation
     }
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) { self.error = error.localizedDescription }
 }
+
+@MainActor final class ScenarioStore: ObservableObject {
+    @Published var info: ScenarioInfo?; @Published var error: String?
+    var enabled: Bool { info?.enabled == true }
+    let client: APIClient
+    init(client: APIClient) { self.client = client }
+    func load() async {
+        error = nil
+        do { info = try await client.request("mobile/scenario") }
+        catch { self.error = error.localizedDescription }
+    }
+    func useStart(_ journey: JourneyStore) {
+        guard let info, info.enabled else { return }
+        journey.origin = info.origin; journey.destination = info.destination
+        journey.destinationName = info.destinationName ?? "Demo destination"
+    }
+}

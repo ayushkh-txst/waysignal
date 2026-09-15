@@ -192,7 +192,8 @@ def create_emergency(payload: EmergencyCreate, reporter: dict = Depends(signed_r
     now = datetime.now(timezone.utc)
     data = payload.model_dump(mode="json")
     data["citizen_id"] = reporter["sub"]
-    record = Emergency(**data, id=f"SOS-{uuid4().hex[:8].upper()}", status=EmergencyStatus.submitted.value, created_at=now, location_updated_at=now, is_demo=False)
+    from app.core.config import settings
+    record = Emergency(**data, id=f"SOS-{uuid4().hex[:8].upper()}", status=EmergencyStatus.submitted.value, created_at=now, updated_at=now, location_updated_at=now, is_demo=settings.waysignal_demo_mode)
     db.add(record)
     db.commit()
     db.refresh(record)

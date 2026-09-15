@@ -30,7 +30,7 @@ struct AssistanceView: View {
                             if let responder = request.responderName { Label(responder, systemImage: "person.crop.circle.badge.checkmark") }
                             else if request.status == "submitted" { Text("Awaiting responder assignment.").font(.footnote).foregroundStyle(.secondary) }
                             if !request.notes.isEmpty { Text(request.notes).font(.subheadline) }
-                            Text("Updated \(Wire.date(request.updatedAt))").font(.caption).foregroundStyle(.secondary)
+                            Text("Updated \(Wire.date(request.updatedAt ?? request.createdAt))").font(.caption).foregroundStyle(.secondary)
                             if request.status == "resolved" { Text("Assistance is marked complete. Nearby road reports keep their own review status.").font(.footnote).foregroundStyle(.secondary) }
                             if request.status == "submitted" && account.role == "citizen" {
                                 Button("Cancel request", role: .destructive) { cancelId = request.id }.disabled(assistance.busy)

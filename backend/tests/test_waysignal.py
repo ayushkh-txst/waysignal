@@ -204,3 +204,96 @@ def test_guide_uses_real_mcp_client_and_source_records(app_api, monkeypatch):
     assert response.json()["sources"][0]["id"] == key
     assert response.json()["tool_used"] == "list_route_reports"
     assert client.post("/mobile/guide", headers=auth(), json={"action": "route"}).status_code == 422
+
+@pytest.fixture
+def demo_api(app_api, monkeypatch, tmp_path):
+    from app.waysignal import scenario
+    from app.api.v1 import safety, citizen_map, routing, reports
+    app, client, sessions = app_api
+    monkeypatch.setattr(settings, 'waysignal_demo_mode', True)
+    monkeypatch.setattr(settings, 'environment', 'development')
+    monkeypatch.setattr(settings, 'database_url', f"sqlite:///{tmp_path / 'waysignal-demo.db'}")
+    app.include_router(safety.router, prefix='/safety')
+    app.include_router(citizen_map.router, prefix='/citizen-map')
+    app.include_router(routing.router, prefix='/routing')
+    app.include_router(reports.router, prefix='/reports')
+    with sessions() as db:
+        scenario.seed(db)
+    return app, client, sessions
+
+
+def demo_input():
+    from app.waysignal.scenario import ORIGIN, DESTINATION
+    return {'origin': ORIGIN, 'destination': DESTINATION, 'destination_name': 'Demo centre'}
+
+
+def test_demo_populates_scoped_records_weather_places_and_route_without_external_providers(demo_api, monkeypatch):
+    _, client, _ = demo_api
+    def external(*args, **kwargs): raise AssertionError('Demo contacted a live provider')
+    monkeypatch.setattr(httpx, 'AsyncClient', external)
+    info = client.get('/mobile/scenario').json()
+    assert info['enabled'] and 'synthetic' in info['notice']
+    community = client.get('/mobile/community', headers=auth()).json()
+    assert len(community) == 5
+    assert len(client.get('/emergencies', headers=auth('citizen-demo')).json()) == 4
+    assert len(client.get('/emergencies', headers=auth('worker-demo', 'worker')).json()) == 6
+    assert client.get('/emergencies', headers=auth('unrelated-citizen')).json() == []
+    point = demo_input()['origin']
+    weather = client.get('/safety/context', params=point)
+    assert weather.status_code == 200, weather.text
+    assert weather.json()['precipitation_next_6h_mm'] == 52.4
+    assert 'Synthetic' in weather.json()['source']
+    places = client.get('/citizen-map/places', params=point, headers=auth())
+    assert places.status_code == 200, places.text
+    assert len(places.json()['facilities']) == 4
+    route = client.get('/routing/evacuation', params=point)
+    assert route.status_code == 200, route.text
+    assert route.json()['is_demo'] and route.json()['rejected_count'] == 1
+    assert client.get('/safety/context', params={'latitude':29.7, 'longitude':-95.4}).status_code == 422
+
+
+def test_demo_review_changes_route_reset_preserves_custom_work(demo_api):
+    from app.waysignal.scenario import seed
+    _, client, sessions = demo_api
+    initial = client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()
+    assert initial['selected_id'] == 'route-1'
+    reviewed = client.post('/mobile/community/WS-DEMO-R104/review', headers=auth('worker-demo','worker'),
+        json={'decision':'reviewed_active', 'expected_version':0})
+    assert reviewed.status_code == 200, reviewed.text
+    changed = client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()
+    assert changed['selected_id'] == 'route-2' and changed['candidates'][0]['excluded']
+    with sessions() as db: seed(db)
+    assert client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()['selected_id'] == 'route-2'
+    custom = report(client)
+    assert client.post('/mobile/scenario/reset', headers=auth()).status_code == 403
+    reset = client.post('/mobile/scenario/reset', headers=auth('worker-demo','worker'))
+    assert reset.status_code == 200, reset.text
+    assert client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()['selected_id'] == 'route-1'
+    assert custom in {r['id'] for r in client.get('/mobile/community', headers=auth()).json()}
+
+
+def test_demo_mcp_agrees_with_rest_and_preserves_assistance_ownership(demo_api):
+    _, client, _ = demo_api
+    result = rpc(client, 'tools/call', {'name':'assess_route','arguments': demo_input()}).json()['result']
+    assert not result.get('isError'), result
+    rest = client.post('/mobile/routes/assess', headers=auth(), json=demo_input()).json()
+    assert result['structuredContent']['selected_id'] == rest['selected_id']
+    own = rpc(client,'tools/call',{'name':'get_assistance_status','arguments':{'request_id':'WS-DEMO-H208'}},auth('citizen-demo')).json()['result']
+    assert not own.get('isError'), own
+    other = rpc(client,'tools/call',{'name':'get_assistance_status','arguments':{'request_id':'WS-DEMO-H208'}},auth('someone-else')).json()['result']
+    assert other['isError']
+    client.patch('/emergencies/WS-DEMO-H208', headers=auth('worker-demo','worker'),json={'status':'resolved'})
+    assert next(r for r in client.get('/mobile/community',headers=auth()).json() if r['id']=='WS-DEMO-R104')['review_state']=='unreviewed'
+
+
+def test_demo_cannot_seed_live_or_production_database(app_api, monkeypatch):
+    from app.waysignal.scenario import validate_demo_database
+    _, client, _ = app_api
+    assert not client.get('/mobile/scenario').json()['enabled']
+    assert client.post('/mobile/scenario/reset', headers=auth('worker','worker')).status_code == 409
+    monkeypatch.setattr(settings,'waysignal_demo_mode', True)
+    monkeypatch.setattr(settings,'database_url', 'sqlite:///jalrakshak-dev.db')
+    with pytest.raises(RuntimeError): validate_demo_database()
+    monkeypatch.setattr(settings,'database_url', 'sqlite:///waysignal-demo.db')
+    monkeypatch.setattr(settings,'environment','production')
+    with pytest.raises(RuntimeError): validate_demo_database()

@@ -6,6 +6,7 @@ import httpx
 from fastapi import HTTPException
 
 from app.api.v1.routing import _osrm_routes
+from app.core.config import settings
 from app.waysignal.domain import (AssessmentInput, HazardPolicy, ReportSource, RouteProvider,
     ReviewedClosurePolicy, UnreviewedHazardPolicy, distance_to_route)
 
@@ -14,6 +15,13 @@ class GOneRouteProvider:
     async def candidates(self, request: AssessmentInput) -> list[dict]:
         destination = {"latitude": request.destination.latitude, "longitude": request.destination.longitude}
         return await _osrm_routes(request.origin.latitude, request.origin.longitude, destination)
+
+
+def route_provider() -> RouteProvider:
+    if settings.waysignal_demo_mode:
+        from app.waysignal.scenario import DemoRouteProvider
+        return DemoRouteProvider()
+    return GOneRouteProvider()
 
 
 class RouteAssessmentService:
@@ -61,5 +69,7 @@ class RouteAssessmentService:
         remaining.sort(key=lambda c: (len(c["findings"]), c["duration_s"]))
         return {"destination_name": request.destination_name, "generated_at": datetime.now(timezone.utc).isoformat(),
             "candidates": candidates, "selected_id": remaining[0]["id"] if remaining else None,
-            "source": "OSRM driving routes + WaySignal community reviews", "data_status": "available",
-            "notice": "Point-based report screening, not verified flood boundaries. Conditions outside reported locations remain unknown. Routes are not guaranteed safe."}
+            "source": "Synthetic demo routes + demo community reviews" if settings.waysignal_demo_mode else "OSRM driving routes + WaySignal community reviews",
+            "data_status": "demo" if settings.waysignal_demo_mode else "available",
+            "notice": ("DEMO: schematic route geometry and simulated travel times; not road directions. " if settings.waysignal_demo_mode else "") +
+                "Point-based report screening, not verified flood boundaries. Conditions outside reported locations remain unknown. Routes are not guaranteed safe."}

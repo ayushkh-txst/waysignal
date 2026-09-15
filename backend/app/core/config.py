@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr = SecretStr("")
     dispatch_ai_model: str = ""
     mcp_internal_url: str = "http://127.0.0.1:8000/mcp/"
+    waysignal_demo_mode: bool = False
 
     # Configured demo accounts. Render supplies private passwords in production.
     # Use example.com so Pydantic EmailStr accepts the addresses during validation.

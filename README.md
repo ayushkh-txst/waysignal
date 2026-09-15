@@ -74,3 +74,7 @@ Read [the implementation handoff](docs/WAYSIGNAL-HANDOFF.md) for the demo sequen
 The core demonstration is **report → responder review → changed route assessment → assistance assignment → source-linked explanation**. Mark inherited work, new hackathon work and future features separately.
 
 This is a hackathon prototype. Reviews are project reviews, route screening uses reported points, and no route is certified safe. Prototype assistance requests go to the project dashboard, not emergency services. No public repository or deployment has been created yet.
+
+## Populated demo exercise
+
+Start `bash scripts/start-demo.sh` instead of the normal backend launcher, sign in, then click **Open exercise**. Read [the demo instructions](docs/DEMO-SCENARIO.md) for installation, default accounts, reset and the presentation sequence. The exercise adds isolated synthetic reports, assistance requests, weather and route candidates.

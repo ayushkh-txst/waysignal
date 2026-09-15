@@ -1,3 +1,4 @@
+import { demoOrigin, isDemoScenario } from '../scenario/scenario-state';
 import { citizenSafetyApi, type EmergencyRecord, type SafetyContext } from './api/citizen-safety.api';
 
 type RouteAnalysisDetail = {
@@ -72,14 +73,14 @@ function riskPresentation() {
     level: level.toUpperCase(),
     score: `${score}/100`,
     isUrgent: level === 'high' || level === 'critical',
-    isDemo: false,
+    isDemo: isDemoScenario(),
   };
 }
 
 function userEmergencies(): EmergencyRecord[] {
   const name = currentCitizenName().toLowerCase();
   return latestEmergencies
-    .filter((record) => !record.is_demo && record.citizen_name?.toLowerCase() === name)
+    .filter((record) => (!record.is_demo || isDemoScenario()) && record.citizen_name?.toLowerCase() === name)
     .sort((a, b) => new Date(b.updated_at ?? b.created_at).getTime() - new Date(a.updated_at ?? a.created_at).getTime());
 }
 
@@ -307,6 +308,10 @@ async function readLocationPermission() {
 }
 
 function acquireLiveSafety(): Promise<void> {
+  const demo = demoOrigin();
+  if (demo) return citizenSafetyApi.getContext(demo.latitude, demo.longitude)
+    .then(value => { latestSafety = value; latestDataError = ''; })
+    .catch(error => { latestDataError = error instanceof Error ? error.message : 'Demo context unavailable'; });
   return new Promise((resolve) => {
     if (!navigator.geolocation || locationPermission === 'denied') return resolve();
     if (locationPermission !== 'granted') return resolve();

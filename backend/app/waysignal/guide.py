@@ -59,5 +59,7 @@ async def source_summary(payload: GuideInput, authorization: str) -> dict:
         active = [r for r in reports if r["review_state"] == "reviewed_active"]
         text = f"There are {len(reports)} reports in this view, including {len(active)} reviewed active reports. Missing reports do not establish safe conditions."
         sources = [{"id": r["id"], "kind": "report", "status": r["review_state"]} for r in reports[:10]]
+    if settings.waysignal_demo_mode:
+        text = "Demo scenario — " + text
     return {"mode": "source_summary", "text": text, "sources": sources,
             "tool_used": name, "notice": "A summary of source records, not a generative AI answer."}

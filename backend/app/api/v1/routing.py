@@ -8,6 +8,7 @@ from typing import Any
 import httpx
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -44,6 +45,12 @@ class EvacuationRoute(BaseModel):
     reasons: list[str]
     source: str
     warning: str
+    is_demo: bool = False
+    screening_status: str | None = None
+    screened_routes: list[dict] | None = None
+    rejected_count: int | None = None
+    viable_count: int | None = None
+    recommended_count: int | None = None
 
 
 def _destination_priority(tags: dict[str, Any]) -> int:
@@ -193,6 +200,9 @@ async def evacuation_route(
     latitude: float = Query(..., ge=-90, le=90),
     longitude: float = Query(..., ge=-180, le=180),
 ) -> EvacuationRoute:
+    if settings.waysignal_demo_mode:
+        from app.waysignal.scenario import legacy_route
+        return EvacuationRoute(**await legacy_route(latitude, longitude))
     cached = _get_cached(latitude, longitude)
     if cached is not None:
         return cached

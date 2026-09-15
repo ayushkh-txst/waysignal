@@ -45,7 +45,7 @@ struct RouteInput: Encodable {
 struct AssistanceRequest: Decodable, Identifiable {
     let id: String; let citizenName: String; let emergencyType: String; let peopleCount: Int
     let latitude: Double; let longitude: Double; let status: String; let notes: String
-    let responderName: String?; let createdAt: String; let updatedAt: String; let isDemo: Bool
+    let responderName: String?; let createdAt: String; let updatedAt: String?; let isDemo: Bool
 }
 struct GuideSource: Decodable, Identifiable { let id: String; let kind: String; let status: String }
 struct GuideResponse: Decodable {
@@ -71,4 +71,9 @@ enum Wire {
         let parsed = formatter.date(from: text) ?? ISO8601DateFormatter().date(from: text)
         return parsed?.formatted(date: .abbreviated, time: .shortened) ?? text
     }
+}
+
+struct ScenarioInfo: Decodable {
+    let enabled: Bool; let title: String; let notice: String
+    let origin: Coordinate?; let destination: Coordinate?; let destinationName: String?
 }

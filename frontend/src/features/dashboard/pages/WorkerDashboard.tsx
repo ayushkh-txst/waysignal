@@ -1,3 +1,4 @@
+import { useScenario } from '../../scenario/ScenarioContext';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { authSession } from '../../auth/auth-session';
 import { citizenSafetyApi, type EmergencyListFilters, type EmergencyRecord, type EmergencyStatus } from '../api/citizen-safety.api';
@@ -64,6 +65,7 @@ function statusLabel(status: EmergencyStatus) {
 }
 
 export default function WorkerDashboard() {
+  const scenario = useScenario();
   const session = authSession.get();
   const [records, setRecords] = useState<EmergencyRecord[]>([]);
   const [queueRecords, setQueueRecords] = useState<EmergencyRecord[]>([]);
@@ -76,7 +78,7 @@ export default function WorkerDashboard() {
   const [activeView, setActiveView] = useState<ViewName>('queue');
   const viewRef = useRef(activeView);
   viewRef.current = activeView;
-  const [showDemo, setShowDemo] = useState(false);
+  const [showDemo, setShowDemo] = useState(scenario.enabled);
   const [showResolved, setShowResolved] = useState(false);
 
   const workerName = session?.user.name ?? 'Demo E-Worker';
@@ -109,7 +111,7 @@ export default function WorkerDashboard() {
   }, [activeFilter]);
 
   const selected = useMemo(() => records.find((item) => item.id === selectedId) ?? null, [records, selectedId]);
-  const pendingCount = records.filter((r) => r.status === 'submitted' && !r.is_demo).length;
+  const pendingCount = records.filter((r) => r.status === 'submitted' && (!r.is_demo || scenario.enabled)).length;
   const filterCount = (filter: IncidentFilter) => records.filter((record) => matchesIncidentFilter(record, filter)).length;
 
   const visibleMapRecords = useMemo(() => records.filter((record) => {

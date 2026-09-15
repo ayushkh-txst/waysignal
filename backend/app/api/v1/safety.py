@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import httpx
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -56,6 +57,9 @@ async def get_safety_context(
     latitude: float = Query(..., ge=-90, le=90),
     longitude: float = Query(..., ge=-180, le=180),
 ) -> SafetyContext:
+    if settings.waysignal_demo_mode:
+        from app.waysignal.scenario import environmental_snapshot
+        return SafetyContext(**environmental_snapshot(latitude, longitude))
     weather_params = {
         "latitude": latitude,
         "longitude": longitude,

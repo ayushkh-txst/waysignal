@@ -1,3 +1,4 @@
+import { demoOrigin, isDemoScenario } from '../scenario/scenario-state';
 import { citizenSafetyApi, type EmergencyRecord, type EvacuationRoute, type SafetyContext } from './api/citizen-safety.api';
 import { runNavCatAction, type NavCatAction } from './navcat-action-engine';
 
@@ -29,8 +30,8 @@ function loadHistory(): Message[] { try { const parsed = JSON.parse(localStorage
 function saveHistory() { try { localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages.slice(-80))); } catch {} }
 function citizenName() { return document.querySelector<HTMLElement>('.sidebar-user strong')?.textContent?.trim() || 'there'; }
 function locationLabel() { const raw = document.querySelector<HTMLElement>('.location-line')?.textContent?.replace(/\s+/g, ' ').trim() ?? ''; return raw.replace(/^⌖\s*/, '').replace(/\s*·\s*LIVE\s*$/, '').trim() || 'your current area'; }
-function getCurrentPosition(): Promise<GeolocationPosition | null> { if (!navigator.geolocation) return Promise.resolve(null); return new Promise((resolve) => navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), { enableHighAccuracy: true, timeout: 4500, maximumAge: 15000 })); }
-async function refreshContext() { const position = await getCurrentPosition(); if (position) { const key = `${position.coords.latitude.toFixed(3)},${position.coords.longitude.toFixed(3)}`; if (key !== lastLocationKey || !latestSafety) { lastLocationKey = key; try { latestSafety = await citizenSafetyApi.getContext(position.coords.latitude, position.coords.longitude); } catch {} } } try { const records = await citizenSafetyApi.listEmergencies(); latestEmergency = records.filter((item) => !item.is_demo && item.status !== 'cancelled').sort((a,b) => Date.parse(b.updated_at ?? b.created_at) - Date.parse(a.updated_at ?? a.created_at))[0] ?? null; } catch {} }
+function getCurrentPosition(): Promise<{ coords: { latitude: number; longitude: number } } | null> { const demo = demoOrigin(); if (demo) return Promise.resolve({ coords: demo }); if (!navigator.geolocation) return Promise.resolve(null); return new Promise((resolve) => navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), { enableHighAccuracy: true, timeout: 4500, maximumAge: 15000 })); }
+async function refreshContext() { const position = await getCurrentPosition(); if (position) { const key = `${position.coords.latitude.toFixed(3)},${position.coords.longitude.toFixed(3)}`; if (key !== lastLocationKey || !latestSafety) { lastLocationKey = key; try { latestSafety = await citizenSafetyApi.getContext(position.coords.latitude, position.coords.longitude); } catch {} } } try { const records = await citizenSafetyApi.listEmergencies(); latestEmergency = records.filter((item) => (!item.is_demo || isDemoScenario()) && item.status !== 'cancelled').sort((a,b) => Date.parse(b.updated_at ?? b.created_at) - Date.parse(a.updated_at ?? a.created_at))[0] ?? null; } catch {} }
 function speak(text:string) {
   if (!voiceEnabled || !('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();

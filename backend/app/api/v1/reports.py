@@ -1,6 +1,6 @@
 """Worker-only operational reports, calculated exclusively from persisted SOS records.
 
-Seeded demo incidents are excluded. Risk is the stored prototype score, not an
+Seeded demo incidents are excluded in live mode. Risk is the stored prototype score, not an
 official hazard classification. Unknown historical measurements remain null.
 """
 from __future__ import annotations
@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 from app.api.v1.emergencies import Emergency, EmergencyStatus, EmergencyType
 from app.api.v1.hazards import signed_reporter
 from app.core.database import get_db
+from app.core.config import settings
 
 router = APIRouter()
 BANDS = ["critical", "high", "moderate", "low", "unknown"]
@@ -106,7 +107,7 @@ def build_report(db: Session, filters: dict, now: datetime | None = None):
     start = datetime.combine(filters["start_date"], time.min, zone).astimezone(timezone.utc)
     end = datetime.combine(filters["end_date"] + timedelta(days=1), time.min, zone).astimezone(timezone.utc)
     rows = list(db.scalars(select(Emergency).where(
-        Emergency.is_demo.is_(False), Emergency.created_at >= start,
+        Emergency.is_demo.is_(settings.waysignal_demo_mode), Emergency.created_at >= start,
         Emergency.created_at < end, Emergency.created_at <= now,
     ).order_by(Emergency.created_at.desc(), Emergency.id)))
     locations = sorted({location_key(row) for row in rows})
@@ -168,7 +169,7 @@ def build_report(db: Session, filters: dict, now: datetime | None = None):
     page_count = max(1, (total + 24) // 25)
     page = min(filters["page"], page_count)
     return {
-        "generated_at": now.isoformat(), "source": "persisted_incidents", "demo_excluded": True,
+        "generated_at": now.isoformat(), "source": "persisted_incidents", "demo_excluded": not settings.waysignal_demo_mode,
         "filters": {key: value.isoformat() if isinstance(value, date) else value for key, value in filters.items() if key != "zone"},
         "locations": locations,
         "summary": {"total": total, "critical": severities["critical"], "active": len(active),
