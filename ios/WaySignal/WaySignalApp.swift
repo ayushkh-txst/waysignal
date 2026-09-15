@@ -31,7 +31,7 @@ struct SignInView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Welcome back").font(.title2.bold())
                         Picker("Workspace", selection: $workspace) {
-                            Text("Citizen").tag("citizen"); Text("Responder / Admin").tag("worker")
+                            Text("Citizen").tag("citizen"); Text("Admin").tag("worker")
                         }.pickerStyle(.segmented)
                         Text(workspace == "citizen" ? "Explore routes, share observations, and request help." : "Review reports, coordinate incidents, and track response.").font(.subheadline).foregroundStyle(.secondary)
                         SignalCard {
@@ -43,7 +43,8 @@ struct SignInView: View {
                         }
                         Toggle("Keep me signed in", isOn: $session.rememberSignIn).font(.subheadline)
                         ErrorNotice(message: session.error)
-                        PrimaryButton(title: "Sign in", icon: "arrow.right", busy: session.busy, disabled: email.isEmpty || password.isEmpty) {
+                        PrimaryButton(title: "Sign in", icon: "arrow.right", busy: session.busy, disabled: email.isEmpty || password.isEmpty,
+                                      fill: SignalStyle.signInButton, trailingIcon: true) {
                             Task { await session.signIn(email: email, password: password) }
                         }
                         DisclosureGroup("Server connection") {

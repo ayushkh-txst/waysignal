@@ -3,6 +3,7 @@ import SwiftUI
 enum SignalStyle {
     static let blue = Color(red: 0.04, green: 0.14, blue: 0.25)
     static let gold = Color(red: 0.48, green: 0.36, blue: 0.10)
+    static let signInButton = Color(red: 105.0 / 255, green: 94.0 / 255, blue: 66.0 / 255)
     static let ink = Color.primary
     static let background = Color(red: 0.98, green: 0.97, blue: 0.95)
     static func stateColor(_ state: String) -> Color {
@@ -59,12 +60,20 @@ struct SignalCard<Content: View>: View {
 struct PrimaryButton: View {
     let title: String; let icon: String
     var busy = false; var disabled = false
+    var fill: Color = SignalStyle.blue
+    var trailingIcon = false
     let action: () -> Void
     var body: some View {
         Button(action: action) {
-            HStack { if busy { ProgressView().tint(.white) }; Label(title, systemImage: icon) }
+            HStack(spacing: 8) {
+                if busy { ProgressView().tint(.white) }
+                if trailingIcon {
+                    Text(title)
+                    Image(systemName: icon).accessibilityHidden(true)
+                } else { Label(title, systemImage: icon) }
+            }
                 .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 8)
-        }.buttonStyle(SignalPressStyle())
+        }.buttonStyle(SignalPressStyle(fill: fill))
             .disabled(disabled || busy)
     }
 }
@@ -81,9 +90,10 @@ struct CoordinateFields: View {
 
 struct SignalPressStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    var fill: Color = SignalStyle.blue
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.foregroundStyle(.white).padding(10)
-            .background(SignalStyle.blue, in: RoundedRectangle(cornerRadius: 16))
+            .background(fill, in: RoundedRectangle(cornerRadius: 16))
             .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
             .opacity(configuration.isPressed ? 0.82 : 1)
             .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: configuration.isPressed)
