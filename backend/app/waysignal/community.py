@@ -40,6 +40,13 @@ class ReviewInput(BaseModel):
     expected_version: int = Field(default=0, ge=0)
 
 
+class Observation(Base):
+    __tablename__ = "waysignal_observations"
+    hazard_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    note: Mapped[str] = mapped_column(Text, default="")
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 def review_state(report: dict, review: Review | None, now: datetime) -> str:
     updated = datetime.fromisoformat(report["updated_at"].replace("Z", "+00:00"))
     # Legacy reopen operations invalidate prior review evidence.
@@ -61,12 +68,18 @@ class CommunityService:
     def reports(self) -> list[dict]:
         records = list_hazards(status="all", reporter=self.actor, db=self.db)
         reviews = {r.hazard_id: r for r in self.db.scalars(select(Review)).all()}
+        observations = {r.hazard_id: r for r in self.db.scalars(select(Observation)).all()}
+        own = set(self.db.scalars(select(Hazard.id).where(Hazard.reporter_id == self.actor["sub"])).all())
         now = datetime.now(timezone.utc)
         result = []
         for record in records:
             report = record.model_dump(mode="json")
             review = reviews.get(record.id)
+            observation = observations.get(record.id)
             report.update(review_state=review_state(report, review, now),
+                          is_mine=record.id in own,
+                          observation=observation.note if observation else "",
+                          observed_at=utc(observation.observed_at).isoformat() if observation else report["created_at"],
                           review_version=review.version if review else 0,
                           review_note=review.note if review else "",
                           reviewed_at=utc(review.reviewed_at).isoformat() if review else None)

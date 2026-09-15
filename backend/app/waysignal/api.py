@@ -8,8 +8,50 @@ from app.waysignal.community import CommunityService, ReviewInput
 from app.waysignal.domain import AssessmentInput
 from app.waysignal.routes import route_provider, RouteAssessmentService
 from app.waysignal.guide import GuideInput, source_summary
+from app.waysignal.assistant import ChatInput, chat
 
 router = APIRouter()
+
+
+@router.post("/assistant")
+async def assistant(payload: ChatInput, request: Request, actor: dict = Depends(signed_reporter)):
+    return await chat(payload, request.headers["authorization"])
+
+
+from app.api.v1.hazards import HazardCreate, create_hazard, BoundedBodyRoute
+from sqlalchemy.exc import IntegrityError
+from app.waysignal.community import Observation
+from pydantic import Field
+from datetime import datetime, timezone
+
+
+class ObservationInput(HazardCreate):
+    note: str = Field(default="", max_length=500)
+
+
+observation_router = APIRouter(route_class=BoundedBodyRoute)
+
+
+@observation_router.post("/community", status_code=201)
+def publish_observation(payload: ObservationInput, actor: dict = Depends(signed_reporter), db: Session = Depends(get_db)):
+    base = HazardCreate.model_validate(payload.model_dump(exclude={"note"}))
+    record = create_hazard(base, actor, db)
+    existing = db.get(Observation, record.id)
+    if existing and existing.note != payload.note:
+        raise HTTPException(409, "This submission has already been saved with a different note.")
+    if existing is None:
+        db.add(Observation(hazard_id=record.id, note=payload.note, observed_at=datetime.now(timezone.utc)))
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            winner = db.get(Observation, record.id)
+            if winner is None or winner.note != payload.note:
+                raise HTTPException(409, "Another submission already saved this observation.") from None
+    return record
+
+
+router.include_router(observation_router)
 
 
 @router.get("/community")

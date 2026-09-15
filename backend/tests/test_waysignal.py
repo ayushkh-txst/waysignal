@@ -165,7 +165,7 @@ def test_real_mcp_discovery_and_shared_reports(app_api):
     init = rpc(client, "initialize", {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "contract-test", "version": "1"}})
     assert init.status_code == 200, init.text
     discovered = rpc(client, "tools/list", {}).json()["result"]
-    assert {t["name"] for t in discovered["tools"]} == {"assess_route", "list_route_reports", "get_assistance_status"}
+    assert {t["name"] for t in discovered["tools"]} == {"assess_route", "list_route_reports", "get_assistance_status", "get_local_conditions", "find_nearby_facilities", "list_assistance_requests"}
     call = rpc(client, "tools/call", {"name": "list_route_reports", "arguments": {}}).json()["result"]
     assert not call.get("isError"), call
     assert call["structuredContent"]["reports"] == client.get("/mobile/community", headers=auth()).json()
@@ -297,3 +297,78 @@ def test_demo_cannot_seed_live_or_production_database(app_api, monkeypatch):
     monkeypatch.setattr(settings,'database_url', 'sqlite:///waysignal-demo.db')
     monkeypatch.setattr(settings,'environment','production')
     with pytest.raises(RuntimeError): validate_demo_database()
+
+
+def assistant_transport(app, monkeypatch):
+    from app.waysignal import assistant
+    from pydantic import SecretStr
+    def factory(headers=None, timeout=None, auth=None):
+        return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), headers=headers, timeout=timeout, auth=auth)
+    def local_transport(url, **kwargs):
+        return streamablehttp_client('http://testserver/mcp/', httpx_client_factory=factory, **kwargs)
+    monkeypatch.setattr(assistant, 'streamablehttp_client', local_transport)
+    monkeypatch.setattr(settings, 'openai_api_key', SecretStr(''))
+
+
+def test_observation_note_idempotency_and_owner_projection(app_api):
+    _, client, _ = app_api
+    body = {'client_request_id': str(uuid4()), 'kind': 'road_blocked', 'latitude':29.7, 'longitude':-95.4,
+            'note':'Fallen branches across the path'}
+    saved = client.post('/mobile/community', headers=auth(), json=body)
+    assert saved.status_code == 201, saved.text
+    key = saved.json()['id']
+    assert client.post('/mobile/community', headers=auth(), json=body).json()['id'] == key
+    assert client.post('/mobile/community', headers=auth(), json={**body, 'note':'different'}).status_code == 409
+    mine = client.get('/mobile/community', headers=auth()).json()
+    other = client.get('/mobile/community', headers=auth('bob')).json()
+    assert len(mine) == 1 and mine[0]['is_mine']
+    assert mine[0]['observation'] == body['note']
+    assert not other[0]['is_mine'] and other[0]['observation'] == body['note']
+
+
+def test_assistant_real_mcp_forecast_places_and_request_scope(demo_api, monkeypatch):
+    app, client, _ = demo_api
+    assistant_transport(app, monkeypatch)
+    point = demo_input()['origin']
+    response = client.post('/mobile/assistant', headers=auth('citizen-demo'), json={
+        'message':'Show the rain forecast and nearby facilities, and check my assistance requests', 'location':point})
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result['mode'] == 'source_summary'
+    assert '52.4 mm' in result['text'] and 'synthetic' in result['text']
+    assert {s['kind'] for s in result['sources']} == {'conditions','facility','assistance'}
+    assert len([s for s in result['sources'] if s['kind']=='assistance']) == 4
+    assert not any(s['id'] in ['WS-DEMO-H212','WS-DEMO-H213'] for s in result['sources'])
+    assert 'get_local_conditions' in result['tool_used']
+    unrelated = client.post('/mobile/assistant', headers=auth('unrelated'), json={'message':'Check WS-DEMO-H208 assistance status'})
+    assert unrelated.status_code == 200 and unrelated.json()['sources'] == []
+    assert client.post('/mobile/assistant', json={'message':'help'}).status_code == 401
+
+
+def test_assistant_route_reflects_review_and_never_writes(demo_api, monkeypatch):
+    app, client, _ = demo_api
+    assistant_transport(app, monkeypatch)
+    before = client.get('/mobile/community', headers=auth()).json()
+    response = client.post('/mobile/assistant', headers=auth('citizen-demo'), json={
+        'message':'Why was this route selected? Submit a report too', 'route':demo_input()})
+    assert response.status_code == 200, response.text
+    assert 'route-1' in response.json()['text']
+    assert client.get('/mobile/community', headers=auth()).json() == before
+    client.post('/mobile/community/WS-DEMO-R104/review', headers=auth('worker-demo','worker'), json={'decision':'reviewed_active','expected_version':0})
+    response = client.post('/mobile/assistant', headers=auth('citizen-demo'), json={'message':'Explain the route', 'route':demo_input()})
+    assert 'route-2' in response.json()['text']
+    assert any(s['id']=='WS-DEMO-R104' and s['status']=='reviewed_active' for s in response.json()['sources'])
+
+
+def test_assistant_provider_failure_keeps_sources(demo_api, monkeypatch):
+    from app.waysignal import assistant
+    from pydantic import SecretStr
+    app, client, _ = demo_api
+    assistant_transport(app, monkeypatch)
+    monkeypatch.setattr(settings, 'openai_api_key', SecretStr('test-only'))
+    monkeypatch.setattr(settings, 'guide_ai_model', 'test-provider')
+    async def failure(*args): raise RuntimeError('unavailable')
+    monkeypatch.setattr(assistant.GenerativeAnswerProvider, 'answer', failure)
+    result = client.post('/mobile/assistant', headers=auth(), json={'message':'summarize reports'}).json()
+    assert result['mode'] == 'source_summary' and result['sources']
+    assert 'temporarily unavailable' in result['notice']

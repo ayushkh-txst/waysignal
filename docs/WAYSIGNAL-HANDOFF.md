@@ -1,3 +1,7 @@
+# Current native upgrade
+
+The original handoff below documents the initial slice. See [NATIVE-UPGRADE.md](NATIVE-UPGRADE.md) for the expanded native screens, real voice/chat implementation, six MCP tools and current verification status. The earlier statements that native chat and responder screens are future work are superseded by that update.
+
 # WaySignal implementation handoff
 
 Prepared September 14, 2026. Working name: WaySignal. Category fusion: Navigation × Social Media × Productivity.

@@ -20,18 +20,20 @@ for file in sources:
     add('ref:' + file.name, f'isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = {file.name}; sourceTree = "<group>";')
     add('build:' + file.name, f'isa = PBXBuildFile; fileRef = {ident("ref:" + file.name)};')
 add('product', 'isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WaySignal.app; sourceTree = BUILT_PRODUCTS_DIR;')
-add('source-group', f'isa = PBXGroup; children = {refs(["ref:" + f.name for f in sources])}; path = WaySignal; sourceTree = "<group>";')
+add('asset-ref', 'isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>";')
+add('asset-build', f'isa = PBXBuildFile; fileRef = {ident("asset-ref")};')
+add('source-group', f'isa = PBXGroup; children = {refs(["ref:" + f.name for f in sources] + ["asset-ref"])}; path = WaySignal; sourceTree = "<group>";')
 add('products', f'isa = PBXGroup; children = {refs(["product"])}; name = Products; sourceTree = "<group>";')
 add('main-group', f'isa = PBXGroup; children = {refs(["source-group", "products"])}; sourceTree = "<group>";')
 add('sources', f'isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = {refs(["build:" + f.name for f in sources])}; runOnlyForDeploymentPostprocessing = 0;')
 add('frameworks', 'isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;')
-add('resources', 'isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;')
+add('resources', f'isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = {refs(["asset-build"])}; runOnlyForDeploymentPostprocessing = 0;')
 for config in ['Debug', 'Release']:
     project_settings = 'SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; CLANG_ENABLE_MODULES = YES; SWIFT_VERSION = 5.0;'
     if config == 'Debug': project_settings += ' SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; DEBUG_INFORMATION_FORMAT = dwarf;'
     else: project_settings += ' SWIFT_OPTIMIZATION_LEVEL = "-O"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; VALIDATE_PRODUCT = YES;'
     add('project-' + config, f'isa = XCBuildConfiguration; buildSettings = {{ {project_settings} }}; name = {config};')
-    target_settings = f'PRODUCT_BUNDLE_IDENTIFIER = org.waysignal.ios; PRODUCT_NAME = "$(TARGET_NAME)"; CODE_SIGN_STYLE = Automatic; DEVELOPMENT_TEAM = ""; TARGETED_DEVICE_FAMILY = 1; INFOPLIST_FILE = "WaySignal/Info-{config}.plist"; GENERATE_INFOPLIST_FILE = NO; CURRENT_PROJECT_VERSION = 1; MARKETING_VERSION = 0.1.0; SWIFT_EMIT_LOC_STRINGS = YES; ENABLE_PREVIEWS = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";'
+    target_settings = f'PRODUCT_BUNDLE_IDENTIFIER = org.waysignal.ios; PRODUCT_NAME = "$(TARGET_NAME)"; CODE_SIGN_STYLE = Automatic; ENTITLEMENTS_REQUIRED = YES; ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; DEVELOPMENT_TEAM = ""; TARGETED_DEVICE_FAMILY = 1; INFOPLIST_FILE = "WaySignal/Info-{config}.plist"; GENERATE_INFOPLIST_FILE = NO; CURRENT_PROJECT_VERSION = 1; MARKETING_VERSION = 0.1.0; SWIFT_EMIT_LOC_STRINGS = YES; ENABLE_PREVIEWS = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";'
     add('target-' + config, f'isa = XCBuildConfiguration; buildSettings = {{ {target_settings} }}; name = {config};')
     plist = {
         'CFBundleDevelopmentRegion': 'en', 'CFBundleDisplayName': 'WaySignal',
@@ -41,6 +43,8 @@ for config in ['Debug', 'Release']:
         'CFBundleVersion': '$(CURRENT_PROJECT_VERSION)', 'LSRequiresIPhoneOS': True,
         'UILaunchScreen': {}, 'UIApplicationSceneManifest': {'UIApplicationSupportsMultipleScenes': False},
         'UISupportedInterfaceOrientations': ['UIInterfaceOrientationPortrait'],
+        'NSSpeechRecognitionUsageDescription': 'Turn your spoken question into text for WaySignal Guide.',
+        'NSMicrophoneUsageDescription': 'Use the microphone only when you tap the voice input button.',
         'NSLocationWhenInUseUsageDescription': 'Use your location as a starting point. You can enter coordinates instead.',
     }
     if config == 'Debug':

@@ -31,6 +31,10 @@
 	<string>Connect to your local WaySignal development server.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Use your location as a starting point. You can enter coordinates instead.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Use the microphone only when you tap the voice input button.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Turn your spoken question into text for WaySignal Guide.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

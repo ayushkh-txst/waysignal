@@ -130,3 +130,36 @@ import CoreLocation
         journey.destinationName = info.destinationName ?? "Demo destination"
     }
 }
+
+@MainActor final class AppNavigation: ObservableObject {
+    @Published var tab = "home"
+    @Published var guidePrompt: String?
+    func ask(_ question: String) { guidePrompt = question; tab = "guide" }
+}
+@MainActor final class ContextStore: ObservableObject {
+    @Published var conditions: LocalConditions?; @Published var places: NearbyPlaces?
+    @Published var weatherError: String?; @Published var placesError: String?; @Published var busy = false
+    let service: any ContextServing
+    init(service: any ContextServing) { self.service = service }
+    func load(_ coordinate: Coordinate, includePlaces: Bool = true) async {
+        guard !busy else { return }; busy = true; defer { busy = false }
+        weatherError = nil; placesError = nil
+        do { conditions = try await service.conditions(at: coordinate) } catch { weatherError = error.localizedDescription }
+        if includePlaces { do { places = try await service.places(at: coordinate) } catch { placesError = error.localizedDescription } }
+    }
+}
+@MainActor final class OperationsStore: ObservableObject {
+    @Published var incidents: [AssistanceRequest] = []; @Published var report: OperationsReport?
+    @Published var error: String?; @Published var busy = false
+    let service: any ResponderServing
+    init(service: any ResponderServing) { self.service = service }
+    func load() async {
+        guard !busy else { return }; busy = true; error = nil; defer { busy = false }
+        do { incidents = try await service.incidents(); report = try await service.reports() } catch { self.error = error.localizedDescription }
+    }
+    func transition(_ request: AssistanceRequest, to status: String, account: Account) async {
+        guard !busy else { return }; busy = true; error = nil
+        do { let changed = try await service.update(request, status: status, account: account); incidents = incidents.map { $0.id == changed.id ? changed : $0 } } catch { self.error = error.localizedDescription }
+        busy = false
+    }
+}

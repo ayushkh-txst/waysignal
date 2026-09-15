@@ -6,6 +6,10 @@ Navigation × Social Media × Productivity: a community observation becomes a re
 
 This new local repository preserves the complete G-one source snapshot from `ayushkh-txst/jalrakshak-hackrice16` at `9e9ebb009ffcb9ee79f3e80da6bc8401df08f2aa`. The upstream commit history is not imported. The original README is preserved in [G_ONE_README.md](G_ONE_README.md).
 
+## Native app upgrade
+
+Read [the native update guide](docs/NATIVE-UPGRADE.md) for the new icon, welcome screen, citizen and responder workspaces, voice/chat Guide, installation and demo recording. Run `bash scripts/run-ios-demo.sh` for the local demo API and a signed iPhone Simulator build.
+
 ## Run on your Mac
 
 Requirements: Python 3.11+, Node.js 22.12+ (or 20.19+), and Xcode with the iOS 17+ SDK.
@@ -32,20 +36,20 @@ The downloadable ZIP includes the built web application, which the API serves at
 ## What is included
 
 - **All G-one modules** in the original frontend/backend layout: citizen maps, weather/flood context, alerts, facility lookup, hazard/photo reporting, AI/voice modules, emergency requests, responder maps, assignment, navigation, dispatch and operational reports.
-- **Native SwiftUI source:** Map, Community, Help and Guide; manual coordinates; optional location access; photo attachment; driving-route findings; assistance status; source details; Keychain session storage.
+- **Native SwiftUI source:** branded welcome, citizen Home/Map/Community/Help/Guide, and responder Overview/Incidents/Map/Review/Reports; search, photo observations, review, assignments, timelines, voice/chat and CSV export.
 - **Responder Community Review:** evidence, notes, reviewed/rejected decisions, resolve/reopen, history and conflict handling.
 - **Shared backend services:** one route-assessment implementation behind REST and MCP, with independently injectable route providers, report sources and hazard policies.
-- **Real MCP:** authenticated `assess_route`, `list_route_reports`, `get_assistance_status`; the Guide discovers and calls these tools for source summaries.
+- **Real MCP:** six authenticated route, report, assistance, forecast and facility tools. Guide retrieves source records and optionally generates an answer using a configured server-side model.
 - **Figma handoff:** complete prompt, tokens, components, screen specifications, SVG reference boards and award presentation story.
 
-All G-one functionality remains available on the web. The first native slice ports the four core citizen flows; it does not port every inherited screen. Native Guide currently provides source summaries, not a generative chat or voice interface. Existing web AI/voice code remains preserved.
+All G-one functionality remains available on the web. The expanded native app covers the flows listed in the update guide. Additional legacy dispatch panels remain in the web workspace. Native Guide supports typed and voice input; generated answers require a configured server-side provider and otherwise show source summaries.
 
 ## Verification
 
-- Backend: **88 tests passed**.
+- Backend: **96 tests passed** (including new assistant and observation contracts).
 - Existing frontend hazard tests: **9 passed**.
 - TypeScript/Vite production build: **passed**.
-- iOS build and simulator/device behavior: **not yet verified**; this development workspace has no Xcode.
+- Expanded iOS build and new-screen behavior: **requires verification on the Mac**. The earlier starter compiled and launched there; this development workspace has no Xcode.
 
 ```bash
 cd backend
@@ -64,7 +68,7 @@ On your Mac:
 ```bash
 xcodebuild -project ios/WaySignal.xcodeproj -scheme WaySignal \
   -configuration Debug -destination 'generic/platform=iOS Simulator' \
-  CODE_SIGNING_ALLOWED=NO build
+  CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- ENTITLEMENTS_REQUIRED=YES build
 ```
 
 ## Demo and submission

@@ -84,4 +84,32 @@ def build_mcp() -> FastMCP:
                 "responder_name": result.responder_name, "updated_at": result.updated_at,
                 "created_at": result.created_at, "is_demo": result.is_demo,
                 "notice": "Status describes a recorded request; no arrival guarantee is implied."}
+
+    @server.tool()
+    async def get_local_conditions(latitude: float, longitude: float, ctx: Context) -> dict[str, Any]:
+        """Read forecast and river context, with explicit source and observation time."""
+        actor_from_context(ctx)
+        point = Coordinate(latitude=latitude, longitude=longitude)
+        from app.api.v1.safety import get_safety_context
+        return (await get_safety_context(latitude=point.latitude, longitude=point.longitude)).model_dump(mode="json")
+
+    @server.tool()
+    async def find_nearby_facilities(latitude: float, longitude: float, ctx: Context) -> dict[str, Any]:
+        """Find mapped destinations. Open status, capacity and shelter clearance are not verified."""
+        actor = actor_from_context(ctx)
+        point = Coordinate(latitude=latitude, longitude=longitude)
+        from fastapi import Response
+        from app.api.v1.citizen_map import places
+        return (await places(Response(), latitude=point.latitude, longitude=point.longitude, _=actor)).model_dump(mode="json")
+
+    @server.tool()
+    def list_assistance_requests(ctx: Context) -> dict[str, Any]:
+        """Read requests visible to this account; citizens see only their own requests."""
+        actor = actor_from_context(ctx)
+        from app.api.v1.emergencies import list_emergencies
+        with database.SessionLocal() as db:
+            rows = list_emergencies(status=None, is_demo=None, reporter=actor, db=db)
+            return {"requests": [{"id": r.id, "status": r.status.value, "responder_name": r.responder_name,
+                "created_at": r.created_at.isoformat(), "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+                "is_demo": r.is_demo} for r in rows]}
     return server

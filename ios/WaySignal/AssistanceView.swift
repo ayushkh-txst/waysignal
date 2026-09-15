@@ -26,6 +26,7 @@ struct AssistanceView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack { Text(request.id).font(.headline); Spacer(); if request.isDemo { Text("DEMO").font(.caption.bold()).foregroundStyle(.orange) } }
                             StatusPill(state: request.status)
+                            RequestTimeline(request: request)
                             Text("\(request.emergencyType.capitalized) · \(request.peopleCount) people").font(.subheadline)
                             if let responder = request.responderName { Label(responder, systemImage: "person.crop.circle.badge.checkmark") }
                             else if request.status == "submitted" { Text("Awaiting responder assignment.").font(.footnote).foregroundStyle(.secondary) }
@@ -102,5 +103,20 @@ struct AssistanceForm: View {
                 emergencyType: kind, latitude: coordinate.latitude, longitude: coordinate.longitude, peopleCount: people, notes: notes))
             await assistance.load()
         } catch { self.error = error.localizedDescription + " Check your request list before retrying, in case the request was received." }
+    }
+}
+
+struct RequestTimeline: View {
+    let request: AssistanceRequest
+    var milestones: [(String, String?)] { [("Received", request.createdAt), ("Assigned", request.assignedAt), ("En route", request.enRouteAt), ("Completed", request.resolvedAt)] }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Array(milestones.enumerated()), id: \.offset) { _, milestone in
+                HStack(spacing: 12) {
+                    Image(systemName: milestone.1 == nil ? "circle" : "checkmark.circle.fill").foregroundStyle(milestone.1 == nil ? Color.gray : Color.teal)
+                    VStack(alignment: .leading, spacing: 2) { Text(milestone.0).font(.subheadline.weight(.medium)); if let date = milestone.1 { Text(Wire.date(date)).font(.caption2).foregroundStyle(.secondary) } }
+                }
+            }
+        }.padding(.vertical, 6)
     }
 }
