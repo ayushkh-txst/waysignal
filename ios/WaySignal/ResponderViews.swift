@@ -35,7 +35,13 @@ struct OperationsOverview: View {
                 NavigationLink { AccountView() } label: { Label("Account and full web workspace", systemImage: "person.crop.circle") }.buttonStyle(.bordered)
             }.padding(20)
         }.background(SignalStyle.background).navigationTitle("Operations").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button { Task { await operations.load(); await community.load() } } label: { Image(systemName: "arrow.clockwise") }.accessibilityLabel("Refresh operations") } }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink { AccountView() } label: { Image(systemName: "person.crop.circle") }
+                        .accessibilityLabel("Admin profile")
+                        .accessibilityHint("View your account and sign out")
+                }
+            }
             .refreshable { await operations.load(); await community.load() }
     }
 }
