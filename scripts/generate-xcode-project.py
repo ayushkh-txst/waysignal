@@ -43,7 +43,7 @@ for config in ['Debug', 'Release']:
         'CFBundleVersion': '$(CURRENT_PROJECT_VERSION)', 'LSRequiresIPhoneOS': True,
         'UILaunchScreen': {}, 'UIApplicationSceneManifest': {'UIApplicationSupportsMultipleScenes': False},
         'UISupportedInterfaceOrientations': ['UIInterfaceOrientationPortrait'],
-        'NSSpeechRecognitionUsageDescription': 'Turn your spoken question into text for WaySignal Guide.',
+        'NSSpeechRecognitionUsageDescription': 'Turn your spoken question into text for Nav AI.',
         'NSMicrophoneUsageDescription': 'Use the microphone only when you tap the voice input button.',
         'NSLocationWhenInUseUsageDescription': 'Use your location as a starting point. You can enter coordinates instead.',
     }

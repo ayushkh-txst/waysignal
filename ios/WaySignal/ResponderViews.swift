@@ -5,11 +5,11 @@ struct ResponderWorkspace: View {
     let account: Account
     var body: some View {
         TabView {
-            NavigationStack { OperationsOverview(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Overview", systemImage: "square.grid.2x2") }
-            NavigationStack { IncidentList(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Incidents", systemImage: "checklist") }
-            NavigationStack { OperationsMap(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Map", systemImage: "map") }
-            NavigationStack { ReviewQueue().modifier(DemoDataIndicator()) }.tabItem { Label("Review", systemImage: "checkmark.bubble") }
-            NavigationStack { OperationsReports().modifier(DemoDataIndicator()) }.tabItem { Label("Reports", systemImage: "chart.bar") }
+            NavigationStack { OperationsOverview(account: account) }.tabItem { Label("Overview", systemImage: "square.grid.2x2") }
+            NavigationStack { IncidentList(account: account) }.tabItem { Label("Incidents", systemImage: "checklist") }
+            NavigationStack { OperationsMap(account: account) }.tabItem { Label("Map", systemImage: "map") }
+            NavigationStack { ReviewQueue() }.tabItem { Label("Review", systemImage: "checkmark.bubble") }
+            NavigationStack { OperationsReports() }.tabItem { Label("Reports", systemImage: "chart.bar") }
         }
     }
 }
@@ -44,11 +44,11 @@ struct IncidentCard: View {
     var body: some View {
         SignalCard {
             VStack(alignment: .leading, spacing: 10) {
-                HStack { Text(request.emergencyType.capitalized).font(.headline); Spacer(); if request.isDemo { Text("DEMO").font(.caption2.bold()).foregroundStyle(.orange) } }
+                HStack { Text(request.emergencyType.capitalized).font(.headline); Spacer() }
                 Text("\(request.citizenName) · \(request.peopleCount) people").font(.subheadline)
                 StatusPill(state: request.status)
                 if let name = request.responderName { Label(name, systemImage: "person.crop.circle").font(.caption) }
-                Text(request.id).font(.caption.monospaced()).foregroundStyle(.secondary)
+                Text(SignalCopy.recordID(request.id)).font(.caption.monospaced()).foregroundStyle(.secondary)
             }
         }
     }
@@ -99,7 +99,7 @@ struct IncidentDetail: View {
                 }
                 Text("Updates are shared with the requesting citizen. Record only actions your team has taken.").font(.caption).foregroundStyle(.secondary)
             }.padding(20)
-        }.background(SignalStyle.background).navigationTitle(request.id).navigationBarTitleDisplayMode(.inline)
+        }.background(SignalStyle.background).navigationTitle(SignalCopy.recordID(request.id)).navigationBarTitleDisplayMode(.inline)
             .confirmationDialog("Record this status update?", isPresented: Binding(get: { confirmation != nil }, set: { if !$0 { confirmation = nil } })) {
                 if let status = confirmation { Button(SignalStyle.label(status)) { Task { await operations.transition(request, to: status, account: account) }; confirmation = nil } }
             }
@@ -119,7 +119,7 @@ struct OperationsMap: View {
                 Marker(site.name, systemImage: "house.lodge.fill", coordinate: site.coordinate.location).tint(.green)
             }
             ForEach(operations.incidents.filter { !["resolved", "cancelled"].contains($0.status) }) { request in
-                Annotation(request.id, coordinate: .init(latitude: request.latitude, longitude: request.longitude)) {
+                Annotation(SignalCopy.recordID(request.id), coordinate: .init(latitude: request.latitude, longitude: request.longitude)) {
                     Button { selected = request } label: { Image(systemName: "hand.raised.fill").foregroundStyle(.white).padding(12).background(SignalStyle.stateColor(request.status), in: Circle()).overlay(Circle().stroke(.white, lineWidth: 2)) }
                 }
             }

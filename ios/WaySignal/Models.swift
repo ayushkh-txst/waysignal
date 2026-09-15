@@ -108,12 +108,13 @@ struct ReviewEvent: Decodable, Identifiable {
     let id: String; let decision: String; let note: String; let source: String; let createdAt: String
 }
 struct ConversationMessage: Identifiable {
-    let id = UUID(); let role: String; let text: String; var response: GuideResponse? = nil
+    let id = UUID(); let role: String; let text: String; var response: GuideResponse? = nil; var imageData: Data? = nil
 }
 struct ChatHistory: Encodable { let role: String; let text: String }
 struct ChatInput: Encodable {
     let message: String; let route: RouteInput?; let routeGeometry: [Coordinate]?
     let location: Coordinate?; let requestId: String?; let history: [ChatHistory]
+    var imageBase64: String? = nil; var imageText: String? = nil
 }
 struct OperationsReport: Decodable {
     struct Summary: Decodable { let total: Int; let active: Int; let resolved: Int; let cancelled: Int; let peopleInActive: Int; let peopleInResolved: Int }

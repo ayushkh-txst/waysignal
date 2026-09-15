@@ -9,6 +9,7 @@ struct HomeView: View {
     @EnvironmentObject private var navigation: AppNavigation
     @EnvironmentObject private var location: LocationProvider
     @EnvironmentObject private var scenario: ScenarioStore
+    @State private var showReport = false
     var body: some View {
         ViewportScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -23,7 +24,7 @@ struct HomeView: View {
                     MetricTile(title: "Your open requests", value: "\(assistance.requests.filter { !["resolved", "cancelled"].contains($0.status) }.count)", icon: "hand.raised.fill")
                 }
                 HStack {
-                    Button { navigation.tab = "community" } label: { Label("Share a signal", systemImage: "plus.bubble") }
+                    Button { showReport = true } label: { Label("Report hazard", systemImage: "camera.fill") }
                     Spacer()
                     Button { navigation.tab = "help" } label: { Label("Request help", systemImage: "hand.raised") }
                 }.font(.subheadline.bold()).padding(.vertical, 4)
@@ -61,6 +62,7 @@ struct HomeView: View {
                 ToolbarItem(placement: .topBarLeading) { BrandHeading(compact: true) }
                 ToolbarItem(placement: .topBarTrailing) { NavigationLink { AccountView() } label: { Image(systemName: "person.crop.circle") }.accessibilityLabel("Account") }
             }
+            .sheet(isPresented: $showReport) { ReportForm() }
             .refreshable { await community.load(); await assistance.load(); if let origin = journey.origin { await context.load(origin) } }
     }
 }

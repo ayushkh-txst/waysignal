@@ -88,5 +88,19 @@ if [[ "$waysignal_state" != Booted ]]; then xcrun simctl boot "$waysignal_device
 xcrun simctl bootstatus "$waysignal_device" -b
 open -b com.apple.dt.Devices 2>/dev/null || open "$DEVELOPER_DIR/Applications/Simulator.app"
 xcrun simctl install "$waysignal_device" "$waysignal_root/build/Build/Products/Debug-iphonesimulator/WaySignal.app"
+# An update may request fresh prompts for this app only; never grant permissions automatically.
+if [[ "${1:-}" == "--reset-voice-permissions" ]]; then
+  xcrun simctl terminate "$waysignal_device" org.waysignal.ios >/dev/null 2>&1 || true
+  waysignal_privacy_help="$(xcrun simctl help privacy 2>&1 || true)"
+  for waysignal_service in microphone speech-recognition; do
+    if [[ "$waysignal_privacy_help" == *"$waysignal_service"* ]]; then
+      if xcrun simctl privacy "$waysignal_device" reset "$waysignal_service" org.waysignal.ios; then
+        echo "WaySignal will ask for $waysignal_service access again. Choose Allow."
+      else
+        echo "Open Nav AI → Voice setup to enable $waysignal_service access."
+      fi
+    fi
+  done
+fi
 xcrun simctl launch --terminate-running-process "$waysignal_device" org.waysignal.ios
 echo 'WaySignal is open. Sign out in Account to switch between Citizen and Responder.'

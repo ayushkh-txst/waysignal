@@ -153,3 +153,33 @@ struct ResponderService: ResponderServing {
     func resolve(_ id: String) async throws { let _: SavedReport = try await client.request("hazards/" + id, method: "PATCH", body: Wire.encode(["status":"resolved"])) }
     func reports() async throws -> OperationsReport { try await client.request("reports") }
 }
+
+// Screenshot text is recognized locally. Only an explicitly sent attachment leaves the device.
+import UIKit
+import Vision
+
+struct PreparedScreenshot: Sendable {
+    let jpeg: Data
+    let text: String
+}
+enum ScreenshotReader {
+    static func prepare(_ data: Data) throws -> PreparedScreenshot {
+        guard data.count <= 25_000_000, let image = UIImage(data: data),
+              image.size.width > 0, image.size.height > 0 else { throw APIError(message: "Choose an image smaller than 25 MB.") }
+        let scale = min(1, 1600 / max(image.size.width, image.size.height))
+        let size = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        let format = UIGraphicsImageRendererFormat(); format.scale = 1; format.opaque = true
+        let normalized = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            UIColor.white.setFill(); UIRectFill(CGRect(origin: .zero, size: size))
+            image.draw(in: CGRect(origin: .zero, size: size))
+        }
+        guard let jpeg = normalized.jpegData(compressionQuality: 0.75), jpeg.count <= 2_000_000 else {
+            throw APIError(message: "Choose a smaller screenshot.")
+        }
+        let recognition = VNRecognizeTextRequest()
+        recognition.recognitionLevel = .accurate; recognition.usesLanguageCorrection = true
+        try? VNImageRequestHandler(data: jpeg, options: [:]).perform([recognition])
+        let text = recognition.results?.compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n") ?? ""
+        return PreparedScreenshot(jpeg: jpeg, text: String(text.prefix(6000)))
+    }
+}

@@ -10,7 +10,7 @@ struct CommunityView: View {
     var shown: [CommunityReport] {
         community.reports.filter { report in
             guard allStates || report.status == "active" else { return false }
-            if scope == "Mine" { return report.isMine == true }
+            if scope == "Alerts" { return report.status == "active" && ["unreviewed", "reviewed_active", "expired"].contains(report.reviewState) }
             if scope == "Nearby" { guard let origin = journey.origin else { return false }; return CLLocation(latitude: origin.latitude, longitude: origin.longitude).distance(from: CLLocation(latitude: report.latitude, longitude: report.longitude)) <= 3500 }
             if scope == "Route" { guard let route = journey.assessment?.selected else { return false }; return route.findings.contains { $0.reportId == report.id } }
             return true
@@ -21,8 +21,9 @@ struct CommunityView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text("One observation.\nA better next journey.").font(.system(size: 28, weight: .bold, design: .serif))
                 PrimaryButton(title: "Report blocked route", icon: "camera.fill") { showReport = true }
-                Picker("Report view", selection: $scope) { ForEach(["All", "Nearby", "Route", "Mine"], id: \.self) { Text($0) } }.pickerStyle(.segmented)
-                Toggle("Include closed reports", isOn: $allStates).font(.subheadline)
+                Picker("Report view", selection: $scope) { ForEach(["All", "Nearby", "Route", "Alerts"], id: \.self) { Text($0) } }.pickerStyle(.segmented)
+                if scope == "Alerts" { Text("Active hazards and reports awaiting review.").font(.caption).foregroundStyle(.secondary) }
+                else { Toggle("Include closed reports", isOn: $allStates).font(.subheadline) }
                 ErrorNotice(message: community.error)
                 if community.busy { ProgressView("Refreshing reports…") }
                 if shown.isEmpty && !community.busy { ContentUnavailableView("No reports in this view", systemImage: "bubble.left.and.bubble.right", description: Text(scope == "Route" ? "Assess a route in Map to see nearby findings." : "No reports does not establish road safety.")) }
@@ -43,8 +44,8 @@ struct ReportCard: View {
                 HStack { Image(systemName: "exclamationmark.bubble.fill").foregroundStyle(SignalStyle.stateColor(report.reviewState)); Text(report.label).font(.headline); Spacer(); Image(systemName: "chevron.right").font(.caption) }
                 StatusPill(state: report.reviewState)
                 if let note = report.observation, !note.isEmpty { Text(note).font(.subheadline).lineLimit(3) }
-                if !report.reviewNote.isEmpty { Text(report.reviewNote).font(.subheadline).foregroundStyle(.secondary) }
-                HStack { Text(report.id); Spacer(); if report.hasPhoto { Image(systemName: "photo") }; if report.isMine == true { Text("YOUR REPORT").font(.caption2.bold()) } }.font(.caption.monospaced()).foregroundStyle(.secondary)
+                if !report.reviewNote.isEmpty { Text(SignalCopy.review(report.reviewNote, id: report.id)).font(.subheadline).foregroundStyle(.secondary) }
+                HStack { Text(SignalCopy.recordID(report.id)); Spacer(); if report.hasPhoto { Image(systemName: "photo") }; if report.isMine == true { Text("YOUR REPORT").font(.caption2.bold()) } }.font(.caption.monospaced()).foregroundStyle(.secondary)
                 Text(Wire.date(report.updatedAt)).font(.caption2).foregroundStyle(.secondary)
             }
         }
@@ -64,7 +65,7 @@ struct ReportDetailView: View {
                 Text("Review history").font(.headline)
                 if history.isEmpty { Text("No review recorded yet.").font(.subheadline).foregroundStyle(.secondary) }
                 ForEach(history) { event in
-                    SignalCard { VStack(alignment: .leading, spacing: 8) { StatusPill(state: event.decision); Text(event.note); Text(Wire.date(event.createdAt)).font(.caption).foregroundStyle(.secondary) } }
+                    SignalCard { VStack(alignment: .leading, spacing: 8) { StatusPill(state: event.decision); Text(SignalCopy.review(event.note, id: report.id)); Text(Wire.date(event.createdAt)).font(.caption).foregroundStyle(.secondary) } }
                 }
                 Text("Location: \(report.latitude), \(report.longitude)").font(.caption.monospacedDigit()).textSelection(.enabled)
                 ErrorNotice(message: error)

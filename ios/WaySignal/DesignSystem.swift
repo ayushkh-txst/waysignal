@@ -139,22 +139,7 @@ struct ViewportScrollView<Content: View>: View {
         }
     }
 }
-struct DemoDataIndicator: ViewModifier {
-    @EnvironmentObject private var scenario: ScenarioStore
-    func body(content: Content) -> some View {
-        content.toolbar {
-            if scenario.enabled {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Text("Demo data").font(.caption2.weight(.medium))
-                        .foregroundStyle(SignalStyle.gold)
-                        .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(SignalStyle.gold.opacity(0.08), in: Capsule())
-                        .accessibilityLabel("Demo mode. Simulated data.")
-                }
-            }
-        }
-    }
-}
+
 struct MetricTile: View {
     let title: String; let value: String; let icon: String
     var color: Color = SignalStyle.blue
@@ -190,5 +175,18 @@ struct MapRiskLegend: View {
             Label("Danger · awaiting review", systemImage: "circle.fill").foregroundStyle(.orange)
             Label("Safe point · open shelter", systemImage: "circle.fill").foregroundStyle(.green)
         }.font(.caption2.bold()).padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+}
+
+// Display labels never replace stable identifiers used by API requests.
+enum SignalCopy {
+    static func recordID(_ id: String) -> String {
+        id.hasPrefix("WS-DEMO-") ? id.replacingOccurrences(of: "WS-DEMO-", with: "WS-") : id
+    }
+    static func review(_ text: String, id: String) -> String {
+        guard id.hasPrefix("WS-DEMO-") else { return text }
+        return text.replacingOccurrences(of: "Demo responder review: ", with: "")
+            .replacingOccurrences(of: "Demo responder update: ", with: "")
+            .replacingOccurrences(of: " in this exercise", with: "")
     }
 }

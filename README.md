@@ -78,7 +78,7 @@ Use the URL printed by Vite, normally `http://127.0.0.1:5173`. For normal develo
 5. Ask Nav AI why the route changed and open its linked report record.
 6. Submit a clearly marked demo assistance request. As responder, assign it, mark en route, then complete it. Show the matching citizen timeline.
 
-Keep the demo label visible: exercise reports, people, weather and route candidates are synthetic. Map tiles and some inherited integrations still require network access. See the [native guide](docs/NATIVE-UPGRADE.md) and [demo scenario](docs/DEMO-SCENARIO.md).
+Account explains the active simulation; route and source details identify synthetic evidence. Repeated toolbar badges are removed. Map tiles and some inherited integrations still require network access. See the [native guide](docs/NATIVE-UPGRADE.md) and [demo scenario](docs/DEMO-SCENARIO.md).
 
 ## Map reporting and shelter navigation
 
@@ -105,7 +105,11 @@ Source: [domain contracts](backend/app/waysignal/domain.py), [route service](bac
 
 Without a model provider, Nav AI returns labeled **source summaries**. For generated answers, configure `OPENAI_API_KEY` and `GUIDE_AI_MODEL` in the backend's local `.env`, using a model available to your account, then restart the API. Keys stay on the server. Provider failures fall back to source summaries with links.
 
-Voice input requires microphone and speech permission; users review the transcript before sending. Nav AI reads records and does not submit requests or dispatch responders for the user. A live paid model call has not been verified in this development workspace.
+Voice input requires microphone and speech permission; users review the transcript before sending. **Nav AI → Voice setup** provides permission recovery, a microphone retry, a speaker test and read-aloud controls. Replies are spoken by default and can be muted. The simulator also needs microphone access for Device Hub/Simulator in macOS System Settings. To request fresh app permission prompts without erasing data, run `bash scripts/run-ios-demo.sh --reset-voice-permissions` on the Mac.
+
+**Ask about a picture** attaches a screenshot to a private Nav AI question, with preview and removal. Apple Vision extracts readable text on-device. Without a model key, Nav AI matches that text to app instructions and labels the result; it does not pretend to interpret arbitrary images. With a configured vision-capable `GUIDE_AI_MODEL`, the normalized image is sent to the Responses API with `store: false`. The API format follows [OpenAI’s image-input guide](https://developers.openai.com/api/docs/guides/images-vision). WaySignal does not persist these chat images or publish them as map reports. Image metadata is stripped; oversized or invalid requests are rejected without echoing image content.
+
+**Report hazard** is a separate visible action in Home and Nav AI. It opens the existing photo, hazard type, note and map-pin form. Only an explicit submission creates a shared map report. Community’s **Alerts** filter shows active hazards awaiting review or reviewed active, instead of filtering to the current user's reports. Nav AI reads records and does not submit requests or dispatch responders for the user. A live paid model call has not been verified in this development workspace.
 
 ## Reused foundation, new work and future scope
 
@@ -119,7 +123,7 @@ The baseline is [G-one commit `9e9ebb0`](https://github.com/ayushkh-txst/jalraks
 
 ## Verification
 
-- Backend regression suite: **96 passed** before the final request-body guard; the **19 WaySignal integration tests** passed after the shared map, photo, shelter lifecycle and MCP changes.
+- Latest targeted backend checks: **43 passed** across WaySignal integration and hazard tests, including screenshot privacy/validation, image-provider failure recovery, report-to-map propagation and shelter routing. Earlier full backend regression: **96 passed**.
 - Frontend hazard tests: **9 passed**; TypeScript/Vite production build passed.
 - Expanded native app: **signed iOS Simulator build passed** on the macOS GitHub Actions runner. [Build result](https://github.com/ayushkh-txst/waysignal/actions/runs/34912217458).
 - The earlier native starter also launched on the developer's Mac. The expanded screens still require interaction and visual verification there; compilation does not establish those results. The [iOS workflow](.github/workflows/ios-build.yml) checks subsequent native source changes.

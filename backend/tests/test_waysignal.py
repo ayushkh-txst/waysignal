@@ -448,3 +448,93 @@ def test_nav_ai_shelter_tool_matches_map_and_uses_sources(demo_api, monkeypatch)
     assert response.status_code == 200, response.text
     assert 'find_shelter_route' in response.json()['tool_used']
     assert any(s['kind'] == 'shelter' for s in response.json()['sources'])
+
+
+def screenshot_payload(text='Microphone Speech Recognition Settings'):
+    import base64, io
+    from PIL import Image
+    image = Image.new('RGB', (48, 48), 'white')
+    exif = Image.Exif(); exif[270] = 'private-image-metadata'
+    stream = io.BytesIO(); image.save(stream, format='JPEG', exif=exif)
+    return {'message': 'Help me understand this picture',
+            'image_base64': base64.b64encode(stream.getvalue()).decode(), 'image_text': text}
+
+
+def test_screenshot_help_without_ai_is_private_and_does_not_need_mcp(app_api, monkeypatch):
+    from app.waysignal import assistant
+    from pydantic import SecretStr
+    _, client, _ = app_api
+    monkeypatch.setattr(settings, 'openai_api_key', SecretStr(''))
+    def unexpected(*args, **kwargs): raise AssertionError('App help must not retrieve unrelated records')
+    monkeypatch.setattr(assistant, 'streamablehttp_client', unexpected)
+    body = screenshot_payload('Microphone Speech Recognition Settings private-password-123')
+    result = client.post('/mobile/assistant', headers=auth(), json=body)
+    assert result.status_code == 200, result.text
+    assert result.headers['cache-control'] == 'no-store'
+    assert result.json()['mode'] == 'app_help'
+    assert 'Voice setup' in result.json()['text'] and 'No image interpretation' in result.json()['notice']
+    assert 'private-password-123' not in result.text and body['image_base64'] not in result.text
+    assert result.json()['sources'] == [] and result.json()['tool_used'] == ''
+    assert client.get('/hazards', headers=auth()).json() == []
+    assert client.get('/hazards', headers=auth('other')).json() == []
+    assert client.post('/mobile/assistant', json=body).status_code == 401
+    blank = client.post('/mobile/assistant', headers=auth(), json=screenshot_payload('')).json()
+    assert "couldn't read text" in blank['text']
+
+
+def test_screenshot_validation_is_bounded_and_does_not_echo_upload(app_api):
+    _, client, _ = app_api
+    bad = 'private-bad-upload'
+    result = client.post('/mobile/assistant', headers=auth(), json={'message':'Explain this', 'image_base64':bad})
+    assert result.status_code == 422 and bad not in result.text
+    orphan = client.post('/mobile/assistant', headers=auth(), json={'message':'Explain this', 'image_text':bad})
+    assert orphan.status_code == 422 and bad not in orphan.text
+    extra = client.post('/mobile/assistant', headers=auth(), json={**screenshot_payload(), 'unexpected':bad})
+    assert extra.status_code == 422 and bad not in extra.text
+    large = client.post('/mobile/assistant', headers={**auth(), 'Content-Type':'application/json'}, content=b'x' * (4*1024*1024+1))
+    assert large.status_code == 413 and len(large.content) < 250
+
+
+def test_screenshot_provider_gets_normalized_image_and_failure_falls_back(app_api, monkeypatch):
+    import base64, io
+    from PIL import Image
+    from pydantic import SecretStr
+    from app.waysignal import assistant
+    _, client, _ = app_api
+    monkeypatch.setattr(settings, 'openai_api_key', SecretStr('test-only'))
+    monkeypatch.setattr(settings, 'guide_ai_model', 'test-vision')
+    calls = []
+    async def answer(self, payload, evidence):
+        image = Image.open(io.BytesIO(base64.b64decode(payload.image_base64)))
+        assert image.format == 'JPEG' and not image.getexif()
+        assert 'Report hazard' in evidence
+        calls.append(payload)
+        return 'Open Voice setup, then Try microphone.'
+    monkeypatch.setattr(assistant.GenerativeAnswerProvider, 'answer', answer)
+    result = client.post('/mobile/assistant', headers=auth(), json=screenshot_payload())
+    assert result.status_code == 200 and result.json()['mode'] == 'ai_grounded'
+    assert len(calls) == 1 and result.json()['sources'] == []
+    async def fail(*args): raise RuntimeError('Provider unavailable')
+    monkeypatch.setattr(assistant.GenerativeAnswerProvider, 'answer', fail)
+    fallback = client.post('/mobile/assistant', headers=auth(), json=screenshot_payload()).json()
+    assert fallback['mode'] == 'app_help' and 'Voice setup' in fallback['text']
+    assert 'temporarily unavailable' in fallback['notice']
+
+
+def test_image_provider_sends_responses_multimodal_content(monkeypatch):
+    from app.waysignal.assistant import GenerativeAnswerProvider, ChatInput
+    captured = []
+    class Client:
+        def __init__(self, **kwargs): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self, *args): pass
+        async def post(self, url, **kwargs):
+            captured.append(kwargs['json'])
+            return httpx.Response(200, request=httpx.Request('POST', url), json={
+                'status':'completed', 'output':[{'type':'message','content':[{'type':'output_text','text':'Explanation'}]}]})
+    monkeypatch.setattr('app.waysignal.assistant.httpx.AsyncClient', Client)
+    assert asyncio.run(GenerativeAnswerProvider().answer(ChatInput(**screenshot_payload()), 'app help')) == 'Explanation'
+    sent = captured[0]
+    assert sent['store'] is False
+    assert [item['type'] for item in sent['input'][0]['content']] == ['input_text','input_image']
+    assert sent['input'][0]['content'][1]['image_url'].startswith('data:image/jpeg;base64,')

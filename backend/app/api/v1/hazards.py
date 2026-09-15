@@ -33,6 +33,9 @@ Status = Literal["active", "resolved"]
 
 
 class BoundedBodyRoute(APIRoute):
+    body_limit = MAX_BODY_BYTES
+    too_large_detail = "Hazard request is too large."
+    invalid_detail = "Invalid hazard data. Check the hazard type, GPS coordinates, submission ID, status, and photo."
     def get_route_handler(self):
         handler = super().get_route_handler()
 
@@ -40,8 +43,8 @@ class BoundedBodyRoute(APIRoute):
             # Limit the actual stream, including requests without Content-Length.
             body = bytearray()
             async for chunk in request.stream():
-                if len(body) + len(chunk) > MAX_BODY_BYTES:
-                    raise HTTPException(413, "Hazard request is too large.")
+                if len(body) + len(chunk) > self.body_limit:
+                    raise HTTPException(413, self.too_large_detail)
                 body.extend(chunk)
             request._body = bytes(body)
             try:
@@ -50,7 +53,7 @@ class BoundedBodyRoute(APIRoute):
                 return response
             except RequestValidationError:
                 # Do not echo the uploaded base64 image or caller-supplied identity.
-                return JSONResponse(status_code=422, content={"detail": "Invalid hazard data. Check the hazard type, GPS coordinates, submission ID, status, and photo."})
+                return JSONResponse(status_code=422, content={"detail": self.invalid_detail}, headers={"Cache-Control": "no-store"})
 
         return bounded
 

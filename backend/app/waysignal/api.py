@@ -8,14 +8,18 @@ from app.waysignal.community import CommunityService, ReviewInput
 from app.waysignal.domain import AssessmentInput
 from app.waysignal.routes import route_provider, RouteAssessmentService
 from app.waysignal.guide import GuideInput, source_summary
-from app.waysignal.assistant import ChatInput, chat
+from app.waysignal.assistant import ChatInput, chat, AssistantBodyRoute
 
 router = APIRouter()
+assistant_router = APIRouter(route_class=AssistantBodyRoute)
 
 
-@router.post("/assistant")
+@assistant_router.post("/assistant")
 async def assistant(payload: ChatInput, request: Request, actor: dict = Depends(signed_reporter)):
     return await chat(payload, request.headers["authorization"])
+
+
+router.include_router(assistant_router)
 
 
 from app.api.v1.hazards import HazardCreate, create_hazard, BoundedBodyRoute

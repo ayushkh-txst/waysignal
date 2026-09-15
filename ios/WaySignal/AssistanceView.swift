@@ -24,7 +24,7 @@ struct AssistanceView: View {
                 ForEach(assistance.requests) { request in
                     SignalCard {
                         VStack(alignment: .leading, spacing: 12) {
-                            HStack { Text(request.id).font(.headline); Spacer(); if request.isDemo { Text("DEMO").font(.caption.bold()).foregroundStyle(.orange) } }
+                            HStack { Text(SignalCopy.recordID(request.id)).font(.headline); Spacer() }
                             StatusPill(state: request.status)
                             RequestTimeline(request: request)
                             Text("\(request.emergencyType.capitalized) · \(request.peopleCount) people").font(.subheadline)

@@ -83,7 +83,7 @@ struct JourneyView: View {
                         Spacer()
                         if journey.assessment != nil { Button("Directions & alternatives") { showRoutes = true } }
                     }.font(.caption.bold())
-                    Text(scenario.enabled ? "Demo routes are schematic · synthetic reports" : "Driving route screening · reported conditions only").font(.caption2).foregroundStyle(.secondary)
+                    Text(scenario.enabled ? "Schematic routes · simulated conditions" : "Driving route screening · reported conditions only").font(.caption2).foregroundStyle(.secondary)
                 }.padding(18).background(.regularMaterial)
             }
             .navigationTitle("Journey map").navigationBarTitleDisplayMode(.inline)
@@ -163,11 +163,11 @@ struct DestinationSearch: View {
                     if busy { ProgressView() }
                     ErrorNotice(message: error)
                 }
-                Section(scenario.enabled ? "Demo destinations" : "Mapped places nearby") {
+                Section(scenario.enabled ? "Destinations" : "Mapped places nearby") {
                     ForEach((context.places?.facilities ?? []).filter { query.isEmpty || $0.name.localizedCaseInsensitiveContains(query) }) { place in
                         Button { choose(place.coordinate, name: place.name) } label: { Label(place.name, systemImage: place.icon) }
                     }
-                    if scenario.enabled, let destination = scenario.info?.destination { Button("Demo community centre") { choose(destination, name: scenario.info?.destinationName ?? "Demo destination") } }
+                    if scenario.enabled, let destination = scenario.info?.destination { Button("Community centre") { choose(destination, name: scenario.info?.destinationName ?? "Destination") } }
                 }
                 if !results.isEmpty {
                     Section("Search results") {

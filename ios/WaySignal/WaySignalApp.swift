@@ -89,11 +89,11 @@ struct Workspace: View {
                 ResponderWorkspace(account: account)
             } else {
                 TabView(selection: $navigation.tab) {
-                    NavigationStack { HomeView(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Home", systemImage: "house") }.tag("home")
-                    NavigationStack { JourneyView().modifier(DemoDataIndicator()) }.tabItem { Label("Map", systemImage: "map") }.tag("map")
-                    NavigationStack { CommunityView().modifier(DemoDataIndicator()) }.tabItem { Label("Community", systemImage: "person.2") }.tag("community")
-                    NavigationStack { AssistanceView(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Help", systemImage: "hand.raised") }.tag("help")
-                    NavigationStack { GuideView().modifier(DemoDataIndicator()) }.tabItem { Label("Nav AI", systemImage: "sparkles") }.tag("guide")
+                    NavigationStack { HomeView(account: account) }.tabItem { Label("Home", systemImage: "house") }.tag("home")
+                    NavigationStack { JourneyView() }.tabItem { Label("Map", systemImage: "map") }.tag("map")
+                    NavigationStack { CommunityView() }.tabItem { Label("Community", systemImage: "person.2") }.tag("community")
+                    NavigationStack { AssistanceView(account: account) }.tabItem { Label("Help", systemImage: "hand.raised") }.tag("help")
+                    NavigationStack { GuideView() }.tabItem { Label("Nav AI", systemImage: "sparkles") }.tag("guide")
                 }
             }
           }

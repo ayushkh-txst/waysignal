@@ -159,7 +159,7 @@ import CoreLocation
     func useStart(_ journey: JourneyStore) {
         guard let info, info.enabled else { return }
         journey.origin = info.origin; journey.destination = info.destination
-        journey.destinationName = info.destinationName ?? "Demo destination"
+        journey.destinationName = info.destinationName ?? "Destination"
     }
 }
 

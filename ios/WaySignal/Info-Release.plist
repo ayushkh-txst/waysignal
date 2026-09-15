@@ -27,7 +27,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Use the microphone only when you tap the voice input button.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Turn your spoken question into text for WaySignal Guide.</string>
+	<string>Turn your spoken question into text for Nav AI.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -40,7 +40,7 @@ def info() -> dict:
     if not settings.waysignal_demo_mode:
         return {"enabled": False, "title": "Live data", "notice": "", "origin": None, "destination": None, "destination_name": None}
     return {"enabled": True, "title": TITLE, "notice": NOTICE, "origin": ORIGIN,
-            "destination": DESTINATION, "destination_name": "Demo Hilltop Community Centre"}
+            "destination": DESTINATION, "destination_name": "Hilltop Community Centre"}
 
 
 def validate_demo_database() -> None:
@@ -66,10 +66,10 @@ def environmental_snapshot(latitude: float, longitude: float) -> dict:
 
 def facilities() -> list[dict]:
     return [
-        {"id": "WS-DEMO-P1", "name": "Demo Hilltop Community Centre", "type": "community_centre", **DESTINATION, "priority": 0},
-        {"id": "WS-DEMO-P2", "name": "Demo North Clinic", "type": "clinic", "latitude": 27.721, "longitude": 85.329, "priority": 1},
-        {"id": "WS-DEMO-P3", "name": "Demo Riverside School", "type": "school", "latitude": 27.715, "longitude": 85.323, "priority": 2},
-        {"id": "WS-DEMO-P4", "name": "Demo Supply Point", "type": "community_centre", "latitude": 27.718, "longitude": 85.335, "priority": 3},
+        {"id": "WS-DEMO-P1", "name": "Hilltop Community Centre", "type": "community_centre", **DESTINATION, "priority": 0},
+        {"id": "WS-DEMO-P2", "name": "North Clinic", "type": "clinic", "latitude": 27.721, "longitude": 85.329, "priority": 1},
+        {"id": "WS-DEMO-P3", "name": "Riverside School", "type": "school", "latitude": 27.715, "longitude": 85.323, "priority": 2},
+        {"id": "WS-DEMO-P4", "name": "Supply Point", "type": "community_centre", "latitude": 27.718, "longitude": 85.335, "priority": 3},
     ]
 
 

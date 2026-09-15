@@ -82,7 +82,7 @@ async def places(response: Response,
         from app.waysignal.scenario import facilities, assert_demo_area, NOTICE
         assert_demo_area(latitude, longitude)
         return MapPlaces(latitude=latitude, longitude=longitude, retrieved_at=datetime.now(timezone.utc),
-            location=PlaceLabel(primary="Riverside demo area", secondary="Fictional storm exercise · coordinates are not live GPS", source="coordinates"),
+            location=PlaceLabel(primary="Riverside", secondary="Fictional storm exercise · coordinates are not live GPS", source="coordinates"),
             facilities=[Facility(id=f["id"], name=f["name"], kind=f["type"], latitude=f["latitude"], longitude=f["longitude"]) for f in facilities()],
             facilities_status="available", facilities_source="Synthetic demo fixtures", notice=NOTICE)
     location, destinations = await asyncio.gather(
