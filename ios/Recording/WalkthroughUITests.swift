@@ -20,7 +20,19 @@ final class WalkthroughUITests: XCTestCase {
     }
     func reach(_ element: XCUIElement, tries: Int = 7) {
         for _ in 0..<tries {
-            if element.exists && element.isHittable { return }
+            if element.exists && element.isHittable {
+                let f = element.frame
+                let h = app.frame.height
+                if f.midY < 180 && (element.elementType == .textField || element.elementType == .secureTextField || element.elementType == .textView || element.elementType == .searchField) {
+                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.30)).press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.60)))
+                    pause(1); continue
+                }
+                if f.midY > h * 0.66 && app.keyboards.firstMatch.exists {
+                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55)).press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.30)))
+                    pause(1); continue
+                }
+                return
+            }
             app.swipeUp(); pause(1)
         }
     }
@@ -36,10 +48,11 @@ final class WalkthroughUITests: XCTestCase {
         app.tabBars.buttons[label].tap(); pause(3)
     }
     func fill(_ label: String, _ value: String, secure: Bool = false) {
-        let el = secure ? app.secureTextFields[label] : app.textFields[label]
+        let field = app.textFields[label]
+        let el = secure ? app.secureTextFields[label] : (field.exists ? field : app.textViews[label])
         reach(el)
         XCTAssertTrue(el.waitForExistence(timeout: 10), "Missing field \(label)")
-        el.tap()
+        el.tap(); pause(2)
         if let old = el.value as? String, old != label, !old.isEmpty {
             el.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: old.count))
         }
@@ -68,7 +81,7 @@ final class WalkthroughUITests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap(); pause(2)
     }
 
-    func testWalkthrough() throws {
+    func test01CitizenRouteAndReport() throws {
         app.launch(); pause(5)
         mark("01-welcome"); pause(5)
         signIn(admin: false)
@@ -101,6 +114,7 @@ final class WalkthroughUITests: XCTestCase {
         mark("04-photo-attached")
         tap("Type"); tap("Flooded road")
         fill("Describe what you saw", "Rising water reported on the northern corridor. Please assess another route.")
+        hideKeyboard()
         fill("Latitude (−90 to 90)", "27.7206")
         fill("Longitude (−180 to 180)", "85.327")
         hideKeyboard()
@@ -118,6 +132,11 @@ final class WalkthroughUITests: XCTestCase {
         mark("05-route-evidence"); pause(8)
         tap("Done")
 
+        app.terminate()
+    }
+
+    func test02AssistantAndRequest() throws {
+        app.launch(); pause(3); signIn(admin: false)
         tab("Nav AI")
         mark("06-nav-ai"); pause(5)
         tap("Explain my route"); pause(20)
@@ -160,8 +179,12 @@ final class WalkthroughUITests: XCTestCase {
         tap("View status"); pause(3)
         mark("08-request-timeline"); pause(5)
 
+        app.terminate()
+    }
+
+    func test03AdminResponse() throws {
+        app.launch(); pause(3)
         mark("09-switch-admin")
-        signOut(admin: false)
         signIn(admin: true)
         mark("09-admin-overview"); pause(6)
         tab("Incidents")
