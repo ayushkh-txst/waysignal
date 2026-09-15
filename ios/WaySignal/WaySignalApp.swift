@@ -47,12 +47,6 @@ struct SignInView: View {
                                       fill: SignalStyle.signInButton, trailingIcon: true) {
                             Task { await session.signIn(email: email, password: password) }
                         }
-                        DisclosureGroup("Server connection") {
-                            TextField("Server origin", text: $session.server).keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
-                            Text("On this Mac's simulator: http://localhost:8000").font(.caption).foregroundStyle(.secondary)
-                        }.font(.subheadline)
-                        Text("Your account determines which workspace opens.").font(.caption).foregroundStyle(.secondary)
-                        Notice(text: "Hackathon prototype. Assistance requests reach this project's responder team, not emergency services.")
                     }.padding(24)
                 }.opacity(appeared ? 1 : 0).offset(y: appeared || reduceMotion ? 0 : 10)
             }.background(SignalStyle.background).toolbar(.hidden, for: .navigationBar)
