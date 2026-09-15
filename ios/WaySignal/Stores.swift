@@ -124,6 +124,7 @@ import CoreLocation
 
 @MainActor final class LocationProvider: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var coordinate: Coordinate?; @Published var error: String?
+    @Published var updatedAt: Date?
     private let manager = CLLocationManager()
     override init() { super.init(); manager.delegate = self; manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters }
     func request() {
@@ -136,12 +137,14 @@ import CoreLocation
     }
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways { manager.requestLocation() }
+        else if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted { error = "Location access is off. Enable it in Settings or choose a starting point." }
     }
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let last = locations.last, last.horizontalAccuracy >= 0, abs(last.timestamp.timeIntervalSinceNow) < 60 else {
             error = "A recent location was not available. Enter coordinates manually."; return
         }
         coordinate = .init(latitude: last.coordinate.latitude, longitude: last.coordinate.longitude)
+        updatedAt = Date()
     }
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) { self.error = error.localizedDescription }
 }
@@ -182,12 +185,17 @@ import CoreLocation
 }
 @MainActor final class OperationsStore: ObservableObject {
     @Published var incidents: [AssistanceRequest] = []; @Published var report: OperationsReport?
+    @Published var reportError: String?; @Published var reportBusy = false
     @Published var error: String?; @Published var busy = false
     let service: any ResponderServing
     init(service: any ResponderServing) { self.service = service }
     func load() async {
         guard !busy else { return }; busy = true; error = nil; defer { busy = false }
-        do { incidents = try await service.incidents(); report = try await service.reports() } catch { self.error = error.localizedDescription }
+        do { incidents = try await service.incidents() } catch { self.error = error.localizedDescription }
+    }
+    func loadReports() async {
+        guard !reportBusy else { return }; reportBusy = true; reportError = nil; defer { reportBusy = false }
+        do { report = try await service.reports() } catch { reportError = error.localizedDescription }
     }
     func transition(_ request: AssistanceRequest, to status: String, account: Account) async {
         guard !busy else { return }; busy = true; error = nil

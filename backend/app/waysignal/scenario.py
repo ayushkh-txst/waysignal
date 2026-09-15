@@ -27,12 +27,12 @@ REPORTS = [
      "Demo responder update: this separate debris report is resolved."),
 ]
 REQUESTS = [
-    ("WS-DEMO-H208", "citizen-demo", "Demo Citizen", "evacuation", "submitted", 3, 4, 27.7172, 85.321, "Demo exercise: three participants need transport from the starting point."),
-    ("WS-DEMO-H209", "citizen-demo", "Demo Citizen", "medical", "assigned", 1, 12, 27.7185, 85.324, "Demo exercise: one participant needs accessible transport."),
-    ("WS-DEMO-H210", "citizen-demo", "Demo Citizen", "rescue", "en_route", 4, 20, 27.716, 85.329, "Demo exercise: a response team is travelling to the meeting point."),
-    ("WS-DEMO-H211", "citizen-demo", "Demo Citizen", "evacuation", "resolved", 2, 60, 27.720, 85.331, "Demo exercise: transport task complete; road reports retain their own status."),
-    ("WS-DEMO-H212", "scenario-participant-2", "Demo neighborhood group", "evacuation", "submitted", 6, 7, 27.715, 85.325, "Demo exercise: group awaiting a transport assignment."),
-    ("WS-DEMO-H213", "scenario-participant-3", "Demo community volunteer", "medical", "en_route", 1, 24, 27.721, 85.328, "Demo exercise: accessible vehicle travelling to pickup."),
+    ("WS-DEMO-H208", "citizen-demo", "Arun Shrestha", "evacuation", "submitted", 3, 4, 27.7172, 85.321, "Arun and two family members are waiting near Riverside Road for transport."),
+    ("WS-DEMO-H209", "citizen-demo", "Arun Shrestha", "medical", "assigned", 1, 12, 27.7185, 85.324, "Arun has requested accessible transport for a family member at the pickup point."),
+    ("WS-DEMO-H210", "citizen-demo", "Arun Shrestha", "rescue", "en_route", 4, 20, 27.716, 85.329, "Arun is coordinating pickup for four neighbors at the meeting point."),
+    ("WS-DEMO-H211", "citizen-demo", "Arun Shrestha", "evacuation", "resolved", 2, 60, 27.720, 85.331, "Arun confirmed that two family members reached their destination."),
+    ("WS-DEMO-H212", "scenario-participant-2", "Maya Gurung", "evacuation", "submitted", 6, 7, 27.715, 85.325, "Maya and five neighbors are waiting together for a vehicle near the school."),
+    ("WS-DEMO-H213", "scenario-participant-3", "Ravi Thapa", "medical", "en_route", 1, 24, 27.721, 85.328, "Ravi is waiting for an accessible vehicle at the northern pickup point."),
 ]
 
 
@@ -74,6 +74,7 @@ def facilities() -> list[dict]:
 
 
 class DemoRouteProvider:
+    is_simulated = True
     async def candidates(self, request: AssessmentInput) -> list[dict]:
         assert_demo_area(request.origin.latitude, request.origin.longitude)
         assert_demo_area(request.destination.latitude, request.destination.longitude)
@@ -88,6 +89,28 @@ class DemoRouteProvider:
                  "legs": [{"steps": [{"distance": distance, "duration": duration, "name": "Demo route",
                      "maneuver": {"type": "depart", "instruction": "Follow the simulated exercise route."}}]}]}
                 for points, distance, duration in paths]
+
+
+def migrate_character_names(db):
+    """Replace only known fixture placeholders; retain user edits and record history."""
+    from app.api.v1.emergencies import Emergency
+    identities = {
+        "citizen-demo": ("Demo Citizen", "Arun Shrestha"),
+        "citizen-demo-2": ("Demo Citizen 2", "Mira Tamang"),
+        "citizen-demo-3": ("Demo Citizen 3", "Nisha Rai"),
+        "scenario-participant-2": ("Demo neighborhood group", "Maya Gurung"),
+        "scenario-participant-3": ("Demo community volunteer", "Ravi Thapa"),
+    }
+    legacy_notes = {'WS-DEMO-H208': 'Demo exercise: three participants need transport from the starting point.', 'WS-DEMO-H209': 'Demo exercise: one participant needs accessible transport.', 'WS-DEMO-H210': 'Demo exercise: a response team is travelling to the meeting point.', 'WS-DEMO-H211': 'Demo exercise: transport task complete; road reports retain their own status.', 'WS-DEMO-H212': 'Demo exercise: group awaiting a transport assignment.', 'WS-DEMO-H213': 'Demo exercise: accessible vehicle travelling to pickup.'}
+    new_notes = {row[0]: row[-1] for row in REQUESTS}
+    for record in db.query(Emergency).all():
+        identity = identities.get(record.citizen_id)
+        if identity and record.citizen_name == identity[0]:
+            record.citizen_name = identity[1]
+        if record.responder_id == "worker-demo" and record.responder_name in {"Demo response team", "Demo E-Worker"}:
+            record.responder_name = "Asha Karki"
+        if record.id in legacy_notes and record.notes == legacy_notes[record.id]:
+            record.notes = new_notes[record.id]
 
 
 def seed(db: Session, reset: bool = False) -> dict:
@@ -137,7 +160,7 @@ def seed(db: Session, reset: bool = False) -> dict:
             latitude=latitude, longitude=longitude, accuracy_m=12, people_count=people, notes=note,
             risk_score=78, risk_level="high", precipitation_next_6h_mm=52.4, river_discharge_m3s=184,
             status=state, created_at=created, updated_at=now - timedelta(minutes=1), is_demo=True,
-            responder_id="worker-demo" if assigned else None, responder_name="Demo response team" if assigned else None,
+            responder_id="worker-demo" if assigned else None, responder_name="Asha Karki" if assigned else None,
             acknowledged_at=created + timedelta(minutes=1) if assigned else None,
             assigned_at=created + timedelta(minutes=2) if assigned else None,
             en_route_at=created + timedelta(minutes=4) if travelling else None,
@@ -150,6 +173,8 @@ def seed(db: Session, reset: bool = False) -> dict:
             responder_distance_m=650 if state == "en_route" else 0 if state == "resolved" else None,
             eta_updated_at=now if travelling else None,
             navigation_status=state if assigned else None))
+    db.flush()
+    migrate_character_names(db)
     db.commit()
     return {**info(), "reports": len(REPORTS), "assistance_requests": len(REQUESTS), "reset": reset}
 

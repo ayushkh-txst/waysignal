@@ -113,6 +113,7 @@ struct Workspace: View {
                 while !Task.isCancelled {
                     do { try await Task.sleep(for: .seconds(8)) } catch { return }
                     await community.load()
+                    if account.role == "worker" { await operations.load() } else { await assistance.load() }
                 }
             }
             .onChange(of: community.mapState?.revision) { previous, current in
@@ -127,7 +128,7 @@ struct AccountView: View {
     var body: some View {
         List {
             Section("Account") {
-                Text(session.account?.user.name ?? "")
+                Text(session.account?.user.displayName ?? "")
                 Text(session.account?.user.email ?? "").foregroundStyle(.secondary)
             }
             if scenario.enabled {

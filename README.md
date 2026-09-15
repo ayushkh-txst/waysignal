@@ -21,7 +21,7 @@ The dependency is visible in the demo: **review report R104 → direct route exc
 | Workspace | Flows |
 |---|---|
 | Citizen iPhone app | Branded welcome; Home; main Map with destination search, report/facility markers and route comparison; Community observations with optional photos; Help requests and progress; Nav AI chat and voice input |
-| Responder iPhone app | Overview; incident filtering and assignment; operations Map; community Review; Reports with CSV sharing |
+| Responder iPhone app | Tappable Overview counts; named requests and assignment filters; directions from admin location to a request; operations Map; community Review; Reports with CSV sharing |
 | Responder web app | Preserved G-one operations workspace, community review and a repeatable demo exercise |
 | Nav AI | Authenticated MCP retrieval, linked source records, optional generated answers, speech transcription and optional spoken replies |
 
@@ -149,3 +149,14 @@ The source is here. The recorded native demo, final app screenshots and public A
 Design references: [Figma prompt](design/WaySignal-Figma-Prompt.md), [design brief](design/WaySignal-Figma-Design-Brief.md), [mobile concept board](design/WaySignal-Mobile-Design.svg). These are references, not evidence of implemented screens.
 
 WaySignal is a hackathon prototype. Route screening uses reported points and does not certify a route as safe. Assistance requests go to this project's dashboard, not emergency services. There is no verified production deployment in this repository.
+
+
+## Admin directions and request navigation
+
+Overview counts open their corresponding lists; **Assigned** shows open requests assigned to the signed-in admin. The top-right profile opens Account; the duplicate bottom Account button is removed. Reports use `/api/v1/admin/reports` and its `/export` endpoint, with report failures isolated from incident loading.
+
+Open **Incidents → a request → Route to [name]**, then choose **Use my location** and allow location access. The map shows the origin, requester’s saved location, a screened driving route, distance, approximate travel time, and provider directions. A manually chosen starting point also uses the road provider. A response never accepts a client-supplied destination: the authenticated worker endpoint resolves it from the selected request. Closed or concurrently moved requests require a refresh. New report/location data invalidates displayed directions.
+
+For the Riverside walkthrough, choose **Use Riverside response base**. This is an explicit fictional base and schematic route with simulated times, documented in route source details; it is never substituted for real GPS. Device/manual routing uses OSRM even when the scenario server is running. Provider failures and blocked candidates show an error/no-route result; they do not produce a fabricated road route. Apple map tiles require internet access.
+
+The scenario now uses fictional characters Arun Shrestha, Maya Gurung, Ravi Thapa, and admin Asha Karki. Existing placeholder names and untouched seeded notes migrate on startup. Request IDs, ownership, coordinates, status history, custom names/notes, and database contents are preserved. These are story characters, not real incident victims.

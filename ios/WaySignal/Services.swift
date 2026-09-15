@@ -144,14 +144,14 @@ struct ResponderService: ResponderServing {
     func incidents() async throws -> [AssistanceRequest] { try await client.request("emergencies") }
     func update(_ request: AssistanceRequest, status: String, account: Account) async throws -> AssistanceRequest {
         try await client.request("emergencies/" + request.id, method: "PATCH", body: Wire.encode([
-            "status": status, "responder_id": request.responderId ?? account.id, "responder_name": request.responderName ?? account.name]))
+            "status": status, "responder_id": request.responderId ?? account.id, "responder_name": request.responderName ?? account.displayName]))
     }
     func review(_ report: CommunityReport, decision: String, note: String) async throws -> CommunityReport {
         struct Payload: Encodable { let decision: String; let note: String; let expectedVersion: Int }
         return try await client.request("mobile/community/" + report.id + "/review", method: "POST", body: Wire.encode(Payload(decision: decision, note: note, expectedVersion: report.reviewVersion)))
     }
     func resolve(_ id: String) async throws { let _: SavedReport = try await client.request("hazards/" + id, method: "PATCH", body: Wire.encode(["status":"resolved"])) }
-    func reports() async throws -> OperationsReport { try await client.request("reports") }
+    func reports() async throws -> OperationsReport { try await client.request("admin/reports") }
 }
 
 // Screenshot text is recognized locally. Only an explicitly sent attachment leaves the device.

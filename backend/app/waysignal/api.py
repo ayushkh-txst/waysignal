@@ -122,3 +122,7 @@ def close_shelter(key: str, actor: dict = Depends(signed_reporter), db: Session 
 @router.post('/routes/shelter')
 async def shelter_route(payload: ShelterRouteInput, actor: dict = Depends(signed_reporter), db: Session = Depends(get_db)):
     return await MapStateService(db, actor).route_to_shelter(payload, payload.shelter_id)
+
+
+from app.waysignal.responder_routes import router as responder_route_router
+router.include_router(responder_route_router)

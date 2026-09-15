@@ -15,7 +15,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Your community.\nYour next step.").font(.system(size: 32, weight: .bold, design: .serif)).foregroundStyle(SignalStyle.blue)
-                    Text(context.places?.location.primary ?? "Welcome, \(account.name)").font(.subheadline).foregroundStyle(.secondary)
+                    Text(context.places?.location.primary ?? "Welcome, \(account.displayName)").font(.subheadline).foregroundStyle(.secondary)
                 }
                 LandscapeBanner(height: 110).clipShape(RoundedRectangle(cornerRadius: 20))
                 PrimaryButton(title: "Explore the map", icon: "map.fill") { navigation.tab = "map" }

@@ -141,3 +141,14 @@ def test_five_logins_isolate_citizens_and_allow_both_admins(client):
     auth._auth = AuthService(InMemoryUserRepository(config()))
     again = login(client, ACCOUNTS[1])
     assert client.get(f"/api/v1/emergencies/{records[1]}", headers=again).status_code == 200
+
+
+def test_native_reports_and_export_use_admin_routes(client):
+    admin = login(client, ACCOUNTS[3])
+    citizen = login(client, ACCOUNTS[0])
+    report = client.get('/api/v1/admin/reports', headers=admin)
+    assert report.status_code == 200
+    assert {'summary', 'statuses', 'incident_types', 'generated_at'} <= report.json().keys()
+    export = client.get('/api/v1/admin/reports/export', headers=admin)
+    assert export.status_code == 200 and 'text/csv' in export.headers['content-type']
+    assert client.get('/api/v1/admin/reports/export', headers=citizen).status_code == 403

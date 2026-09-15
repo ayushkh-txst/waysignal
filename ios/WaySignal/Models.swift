@@ -11,7 +11,16 @@ struct Coordinate: Codable, Equatable {
         return .init(latitude: lat, longitude: lon)
     }
 }
-struct Account: Codable { let id: String; let name: String; let email: String; let role: String }
+struct Account: Codable {
+    let id: String; let name: String; let email: String; let role: String
+    var displayName: String {
+        let characters = ["citizen-demo": ("Demo Citizen", "Arun Shrestha"), "worker-demo": ("Demo E-Worker", "Asha Karki"),
+                          "citizen-demo-2": ("Demo Citizen 2", "Mira Tamang"), "citizen-demo-3": ("Demo Citizen 3", "Nisha Rai"),
+                          "worker-demo-2": ("Demo Admin 2", "Dev Sharma")]
+        if let character = characters[id], character.0 == name { return character.1 }
+        return name
+    }
+}
 struct LoginResponse: Codable { let user: Account; let accessToken: String; let expiresIn: Int }
 struct CommunityReport: Decodable, Identifiable {
     let id: String; let kind: String; let label: String
@@ -49,6 +58,8 @@ struct AssistanceRequest: Decodable, Identifiable {
     let latitude: Double; let longitude: Double; let status: String; let notes: String
     let responderId: String?; let assignedAt: String?; let enRouteAt: String?; let resolvedAt: String?
     let responderName: String?; let createdAt: String; let updatedAt: String?; let isDemo: Bool
+    let locationUpdatedAt: String?
+    var coordinate: Coordinate { .init(latitude: latitude, longitude: longitude) }
 }
 struct GuideSource: Decodable, Identifiable { let id: String; let kind: String; let status: String }
 struct GuideResponse: Decodable {

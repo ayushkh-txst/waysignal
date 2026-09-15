@@ -12,6 +12,7 @@ from app.waysignal.domain import (AssessmentInput, HazardPolicy, ReportSource, R
 
 
 class GOneRouteProvider:
+    is_simulated = False
     async def candidates(self, request: AssessmentInput) -> list[dict]:
         destination = {"latitude": request.destination.latitude, "longitude": request.destination.longitude}
         return await _osrm_routes(request.origin.latitude, request.origin.longitude, destination)
@@ -31,11 +32,11 @@ class RouteAssessmentService:
         self.policies = policies if policies is not None else [ReviewedClosurePolicy(), UnreviewedHazardPolicy()]
 
     async def assess(self, request: AssessmentInput) -> dict:
-        reports = self.reports.reports()
         try:
             raw = await self.provider.candidates(request)
         except (httpx.HTTPError, TimeoutError, ValueError, KeyError):
             raise HTTPException(502, "Route provider is unavailable. No route assessment was made.") from None
+        reports = self.reports.reports()
         candidates = []
         for item in raw[:3]:
             try:
@@ -67,11 +68,12 @@ class RouteAssessmentService:
             raise HTTPException(502, "The provider returned no usable route geometry.")
         remaining = [c for c in candidates if not c["excluded"]]
         remaining.sort(key=lambda c: (len(c["findings"]), c["duration_s"]))
+        simulated = getattr(self.provider, "is_simulated", settings.waysignal_demo_mode)
         return {"destination_name": request.destination_name, "generated_at": datetime.now(timezone.utc).isoformat(),
             "candidates": candidates, "selected_id": remaining[0]["id"] if remaining else None,
-            "source": "Synthetic demo routes + demo community reviews" if settings.waysignal_demo_mode else "OSRM driving routes + WaySignal community reviews",
-            "data_status": "demo" if settings.waysignal_demo_mode else "available",
-            "notice": ("DEMO: schematic route geometry and simulated travel times; not road directions. " if settings.waysignal_demo_mode else "") +
+            "source": "Simulated routes + community reviews" if simulated else "OSRM driving routes + WaySignal community reviews",
+            "data_status": "demo" if simulated else "available",
+            "notice": ("Schematic routes and simulated travel times; not road directions. " if simulated else "") +
                 "Point-based report screening, not verified flood boundaries. Conditions outside reported locations remain unknown. Routes are not guaranteed safe."}
 
 

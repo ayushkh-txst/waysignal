@@ -99,7 +99,7 @@ struct AssistanceForm: View {
         busy = true; error = nil
         defer { busy = false }
         do {
-            saved = try await assistance.service.create(.init(citizenId: account.id, citizenName: account.name,
+            saved = try await assistance.service.create(.init(citizenId: account.id, citizenName: account.displayName,
                 emergencyType: kind, latitude: coordinate.latitude, longitude: coordinate.longitude, peopleCount: people, notes: notes))
             await assistance.load()
         } catch { self.error = error.localizedDescription + " Check your request list before retrying, in case the request was received." }

@@ -23,16 +23,21 @@ struct OperationsOverview: View {
         ViewportScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Text("A clear picture.\nA coordinated response.").font(.system(size: 30, weight: .bold, design: .serif))
-                Text("Responder workspace · \(account.name)").font(.subheadline).foregroundStyle(.secondary)
+                Text("Responder workspace · \(account.displayName)").font(.subheadline).foregroundStyle(.secondary)
                 LandscapeBanner(height: 100).clipShape(RoundedRectangle(cornerRadius: 18))
-                HStack { MetricTile(title: "Active requests", value: "\(active.count)", icon: "hand.raised.fill", color: .orange); MetricTile(title: "People in requests", value: "\(active.reduce(0) { $0 + $1.peopleCount })", icon: "person.2.fill") }
-                HStack { MetricTile(title: "Awaiting review", value: "\(community.reports.filter { ["unreviewed", "expired"].contains($0.reviewState) }.count)", icon: "bubble.left.and.exclamationmark.bubble.right", color: .orange); MetricTile(title: "Assigned to you", value: "\(active.filter { $0.responderId == account.id }.count)", icon: "person.crop.circle.badge.checkmark") }
+                HStack(alignment: .top) {
+                    NavigationLink { IncidentList(account: account) } label: { MetricTile(title: "Active requests", value: "\(active.count)", icon: "hand.raised.fill", color: .orange) }
+                    NavigationLink { IncidentList(account: account, title: "People in requests") } label: { MetricTile(title: "People in requests", value: "\(active.reduce(0) { $0 + $1.peopleCount })", icon: "person.2.fill") }
+                }.buttonStyle(.plain)
+                HStack(alignment: .top) {
+                    NavigationLink { ReviewQueue() } label: { MetricTile(title: "Awaiting review", value: "\(community.reports.filter { ["unreviewed", "expired"].contains($0.reviewState) }.count)", icon: "bubble.left.and.exclamationmark.bubble.right", color: .orange) }
+                    NavigationLink { IncidentList(account: account, initialScope: "Assigned") } label: { MetricTile(title: "Assigned to you", value: "\(active.filter { $0.responderId == account.id }.count)", icon: "person.crop.circle.badge.checkmark") }
+                }.buttonStyle(.plain)
                 ErrorNotice(message: operations.error)
                 HStack { Text("Awaiting assignment").font(.title3.bold()); Spacer(); if operations.busy { ProgressView() } }
                 ForEach(active.filter { $0.status == "submitted" }.prefix(4)) { request in NavigationLink { IncidentDetail(initial: request, account: account) } label: { IncidentCard(request: request) }.buttonStyle(.plain) }
                 if let conditions = context.conditions { Text("Forecast context").font(.title3.bold()); ConditionsCard(conditions: conditions) }
                 NavigationLink { GuideView() } label: { Label("Ask Nav AI", systemImage: "sparkles") }.buttonStyle(.bordered)
-                NavigationLink { AccountView() } label: { Label("Account and full web workspace", systemImage: "person.crop.circle") }.buttonStyle(.bordered)
             }.padding(20)
         }.background(SignalStyle.background).navigationTitle("Operations").navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -51,7 +56,7 @@ struct IncidentCard: View {
         SignalCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack { Text(request.emergencyType.capitalized).font(.headline); Spacer() }
-                Text("\(request.citizenName) · \(request.peopleCount) people").font(.subheadline)
+                Text("\(request.citizenName) · \(request.peopleCount) \(request.peopleCount == 1 ? "person" : "people")").font(.subheadline)
                 StatusPill(state: request.status)
                 if let name = request.responderName { Label(name, systemImage: "person.crop.circle").font(.caption) }
                 Text(SignalCopy.recordID(request.id)).font(.caption.monospaced()).foregroundStyle(.secondary)
@@ -62,23 +67,28 @@ struct IncidentCard: View {
 struct IncidentList: View {
     let account: Account
     @EnvironmentObject private var operations: OperationsStore
-    @State private var scope = "Active"; @State private var query = ""
+    let title: String
+    @State private var scope: String; @State private var query = ""
+    init(account: Account, initialScope: String = "Active", title: String = "Incidents") {
+        self.account = account; self.title = title; _scope = State(initialValue: initialScope)
+    }
     var shown: [AssistanceRequest] {
         operations.incidents.filter { request in
             let matches = query.isEmpty || (request.id + request.citizenName + request.notes).localizedCaseInsensitiveContains(query)
-            return matches && (scope == "All" || scope == "Mine" && request.responderId == account.id || scope == "Active" && !["resolved", "cancelled"].contains(request.status))
+            return matches && (scope == "All" || scope == "Assigned" && request.responderId == account.id && !["resolved", "cancelled"].contains(request.status) || scope == "Active" && !["resolved", "cancelled"].contains(request.status))
         }
     }
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                Picker("Scope", selection: $scope) { ForEach(["Active", "Mine", "All"], id: \.self) { Text($0) } }.pickerStyle(.segmented)
+                Picker("Scope", selection: $scope) { ForEach(["Active", "Assigned", "All"], id: \.self) { Text($0) } }.pickerStyle(.segmented)
                 ErrorNotice(message: operations.error)
                 if operations.busy { ProgressView() }
+                Text("\(shown.reduce(0) { $0 + $1.peopleCount }) people · \(shown.count) requests").font(.subheadline).foregroundStyle(.secondary)
                 ForEach(shown) { request in NavigationLink { IncidentDetail(initial: request, account: account) } label: { IncidentCard(request: request) }.buttonStyle(.plain) }
                 if shown.isEmpty && !operations.busy { ContentUnavailableView("No matching incidents", systemImage: "tray") }
             }.padding(20)
-        }.background(SignalStyle.background).navigationTitle("Incidents").searchable(text: $query, prompt: "Name, ID or details")
+        }.background(SignalStyle.background).navigationTitle(title).searchable(text: $query, prompt: "Name, ID or details")
             .task { await operations.load() }.refreshable { await operations.load() }
     }
 }
@@ -91,7 +101,14 @@ struct IncidentDetail: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 IncidentCard(request: request)
-                Map { Marker(request.citizenName, coordinate: .init(latitude: request.latitude, longitude: request.longitude)).tint(.orange) }.frame(height: 220).clipShape(RoundedRectangle(cornerRadius: 20))
+                Map(initialPosition: .region(MKCoordinateRegion(center: request.coordinate.location, span: .init(latitudeDelta: 0.012, longitudeDelta: 0.012)))) {
+                    Marker(request.citizenName, coordinate: request.coordinate.location).tint(.orange)
+                }.frame(height: 220).clipShape(RoundedRectangle(cornerRadius: 20))
+                if !["resolved", "cancelled"].contains(request.status) {
+                    NavigationLink { ResponderNavigationView(initial: request) } label: {
+                        Label("Route to " + request.citizenName, systemImage: "location.fill").font(.headline).frame(maxWidth: .infinity).padding(16).foregroundStyle(.white).background(SignalStyle.blue, in: RoundedRectangle(cornerRadius: 16))
+                    }.buttonStyle(.plain)
+                }
                 Text("Coordinates: \(request.latitude), \(request.longitude)").font(.caption.monospaced()).textSelection(.enabled)
                 if !request.notes.isEmpty { SignalCard { VStack(alignment: .leading, spacing: 8) { Text("Request details").font(.headline); Text(request.notes) } } }
                 SignalCard { RequestTimeline(request: request) }
@@ -140,6 +157,7 @@ struct OperationsMap: View {
             .overlay(alignment: .topLeading) { MapRiskLegend().padding(12) }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 8) {
+                    NavigationLink { IncidentList(account: account) } label: { Label("Choose a request for directions", systemImage: "location.fill") }.font(.headline)
                     Button { showShelters = true } label: { Label("Manage safe points & shelters", systemImage: "house.lodge.fill") }.font(.subheadline.bold())
                     Text("Tap a hazard to review its photo and update the shared map.").font(.caption)
                     ErrorNotice(message: community.error ?? community.mapError)
@@ -272,15 +290,17 @@ struct OperationsReports: View {
                     PrimaryButton(title: "Prepare CSV export", icon: "square.and.arrow.up", busy: exporting) { Task { await export() } }
                     if let exportURL { ShareLink("Share report CSV", item: exportURL).buttonStyle(.bordered) }
                 }
-                ErrorNotice(message: operations.error ?? exportError)
+                if operations.reportBusy { ProgressView() }
+                ErrorNotice(message: operations.reportError ?? exportError)
+                if operations.reportError != nil { Button("Retry reports") { Task { await operations.loadReports() } } }
             }.padding(20)
         }.background(SignalStyle.background).navigationTitle("Reports").navigationBarTitleDisplayMode(.inline)
-            .task { await operations.load() }.refreshable { await operations.load() }
+            .task { await operations.loadReports() }.refreshable { await operations.loadReports() }
     }
     private func export() async {
         guard let client = session.client, !exporting else { return }; exporting = true; exportError = nil; defer { exporting = false }
         do {
-            var request = URLRequest(url: client.baseURL.appendingPathComponent("api/v1/reports/export")); request.timeoutInterval = 25
+            var request = URLRequest(url: client.baseURL.appendingPathComponent("api/v1/admin/reports/export")); request.timeoutInterval = 25
             if let token = client.token { request.setValue("Bearer " + token, forHTTPHeaderField: "Authorization") }
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { throw APIError(message: "Report export failed. Try again.") }
