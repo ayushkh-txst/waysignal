@@ -5,11 +5,11 @@ struct ResponderWorkspace: View {
     let account: Account
     var body: some View {
         TabView {
-            NavigationStack { OperationsOverview(account: account) }.tabItem { Label("Overview", systemImage: "square.grid.2x2") }
-            NavigationStack { IncidentList(account: account) }.tabItem { Label("Incidents", systemImage: "checklist") }
-            NavigationStack { OperationsMap(account: account) }.tabItem { Label("Map", systemImage: "map") }
-            NavigationStack { ReviewQueue() }.tabItem { Label("Review", systemImage: "checkmark.bubble") }
-            NavigationStack { OperationsReports() }.tabItem { Label("Reports", systemImage: "chart.bar") }
+            NavigationStack { OperationsOverview(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Overview", systemImage: "square.grid.2x2") }
+            NavigationStack { IncidentList(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Incidents", systemImage: "checklist") }
+            NavigationStack { OperationsMap(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Map", systemImage: "map") }
+            NavigationStack { ReviewQueue().modifier(DemoDataIndicator()) }.tabItem { Label("Review", systemImage: "checkmark.bubble") }
+            NavigationStack { OperationsReports().modifier(DemoDataIndicator()) }.tabItem { Label("Reports", systemImage: "chart.bar") }
         }
     }
 }
@@ -20,7 +20,7 @@ struct OperationsOverview: View {
     @EnvironmentObject private var context: ContextStore
     var active: [AssistanceRequest] { operations.incidents.filter { !["resolved", "cancelled"].contains($0.status) } }
     var body: some View {
-        ScrollView {
+        ViewportScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Text("A clear picture.\nA coordinated response.").font(.system(size: 30, weight: .bold, design: .serif))
                 Text("Responder workspace · \(account.name)").font(.subheadline).foregroundStyle(.secondary)

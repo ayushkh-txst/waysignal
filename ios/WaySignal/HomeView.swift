@@ -10,7 +10,7 @@ struct HomeView: View {
     @EnvironmentObject private var location: LocationProvider
     @EnvironmentObject private var scenario: ScenarioStore
     var body: some View {
-        ScrollView {
+        ViewportScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Your community.\nYour next step.").font(.system(size: 32, weight: .bold, design: .serif)).foregroundStyle(SignalStyle.blue)

@@ -105,8 +105,43 @@ struct BrandHeading: View {
 struct LandscapeBanner: View {
     var height: CGFloat = 140
     var body: some View {
-        Image("Landscape").resizable().scaledToFill().frame(height: height).clipped()
-            .background(Color(red: 0.97, green: 0.93, blue: 0.85)).accessibilityHidden(true)
+        // The image is decoration: its aspect ratio must never set the page width.
+        Color(red: 0.97, green: 0.93, blue: 0.85)
+            .frame(height: height)
+            .overlay {
+                GeometryReader { geometry in
+                    Image("Landscape").resizable().scaledToFill()
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
+                }
+            }.clipped().accessibilityHidden(true)
+    }
+}
+struct ViewportScrollView<Content: View>: View {
+    let content: Content
+    init(@ViewBuilder content: () -> Content) { self.content = content() }
+    var body: some View {
+        GeometryReader { geometry in
+            ScrollView {
+                content.frame(width: max(0, geometry.size.width), alignment: .leading)
+            }
+        }
+    }
+}
+struct DemoDataIndicator: ViewModifier {
+    @EnvironmentObject private var scenario: ScenarioStore
+    func body(content: Content) -> some View {
+        content.toolbar {
+            if scenario.enabled {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Text("Demo data").font(.caption2.weight(.medium))
+                        .foregroundStyle(SignalStyle.gold)
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(SignalStyle.gold.opacity(0.08), in: Capsule())
+                        .accessibilityLabel("Demo mode. Simulated data.")
+                }
+            }
+        }
     }
 }
 struct MetricTile: View {

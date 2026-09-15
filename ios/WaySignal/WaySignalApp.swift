@@ -19,7 +19,7 @@ struct SignInView: View {
     @State private var workspace = "citizen"; @State private var appeared = false
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ViewportScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     BrandHeading().padding(.horizontal, 24).padding(.top, 20)
                     VStack(alignment: .leading, spacing: 12) {
@@ -41,6 +41,7 @@ struct SignInView: View {
                                 SecureField("Password", text: $password).textContentType(.password)
                             }.textInputAutocapitalization(.never).autocorrectionDisabled()
                         }
+                        Toggle("Keep me signed in", isOn: $session.rememberSignIn).font(.subheadline)
                         ErrorNotice(message: session.error)
                         PrimaryButton(title: "Sign in", icon: "arrow.right", busy: session.busy, disabled: email.isEmpty || password.isEmpty) {
                             Task { await session.signIn(email: email, password: password) }
@@ -88,25 +89,17 @@ struct Workspace: View {
                 if scenario.error != nil { Button("Retry") { Task { await scenario.load() } } }
             }.padding()
           } else {
-           VStack(spacing: 0) {
-            if scenario.enabled {
-                VStack(spacing: 2) {
-                    Text("DEMO SCENARIO").font(.caption.bold())
-                    Text("Synthetic conditions, routes and people").font(.caption2)
-                }.frame(maxWidth: .infinity).padding(8).background(Color.orange.opacity(0.18))
-            }
             if account.role == "worker" {
                 ResponderWorkspace(account: account)
             } else {
                 TabView(selection: $navigation.tab) {
-                    NavigationStack { HomeView(account: account) }.tabItem { Label("Home", systemImage: "house") }.tag("home")
-                    NavigationStack { JourneyView() }.tabItem { Label("Map", systemImage: "map") }.tag("map")
-                    NavigationStack { CommunityView() }.tabItem { Label("Community", systemImage: "person.2") }.tag("community")
-                    NavigationStack { AssistanceView(account: account) }.tabItem { Label("Help", systemImage: "hand.raised") }.tag("help")
-                    NavigationStack { GuideView() }.tabItem { Label("Guide", systemImage: "sparkles") }.tag("guide")
+                    NavigationStack { HomeView(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Home", systemImage: "house") }.tag("home")
+                    NavigationStack { JourneyView().modifier(DemoDataIndicator()) }.tabItem { Label("Map", systemImage: "map") }.tag("map")
+                    NavigationStack { CommunityView().modifier(DemoDataIndicator()) }.tabItem { Label("Community", systemImage: "person.2") }.tag("community")
+                    NavigationStack { AssistanceView(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Help", systemImage: "hand.raised") }.tag("help")
+                    NavigationStack { GuideView().modifier(DemoDataIndicator()) }.tabItem { Label("Guide", systemImage: "sparkles") }.tag("guide")
                 }
             }
-           }
           }
         }.environmentObject(journey).environmentObject(community).environmentObject(assistance)
             .environmentObject(guide).environmentObject(location).environmentObject(scenario)
@@ -124,11 +117,17 @@ struct Workspace: View {
 }
 struct AccountView: View {
     @EnvironmentObject private var session: SessionStore
+    @EnvironmentObject private var scenario: ScenarioStore
     var body: some View {
         List {
             Section("Account") {
                 Text(session.account?.user.name ?? "")
                 Text(session.account?.user.email ?? "").foregroundStyle(.secondary)
+            }
+            if scenario.enabled {
+                Section("Demo data") {
+                    Text("This exercise uses simulated conditions, routes, observations and people. It is not a live emergency.").font(.footnote)
+                }
             }
             Section("G-one workspace") {
                 if let url = URL(string: session.server) {

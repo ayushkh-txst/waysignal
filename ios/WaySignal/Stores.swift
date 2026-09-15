@@ -6,12 +6,18 @@ import CoreLocation
     @Published var account: LoginResponse?
     @Published var server = UserDefaults.standard.string(forKey: "waysignal.server") ?? "http://localhost:8000"
     @Published var error: String?; @Published var busy = false
+    @Published var rememberSignIn = UserDefaults.standard.bool(forKey: "waysignal.rememberSignIn")
     var client: APIClient? {
         guard let url = URL(string: server), let account else { return nil }
         return APIClient(baseURL: url, token: account.accessToken)
     }
     init() {
-        if let data = SessionVault.read(host: server) { account = try? Wire.decode(LoginResponse.self, from: data) }
+        if rememberSignIn {
+            if let data = SessionVault.read(host: server) { account = try? Wire.decode(LoginResponse.self, from: data) }
+        } else {
+            // Previous builds restored sessions without an explicit opt-in.
+            SessionVault.clear(host: server)
+        }
     }
     func signIn(email: String, password: String) async {
         guard !busy else { return }; busy = true; error = nil
@@ -26,7 +32,12 @@ import CoreLocation
         do {
             let response: LoginResponse = try await APIClient(baseURL: url).request("auth/login", method: "POST",
                 body: Wire.encode(["email": email.trimmingCharacters(in: .whitespacesAndNewlines), "password": password]))
-            try SessionVault.save(Wire.encode(response), host: server)
+            if rememberSignIn {
+                try SessionVault.save(Wire.encode(response), host: server)
+            } else {
+                SessionVault.clear(host: server)
+            }
+            UserDefaults.standard.set(rememberSignIn, forKey: "waysignal.rememberSignIn")
             UserDefaults.standard.set(server, forKey: "waysignal.server")
             account = response
         } catch { self.error = error.localizedDescription }

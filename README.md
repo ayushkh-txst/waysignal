@@ -51,6 +51,8 @@ For subsequent runs, use `bash scripts/run-ios-demo.sh` from the updated project
 
 These are intentional development accounts, unless overridden locally. Native **Server connection** defaults to `http://localhost:8000` for the simulator. The companion web app is served at the same address with a separate sign-in session.
 
+**Keep me signed in** is off by default. Enable it to restore your session from Keychain after relaunch. A compact **Demo data** badge identifies simulated data without covering the app's content.
+
 Build log: `build/WaySignal-build.log`. API log: `build/WaySignal-backend.log`. Environment files, local databases and build products are excluded from Git.
 
 ### Separate development servers

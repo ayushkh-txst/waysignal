@@ -41,6 +41,10 @@ Build output: `build/WaySignal-build.log`. Server output: `build/WaySignal-backe
 
 A welcome-screen selection explains the workspaces; it does not grant privileges. The server-authenticated account role selects the actual workspace. Sign out through Account to change roles.
 
+Sign-in now appears on launch unless the user explicitly enables **Keep me signed in**. The option defaults off, including for sessions saved by earlier builds. With it off, the authenticated session stays in memory until the app exits; with it on, the session is stored in Keychain. Backgrounding the app alone does not sign out.
+
+The landscape and the Home, welcome and responder overview content are constrained to the available screen width. Demo mode uses a compact **Demo data** badge in the navigation toolbar, with the explanation in Account, instead of a full-width orange banner.
+
 Demo citizen: `citizen@example.com` / `CitizenDemo2026!`
 
 Demo responder: `worker@example.com` / `WorkerDemo2026!`
