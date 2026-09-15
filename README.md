@@ -109,8 +109,8 @@ The baseline is [G-one commit `9e9ebb0`](https://github.com/ayushkh-txst/jalraks
 
 - Backend regression suite: **96 passed** before the final request-body guard; the **16 WaySignal integration tests** passed again after that guard.
 - Frontend hazard tests: **9 passed**; TypeScript/Vite production build passed.
-- Earlier native starter: compiled and launched on the developer's Mac. Expanded native UI: syntax checked; its new screens still require simulator and visual verification.
-- The [iOS workflow](.github/workflows/ios-build.yml) compiles the app on a macOS runner. Check [Actions](https://github.com/ayushkh-txst/waysignal/actions) for the actual result; compilation does not verify interactions or appearance.
+- Expanded native app: **signed iOS Simulator build passed** on the macOS GitHub Actions runner. [Build result](https://github.com/ayushkh-txst/waysignal/actions/runs/34912217458).
+- The earlier native starter also launched on the developer's Mac. The expanded screens still require interaction and visual verification there; compilation does not establish those results. The [iOS workflow](.github/workflows/ios-build.yml) checks subsequent native source changes.
 
 ```bash
 # From the repository root, after environment setup

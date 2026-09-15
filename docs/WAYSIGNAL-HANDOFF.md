@@ -1,6 +1,6 @@
 # Current native upgrade
 
-The original handoff below documents the initial slice. See [NATIVE-UPGRADE.md](NATIVE-UPGRADE.md) for the expanded native screens, real voice/chat implementation, six MCP tools and current verification status. The earlier statements that native chat and responder screens are future work are superseded by that update.
+The original handoff below documents the initial slice. See [NATIVE-UPGRADE.md](NATIVE-UPGRADE.md) for the expanded native screens, real voice/chat implementation and six MCP tools, and [README.md](../README.md) for current setup and verification. The earlier statements that native chat and responder screens are future work are superseded by that update. The full source is published at [ayushkh-txst/waysignal](https://github.com/ayushkh-txst/waysignal).
 
 # WaySignal implementation handoff
 
@@ -89,7 +89,7 @@ To build from Terminal on the Mac:
 ```bash
 xcodebuild -project ios/WaySignal.xcodeproj -scheme WaySignal \
   -configuration Debug -destination 'generic/platform=iOS Simulator' \
-  CODE_SIGNING_ALLOWED=NO build
+  CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- ENTITLEMENTS_REQUIRED=YES build
 ```
 
 If Xcode reports an error, send its first compiler error and file/line so it can be fixed directly. Debug builds allow local HTTP development; Release requires an HTTPS server. The provided backend binds to loopback for simulator use. A physical iPhone needs a reachable development server or an HTTPS deployment.
@@ -105,4 +105,4 @@ Use Figma to design screens and Adobe Express to assemble the required presentat
 5. **Engineering:** preserved G-one foundation, native SwiftUI, one set of service rules behind REST and MCP, explicit extension boundaries.
 6. **Honest progress:** identify inherited G-one work, additions made during this hackathon, prototype limitations and future work separately. Use screenshots from the running build when available; label Figma simulations as design prototypes.
 
-Do not claim official agency integration, safe-route certification, automatic emergency dispatch, measured lives saved or an unbuilt native generative assistant. No GitHub repository has been published from this workspace. The local project is ready to connect to a new repository.
+Use only demonstrated behavior in the submission. Do not claim official agency integration, safe-route certification, automatic emergency dispatch or measured lives saved. The public repository is [ayushkh-txst/waysignal](https://github.com/ayushkh-txst/waysignal). Native Guide now supports optional generated answers; its server-side model configuration and verification limits are documented in the current native upgrade guide.
