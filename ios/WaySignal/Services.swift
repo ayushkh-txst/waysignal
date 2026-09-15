@@ -28,10 +28,12 @@ struct APIClient {
 
 protocol CommunityServing {
     func reports() async throws -> [CommunityReport]
+    func mapState() async throws -> MapSnapshot
     func create(kind: String, coordinate: Coordinate, photo: String?, requestId: UUID, note: String) async throws -> SavedReport
 }
 struct CommunityService: CommunityServing {
     let client: APIClient
+    func mapState() async throws -> MapSnapshot { try await client.request("mobile/map-state") }
     func reports() async throws -> [CommunityReport] { try await client.request("mobile/community") }
     func create(kind: String, coordinate: Coordinate, photo: String?, requestId: UUID, note: String) async throws -> SavedReport {
         struct Payload: Encodable {
@@ -43,9 +45,16 @@ struct CommunityService: CommunityServing {
             longitude: coordinate.longitude, photoBase64: photo, note: note)))
     }
 }
-protocol RouteServing { func assess(_ input: RouteInput) async throws -> RouteAssessment }
+protocol RouteServing {
+    func assess(_ input: RouteInput) async throws -> RouteAssessment
+    func shelterRoute(_ origin: Coordinate, shelterId: String?) async throws -> ShelterRoute
+}
 struct RouteService: RouteServing {
     let client: APIClient
+    func shelterRoute(_ origin: Coordinate, shelterId: String?) async throws -> ShelterRoute {
+        struct Payload: Encodable { let latitude: Double; let longitude: Double; let shelterId: String? }
+        return try await client.request("mobile/routes/shelter", method: "POST", body: Wire.encode(Payload(latitude: origin.latitude, longitude: origin.longitude, shelterId: shelterId)))
+    }
     func assess(_ input: RouteInput) async throws -> RouteAssessment {
         try await client.request("mobile/routes/assess", method: "POST", body: Wire.encode(input))
     }

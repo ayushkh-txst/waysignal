@@ -31,7 +31,7 @@ struct OperationsOverview: View {
                 HStack { Text("Awaiting assignment").font(.title3.bold()); Spacer(); if operations.busy { ProgressView() } }
                 ForEach(active.filter { $0.status == "submitted" }.prefix(4)) { request in NavigationLink { IncidentDetail(initial: request, account: account) } label: { IncidentCard(request: request) }.buttonStyle(.plain) }
                 if let conditions = context.conditions { Text("Forecast context").font(.title3.bold()); ConditionsCard(conditions: conditions) }
-                NavigationLink { GuideView() } label: { Label("Ask WaySignal Guide", systemImage: "sparkles") }.buttonStyle(.bordered)
+                NavigationLink { GuideView() } label: { Label("Ask Nav AI", systemImage: "sparkles") }.buttonStyle(.bordered)
                 NavigationLink { AccountView() } label: { Label("Account and full web workspace", systemImage: "person.crop.circle") }.buttonStyle(.bordered)
             }.padding(20)
         }.background(SignalStyle.background).navigationTitle("Operations").navigationBarTitleDisplayMode(.inline)
@@ -110,19 +110,92 @@ struct OperationsMap: View {
     let account: Account
     @EnvironmentObject private var operations: OperationsStore
     @EnvironmentObject private var community: CommunityStore
-    @State private var selected: AssistanceRequest?
+    @State private var selected: AssistanceRequest?; @State private var selectedReport: CommunityReport?
+    @State private var showShelters = false
     var body: some View {
         Map {
+            MapRiskLayer(snapshot: community.mapState)
+            ForEach((community.mapState?.shelters ?? []).filter { $0.available }) { site in
+                Marker(site.name, systemImage: "house.lodge.fill", coordinate: site.coordinate.location).tint(.green)
+            }
             ForEach(operations.incidents.filter { !["resolved", "cancelled"].contains($0.status) }) { request in
                 Annotation(request.id, coordinate: .init(latitude: request.latitude, longitude: request.longitude)) {
                     Button { selected = request } label: { Image(systemName: "hand.raised.fill").foregroundStyle(.white).padding(12).background(SignalStyle.stateColor(request.status), in: Circle()).overlay(Circle().stroke(.white, lineWidth: 2)) }
                 }
             }
-            ForEach(community.reports.filter { $0.status == "active" }) { report in Marker(report.label, systemImage: "exclamationmark.triangle", coordinate: report.coordinate.location).tint(SignalStyle.stateColor(report.reviewState)) }
+            ForEach(community.reports.filter { $0.status == "active" }) { report in
+                Annotation(report.label, coordinate: report.coordinate.location) {
+                    Button { selectedReport = report } label: {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.white).padding(10).background(SignalStyle.stateColor(report.reviewState), in: Circle())
+                    }.accessibilityLabel("Review " + report.label)
+                }
+            }
         }.navigationTitle("Operations map").navigationBarTitleDisplayMode(.inline)
-            .safeAreaInset(edge: .bottom) { Text("Hands: assistance requests · Triangles: community observations").font(.caption).padding(14).frame(maxWidth: .infinity).background(.regularMaterial) }
+            .overlay(alignment: .topLeading) { MapRiskLegend().padding(12) }
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 8) {
+                    Button { showShelters = true } label: { Label("Manage safe points & shelters", systemImage: "house.lodge.fill") }.font(.subheadline.bold())
+                    Text("Tap a hazard to review its photo and update the shared map.").font(.caption)
+                    ErrorNotice(message: community.error ?? community.mapError)
+                }.padding(14).frame(maxWidth: .infinity).background(.regularMaterial)
+            }
             .sheet(item: $selected) { request in NavigationStack { IncidentDetail(initial: request, account: account) }.presentationDetents([.medium, .large]) }
+            .sheet(item: $selectedReport) { report in NavigationStack { ReviewDetail(initial: report) }.presentationDetents([.medium, .large]) }
+            .sheet(isPresented: $showShelters) { ShelterManagementView() }
             .task { await operations.load(); await community.load() }
+    }
+}
+struct ShelterManagementView: View {
+    @EnvironmentObject private var session: SessionStore
+    @EnvironmentObject private var community: CommunityStore
+    @EnvironmentObject private var journey: JourneyStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var name = ""; @State private var latitude = ""; @State private var longitude = ""; @State private var note = ""
+    @State private var busy = false; @State private var error: String?; @State private var pin = false; @State private var closing: ShelterSite?
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Recorded shelters") {
+                    ForEach(community.mapState?.shelters ?? []) { site in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label(site.name, systemImage: "house.lodge.fill").foregroundStyle(site.available ? .green : .secondary)
+                            Text("\(site.status.replacingOccurrences(of: "_", with: " ")) · \(site.source)").font(.caption)
+                            Text("Checked \(Wire.date(site.checkedAt))").font(.caption).foregroundStyle(.secondary)
+                            if site.status != "closed" { Button("Close shelter", role: .destructive) { closing = site }.disabled(busy) }
+                        }
+                    }
+                }
+                Section("Confirm an open shelter") {
+                    TextField("Shelter name", text: $name)
+                    TextField("Who confirmed access and availability?", text: $note, axis: .vertical)
+                    Text("Confirmation expires after 4 hours. Nearby hazards remove the green status automatically.").font(.caption).foregroundStyle(.secondary)
+                    Button("Choose on map") { pin = true }
+                }
+                CoordinateFields(title: "Shelter location", latitude: $latitude, longitude: $longitude)
+                ErrorNotice(message: error)
+                PrimaryButton(title: "Confirm shelter is open", icon: "checkmark.shield", busy: busy,
+                    disabled: Coordinate.parse(latitude, longitude) == nil || name.trimmingCharacters(in: .whitespaces).count < 2 || note.trimmingCharacters(in: .whitespaces).count < 5) { Task { await create() } }
+            }.navigationTitle("Safe points").navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+                .sheet(isPresented: $pin) { ReportPinPicker(latitude: $latitude, longitude: $longitude) }
+                .confirmationDialog("Close this shelter on both maps?", isPresented: Binding(get: { closing != nil }, set: { if !$0 { closing = nil } })) {
+                    if let site = closing { Button("Close " + site.name, role: .destructive) { Task { await close(site) }; closing = nil } }
+                }
+                .onAppear { if let point = journey.origin { latitude = String(point.latitude); longitude = String(point.longitude) } }
+        }
+    }
+    private func create() async {
+        guard !busy, let client = session.client, let point = Coordinate.parse(latitude, longitude) else { return }
+        busy = true; error = nil; defer { busy = false }
+        do {
+            let _: SavedReport = try await client.request("mobile/shelters", method: "POST", body: Wire.encode(ShelterInput(name: name, latitude: point.latitude, longitude: point.longitude, note: note, validHours: 4)))
+            name = ""; note = ""; await community.load()
+        } catch { self.error = error.localizedDescription }
+    }
+    private func close(_ site: ShelterSite) async {
+        guard !busy, let client = session.client else { return }; busy = true; error = nil; defer { busy = false }
+        do { let _: SavedReport = try await client.request("mobile/shelters/\(site.id)/close", method: "POST"); await community.load() }
+        catch { self.error = error.localizedDescription }
     }
 }
 struct ReviewQueue: View {
@@ -171,7 +244,7 @@ struct ReviewDetail: View {
         guard !busy else { return }; busy = true; error = nil; defer { busy = false }
         do {
             if decision == "resolved" { try await operations.service.resolve(report.id) } else { _ = try await operations.service.review(report, decision: decision, note: note) }
-            await community.load(); journey.assessment = nil
+            await community.load(); await journey.refreshRoute()
         } catch { self.error = error.localizedDescription; await community.load() }
     }
 }

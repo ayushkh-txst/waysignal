@@ -62,7 +62,7 @@ class RouteAssessmentService:
             excluded = any(f["disposition"] == "exclude" for f in findings)
             candidates.append({"id": f"route-{len(candidates)+1}", "geometry": geometry,
                 "distance_m": distance, "duration_s": duration, "excluded": excluded,
-                "findings": findings, "transport_mode": "driving"})
+                "findings": findings, "transport_mode": "driving", "steps": route_steps(item)})
         if not candidates:
             raise HTTPException(502, "The provider returned no usable route geometry.")
         remaining = [c for c in candidates if not c["excluded"]]
@@ -73,3 +73,16 @@ class RouteAssessmentService:
             "data_status": "demo" if settings.waysignal_demo_mode else "available",
             "notice": ("DEMO: schematic route geometry and simulated travel times; not road directions. " if settings.waysignal_demo_mode else "") +
                 "Point-based report screening, not verified flood boundaries. Conditions outside reported locations remain unknown. Routes are not guaranteed safe."}
+
+
+def route_steps(route):
+    steps = []
+    for leg in route.get('legs', []):
+        for step in leg.get('steps', []):
+            maneuver = step.get('maneuver', {})
+            action = maneuver.get('type', 'continue').replace('_', ' ').capitalize()
+            modifier = maneuver.get('modifier', '')
+            road = step.get('name', '')
+            instruction = maneuver.get('instruction') or ' '.join(p for p in [action, modifier, ('onto ' + road) if road else ''] if p)
+            steps.append({'instruction': instruction, 'distance_m': max(0, step.get('distance', 0))})
+    return steps[:200]

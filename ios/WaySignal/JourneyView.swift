@@ -14,6 +14,14 @@ struct JourneyView: View {
     @State private var selectedReport: CommunityReport?
     var body: some View {
         Map(position: $position) {
+            MapRiskLayer(snapshot: community.mapState)
+            ForEach((community.mapState?.shelters ?? []).filter { $0.available }) { site in
+                Annotation(site.name, coordinate: site.coordinate.location) {
+                    Button { Task { await journey.routeToShelter(site.id); position = .automatic; showRoutes = journey.assessment != nil } } label: {
+                        Image(systemName: "house.lodge.fill").foregroundStyle(.white).padding(10).background(.green, in: Circle())
+                    }.accessibilityLabel("Open shelter: " + site.name)
+                }
+            }
             if let origin = journey.origin { Marker("Starting point", systemImage: "location.fill", coordinate: origin.location).tint(SignalStyle.blue) }
             if let destination = journey.destination { Marker(journey.destinationName, systemImage: "flag.fill", coordinate: destination.location).tint(.indigo) }
             ForEach(community.reports.filter { $0.status == "active" }) { report in
@@ -39,10 +47,11 @@ struct JourneyView: View {
                 }
             }
         }.mapStyle(satellite ? .hybrid : .standard(elevation: .flat))
+            .overlay(alignment: .topLeading) { MapRiskLegend().padding(12) }
             .overlay(alignment: .topTrailing) {
                 VStack(spacing: 12) {
                     mapButton("location.fill", label: "Recenter") {
-                        if scenario.enabled { scenario.useStart(journey) } else { location.request() }
+                        if scenario.enabled { journey.origin = scenario.info?.origin } else { location.request() }
                         if let point = journey.origin { position = .region(.init(center: point.location, span: .init(latitudeDelta: 0.025, longitudeDelta: 0.025))) }
                     }
                     mapButton(satellite ? "map" : "globe.americas.fill", label: "Change map appearance") { satellite.toggle() }
@@ -60,17 +69,25 @@ struct JourneyView: View {
                     }
                     if let error = journey.error ?? location.error { Text(error).font(.caption).foregroundStyle(.red).lineLimit(3) }
                     if community.error != nil { Text("Report refresh failed; markers may be stale.").font(.caption).foregroundStyle(.orange) }
+                    if let mapError = community.mapError { Text(mapError).font(.caption).foregroundStyle(.red).lineLimit(2) }
                     HStack {
-                        PrimaryButton(title: "Assess routes", icon: "arrow.triangle.branch", busy: journey.busy, disabled: journey.input == nil) {
-                            Task { await community.load(); await journey.assess(); position = .automatic; showRoutes = journey.assessment != nil }
-                        }
-                        if journey.assessment != nil { Button("Compare") { showRoutes = true }.font(.subheadline.bold()) }
+                        Button { showReport = true } label: { Label("Report blocked route", systemImage: "camera.fill") }
+                        Spacer()
+                        Button { navigation.tab = "help" } label: { Label("Help", systemImage: "hand.raised") }
+                    }.font(.subheadline.bold())
+                    PrimaryButton(title: "Route to shelter", icon: "location.north.line.fill", busy: journey.busy, disabled: journey.origin == nil) {
+                        Task { await community.load(); await journey.routeToShelter(); position = .automatic; showRoutes = journey.assessment != nil }
                     }
+                    HStack {
+                        Button("Assess destination") { Task { await journey.assess(); position = .automatic; showRoutes = journey.assessment != nil } }.disabled(journey.input == nil || journey.busy)
+                        Spacer()
+                        if journey.assessment != nil { Button("Directions & alternatives") { showRoutes = true } }
+                    }.font(.caption.bold())
                     Text(scenario.enabled ? "Demo routes are schematic · synthetic reports" : "Driving route screening · reported conditions only").font(.caption2).foregroundStyle(.secondary)
                 }.padding(18).background(.regularMaterial)
             }
             .navigationTitle("Journey map").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button { navigation.ask("Explain the route assessment and nearby reports") } label: { Image(systemName: "sparkles") }.accessibilityLabel("Ask Guide") } }
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button { navigation.ask("Explain the route assessment and nearby reports") } label: { Image(systemName: "sparkles") }.accessibilityLabel("Ask Nav AI") } }
             .sheet(isPresented: $showSearch) { DestinationSearch() }
             .sheet(isPresented: $showReport) { ReportForm() }
             .sheet(isPresented: $showRoutes) { NavigationStack { RouteComparisonView() }.presentationDetents([.medium, .large]) }
@@ -95,7 +112,7 @@ struct RouteComparisonView: View {
                     ForEach(assessment.candidates) { route in
                         SignalCard {
                             VStack(alignment: .leading, spacing: 12) {
-                                Label(route.excluded ? "Excluded by reviewed report" : route.id == assessment.selectedId ? "Selected candidate" : "Alternative candidate", systemImage: route.excluded ? "xmark.octagon" : "arrow.triangle.turn.up.right.diamond").font(.headline).foregroundStyle(route.excluded ? .red : SignalStyle.blue)
+                                Label(route.excluded ? "Avoid reported hazard" : route.id == assessment.selectedId ? "Selected candidate" : "Alternative candidate", systemImage: route.excluded ? "xmark.octagon" : "arrow.triangle.turn.up.right.diamond").font(.headline).foregroundStyle(route.excluded ? .red : SignalStyle.blue)
                                 Text("\(Int((route.durationS / 60).rounded(.up))) min \(scenario.enabled ? "simulated" : "driving") · \((route.distanceM / 1000).formatted(.number.precision(.fractionLength(1)))) km").font(.title3.bold())
                                 if route.findings.isEmpty { Text("No nearby reports found. Conditions remain unknown.").font(.footnote).foregroundStyle(.secondary) }
                                 ForEach(route.findings) { finding in
@@ -104,7 +121,24 @@ struct RouteComparisonView: View {
                             }
                         }
                     }
-                    Button("Ask Guide to explain") { dismiss(); navigation.ask("Why was this route selected and which reports excluded the alternatives?") }.buttonStyle(.bordered)
+                    if let selected = assessment.selected, let steps = selected.steps, !steps.isEmpty {
+                        SignalCard {
+                            VStack(alignment: .leading, spacing: 14) {
+                                Text("Directions").font(.headline)
+                                ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+                                    HStack(alignment: .top) {
+                                        Text("\(index + 1)").font(.caption.bold()).padding(6).background(.thinMaterial, in: Circle())
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(step.instruction).font(.subheadline)
+                                            Text("\(Int(step.distanceM)) m").font(.caption).foregroundStyle(.secondary)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if let site = journey.shelter { Text("Shelter: \(site.name) · \(site.source) · checked \(Wire.date(site.checkedAt))").font(.caption).foregroundStyle(.secondary) }
+                    Button("Ask Nav AI to explain") { dismiss(); navigation.ask("Why was this route selected and which reports excluded the alternatives?") }.buttonStyle(.bordered)
                     Text("Assessed \(Wire.date(assessment.generatedAt)) · \(assessment.source)").font(.caption).foregroundStyle(.secondary)
                     Notice(text: assessment.notice)
                 }

@@ -45,10 +45,11 @@ import CoreLocation
     func signOut() { SessionVault.clear(host: server); account = nil; error = nil }
 }
 @MainActor final class JourneyStore: ObservableObject {
-    @Published var origin: Coordinate? { didSet { assessment = nil } }
-    @Published var destination: Coordinate? { didSet { assessment = nil } }
-    @Published var destinationName = "Selected destination" { didSet { assessment = nil } }
+    @Published var origin: Coordinate? { didSet { if origin != oldValue { assessment = nil } } }
+    @Published var destination: Coordinate? { didSet { if destination != oldValue { assessment = nil; shelter = nil } } }
+    @Published var destinationName = "Selected destination" { didSet { if destinationName != oldValue { assessment = nil } } }
     @Published var assessment: RouteAssessment?; @Published var error: String?; @Published var busy = false
+    @Published var shelter: ShelterSite?
     private let service: any RouteServing
     init(service: any RouteServing) { self.service = service }
     var input: RouteInput? {
@@ -56,20 +57,40 @@ import CoreLocation
         return .init(origin: origin, destination: destination, destinationName: destinationName)
     }
     func assess() async {
-        guard let input, !busy else { return }; busy = true; error = nil; assessment = nil
+        guard let input, !busy else { return }; busy = true; error = nil; assessment = nil; shelter = nil
         defer { busy = false }
-        do { assessment = try await service.assess(input) } catch { self.error = error.localizedDescription }
+        do {
+            let result = try await service.assess(input)
+            guard origin == input.origin, destination == input.destination else { return }
+            assessment = result
+        } catch { self.error = error.localizedDescription }
+    }
+    func routeToShelter(_ shelterId: String? = nil) async {
+        guard let origin, !busy else { error = "Set your starting point first."; return }
+        busy = true; error = nil; assessment = nil; shelter = nil
+        defer { busy = false }
+        do {
+            let result = try await service.shelterRoute(origin, shelterId: shelterId)
+            guard self.origin == origin else { return }
+            destination = result.shelter.coordinate; destinationName = result.shelter.name
+            shelter = result.shelter; assessment = result.assessment
+        } catch { self.error = error.localizedDescription }
+    }
+    func refreshRoute() async {
+        if shelter != nil { await routeToShelter() } else if assessment != nil { await assess() }
     }
 }
 @MainActor final class CommunityStore: ObservableObject {
     @Published var reports: [CommunityReport] = []; @Published var error: String?; @Published var busy = false
     @Published var loadedAt: Date?
+    @Published var mapState: MapSnapshot?; @Published var mapError: String?
     let service: any CommunityServing
     init(service: any CommunityServing) { self.service = service }
     func load() async {
         guard !busy else { return }; busy = true; error = nil
         defer { busy = false }
         do { reports = try await service.reports(); loadedAt = Date() } catch { self.error = error.localizedDescription }
+        do { mapState = try await service.mapState(); mapError = nil } catch { mapError = error.localizedDescription }
     }
 }
 @MainActor final class AssistanceStore: ObservableObject {

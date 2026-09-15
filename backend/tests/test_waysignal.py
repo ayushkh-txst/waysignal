@@ -165,7 +165,7 @@ def test_real_mcp_discovery_and_shared_reports(app_api):
     init = rpc(client, "initialize", {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "contract-test", "version": "1"}})
     assert init.status_code == 200, init.text
     discovered = rpc(client, "tools/list", {}).json()["result"]
-    assert {t["name"] for t in discovered["tools"]} == {"assess_route", "list_route_reports", "get_assistance_status", "get_local_conditions", "find_nearby_facilities", "list_assistance_requests"}
+    assert {t["name"] for t in discovered["tools"]} == {"assess_route", "list_route_reports", "get_assistance_status", "get_local_conditions", "find_nearby_facilities", "list_assistance_requests", "find_shelter_route"}
     call = rpc(client, "tools/call", {"name": "list_route_reports", "arguments": {}}).json()["result"]
     assert not call.get("isError"), call
     assert call["structuredContent"]["reports"] == client.get("/mobile/community", headers=auth()).json()
@@ -372,3 +372,79 @@ def test_assistant_provider_failure_keeps_sources(demo_api, monkeypatch):
     result = client.post('/mobile/assistant', headers=auth(), json={'message':'summarize reports'}).json()
     assert result['mode'] == 'source_summary' and result['sources']
     assert 'temporarily unavailable' in result['notice']
+
+
+def test_shared_map_photo_review_shelter_route_and_closure(demo_api):
+    import base64, io
+    from PIL import Image
+    app, client, sessions = demo_api
+    citizen, admin = auth('citizen-demo'), auth('worker-demo', 'worker')
+    snapshot = client.get('/mobile/map-state', headers=citizen).json()
+    assert snapshot['zones'] == client.get('/mobile/map-state', headers=admin).json()['zones']
+    assert {z['level'] for z in snapshot['zones']} == {'critical', 'danger'}
+    assert snapshot['shelters'][0]['available']
+    body = demo_input()['origin']
+    initial = client.post('/mobile/routes/shelter', headers=citizen, json=body)
+    assert initial.status_code == 200, initial.text
+    assert initial.json()['assessment']['selected_id'] == 'route-2'
+    assert initial.json()['assessment']['candidates'][0]['excluded']  # pending blockage avoided immediately
+    assert initial.json()['assessment']['candidates'][1]['steps']
+    data = io.BytesIO(); Image.new('RGB', (16, 16), 'blue').save(data, 'JPEG')
+    created = client.post('/mobile/community', headers=citizen, json={
+        'client_request_id': str(uuid4()), 'kind': 'road_blocked', 'latitude': 27.7192,
+        'longitude': 85.327, 'note': 'Photo of a blockage on the northern route',
+        'photo_base64': base64.b64encode(data.getvalue()).decode()})
+    assert created.status_code == 201, created.text
+    key = created.json()['id']
+    assert client.get(f'/hazards/{key}/photo', headers=admin).status_code == 200
+    assert client.get(f'/hazards/{key}/photo', headers=auth('other')).status_code == 403
+    updated = client.get('/mobile/map-state', headers=admin).json()
+    assert next(z for z in updated['zones'] if z['id'] == key)['level'] == 'danger'
+    blocked = client.post('/mobile/routes/shelter', headers=citizen, json=body)
+    assert blocked.status_code == 409
+    assert client.post(f'/mobile/community/{key}/review', headers=admin, json={
+        'decision': 'reviewed_active', 'expected_version': 0, 'note': 'Reviewed the uploaded image'}).status_code == 200
+    assert next(z for z in client.get('/mobile/map-state', headers=citizen).json()['zones'] if z['id'] == key)['level'] == 'critical'
+    assert client.patch(f'/hazards/{key}', headers=admin, json={'status': 'resolved'}).status_code == 200
+    assert key not in [z['id'] for z in client.get('/mobile/map-state', headers=citizen).json()['zones']]
+    assert client.post('/mobile/routes/shelter', headers=citizen, json=body).status_code == 200
+    assert client.post('/mobile/shelters/WS-DEMO-S1/close', headers=citizen).status_code == 403
+    assert client.post('/mobile/shelters/WS-DEMO-S1/close', headers=admin).status_code == 200
+    assert not client.get('/mobile/map-state', headers=citizen).json()['shelters'][0]['available']
+    assert client.post('/mobile/routes/shelter', headers=citizen, json=body).status_code == 409
+
+
+def test_shelter_authorization_expiry_hazard_overlap_and_no_fake_safe_areas(app_api):
+    from app.waysignal.map_state import Shelter
+    _, client, sessions = app_api
+    citizen, admin = auth(), auth('worker', 'worker')
+    assert client.get('/mobile/map-state').status_code == 401
+    assert client.get('/mobile/map-state', headers=citizen).json()['shelters'] == []
+    body = {'name': 'Community centre', 'note': 'Site manager confirmed open', 'latitude': 29.7, 'longitude': -95.4}
+    assert client.post('/mobile/shelters', headers=citizen, json=body).status_code == 403
+    created = client.post('/mobile/shelters', headers=admin, json=body)
+    assert created.status_code == 201, created.text
+    key = created.json()['id']
+    assert client.get('/mobile/map-state', headers=citizen).json()['shelters'][0]['available']
+    hazard = report(client)
+    site = client.get('/mobile/map-state', headers=citizen).json()['shelters'][0]
+    assert not site['available'] and site['status'] == 'near_hazard'
+    client.patch(f'/hazards/{hazard}', headers=admin, json={'status': 'resolved'})
+    with sessions() as db:
+        row = db.get(Shelter, key); row.expires_at = datetime.now(timezone.utc) - timedelta(seconds=1); db.commit()
+    site = client.get('/mobile/map-state', headers=citizen).json()['shelters'][0]
+    assert not site['available'] and site['status'] == 'expired'
+
+
+def test_nav_ai_shelter_tool_matches_map_and_uses_sources(demo_api, monkeypatch):
+    app, client, _ = demo_api
+    assistant_transport(app, monkeypatch)
+    point = demo_input()['origin']
+    result = rpc(client, 'tools/call', {'name': 'find_shelter_route', 'arguments': point}).json()['result']
+    assert not result.get('isError'), result
+    rest = client.post('/mobile/routes/shelter', headers=auth(), json=point).json()
+    assert result['structuredContent']['assessment']['selected_id'] == rest['assessment']['selected_id']
+    response = client.post('/mobile/assistant', headers=auth(), json={'message': 'Find a route to an open shelter', 'location': point})
+    assert response.status_code == 200, response.text
+    assert 'find_shelter_route' in response.json()['tool_used']
+    assert any(s['kind'] == 'shelter' for s in response.json()['sources'])

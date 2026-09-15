@@ -93,3 +93,28 @@ def reset_scenario(actor: dict = Depends(signed_reporter), db: Session = Depends
     if actor["role"] != "worker":
         raise HTTPException(403, "Only responders can reset the scripted exercise.")
     return seed(db, reset=True)
+
+
+from app.waysignal.map_state import MapStateService, ShelterInput, ShelterRouteInput
+from app.waysignal.domain import Coordinate
+
+
+@router.get('/map-state')
+def map_state(response: Response, actor: dict = Depends(signed_reporter), db: Session = Depends(get_db)):
+    response.headers['Cache-Control'] = 'no-store'
+    return MapStateService(db, actor).snapshot()
+
+
+@router.post('/shelters', status_code=201)
+def add_shelter(payload: ShelterInput, actor: dict = Depends(signed_reporter), db: Session = Depends(get_db)):
+    return MapStateService(db, actor).create_shelter(payload)
+
+
+@router.post('/shelters/{key}/close')
+def close_shelter(key: str, actor: dict = Depends(signed_reporter), db: Session = Depends(get_db)):
+    return MapStateService(db, actor).close_shelter(key)
+
+
+@router.post('/routes/shelter')
+async def shelter_route(payload: ShelterRouteInput, actor: dict = Depends(signed_reporter), db: Session = Depends(get_db)):
+    return await MapStateService(db, actor).route_to_shelter(payload, payload.shelter_id)

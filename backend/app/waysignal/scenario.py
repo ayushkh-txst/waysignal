@@ -97,6 +97,16 @@ def seed(db: Session, reset: bool = False) -> dict:
     validate_demo_database()
     if not settings.waysignal_demo_mode:
         raise HTTPException(409, "Start the dedicated demo server to load this exercise.")
+    from app.waysignal.map_state import Shelter
+    shelter_id = 'WS-DEMO-S1'
+    if reset:
+        db.execute(delete(Shelter).where(Shelter.id == shelter_id))
+        db.flush()
+    if db.get(Shelter, shelter_id) is None:
+        checked = datetime.now(timezone.utc)
+        db.add(Shelter(id=shelter_id, name='Hilltop Community Centre', **DESTINATION,
+            note='Simulated open shelter for the Riverside exercise.', actor='worker-demo',
+            checked_at=checked, expires_at=checked + timedelta(hours=12), status='open'))
     ids = [item[0] for item in REPORTS]
     if reset:
         db.execute(delete(ReviewEvent).where(ReviewEvent.hazard_id.in_(ids)))

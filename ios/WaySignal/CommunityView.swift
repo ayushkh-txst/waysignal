@@ -20,7 +20,7 @@ struct CommunityView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text("One observation.\nA better next journey.").font(.system(size: 28, weight: .bold, design: .serif))
-                PrimaryButton(title: "Share an observation", icon: "plus.bubble") { showReport = true }
+                PrimaryButton(title: "Report blocked route", icon: "camera.fill") { showReport = true }
                 Picker("Report view", selection: $scope) { ForEach(["All", "Nearby", "Route", "Mine"], id: \.self) { Text($0) } }.pickerStyle(.segmented)
                 Toggle("Include closed reports", isOn: $allStates).font(.subheadline)
                 ErrorNotice(message: community.error)
@@ -92,17 +92,32 @@ struct ReportForm: View {
     @State private var item: PhotosPickerItem?; @State private var photo: String?
     @State private var requestId = UUID(); @State private var busy = false; @State private var error: String?
     @State private var savedId: String?; @State private var photoBusy = false
+    @State private var showPinPicker = false
+    @EnvironmentObject private var navigation: AppNavigation
+    @EnvironmentObject private var location: LocationProvider
+    @EnvironmentObject private var scenario: ScenarioStore
     var body: some View {
         NavigationStack {
             Form {
                 if let savedId {
                     Section {
                         Label("Observation received", systemImage: "checkmark.circle.fill").foregroundStyle(.teal)
-                        Text("Your report is awaiting responder review.")
+                        Text("Your report is on the shared map. An admin can review the photo and confirm the blockage.")
                         Text(savedId).font(.caption.monospaced())
-                        Button("Done") { dismiss() }
+                        Button("View on map") { navigation.tab = "map"; dismiss() }
                     }
                 } else {
+                    Section("Photo") {
+                        PhotosPicker(selection: $item, matching: .images) {
+                            Label(photo == nil ? "Upload a blockage photo" : "Choose another photo", systemImage: "camera.fill")
+                                .font(.headline).padding(.vertical, 8)
+                        }
+                        if photoBusy { ProgressView("Preparing photo…") }
+                        if let photo, let data = Data(base64Encoded: photo), let image = UIImage(data: data) {
+                            Image(uiImage: image).resizable().scaledToFit().frame(maxHeight: 200).clipShape(RoundedRectangle(cornerRadius: 12))
+                            Button("Remove photo", role: .destructive) { item = nil; self.photo = nil }
+                        }
+                    }
                     Section("What did you observe?") {
                         Picker("Type", selection: $kind) {
                             Text("Road blocked").tag("road_blocked"); Text("Flooded road").tag("flooded_road")
@@ -111,10 +126,13 @@ struct ReportForm: View {
                     }
                     Section("What should others know?") { TextField("Describe what you saw", text: $note, axis: .vertical).lineLimit(3...5); Text("\(note.count)/500").font(.caption).foregroundStyle(note.count > 500 ? .red : .secondary) }
                     CoordinateFields(title: "Observation location", latitude: $lat, longitude: $lon)
-                    Section("Photo · optional") {
-                        PhotosPicker(selection: $item, matching: .images) { Label(photo == nil ? "Attach photo" : "Replace attached photo", systemImage: "photo") }
-                        if photoBusy { ProgressView("Preparing photo…") }
-                        if photo != nil { Button("Remove photo", role: .destructive) { item = nil; photo = nil } }
+                    Section("Place the report") {
+                        Button { showPinPicker = true } label: { Label("Choose location on map", systemImage: "mappin.and.ellipse") }
+                        Button("Use my location") {
+                            if scenario.enabled, let start = scenario.info?.origin { lat = String(start.latitude); lon = String(start.longitude) }
+                            else { location.request() }
+                        }
+                        ErrorNotice(message: location.error)
                     }
                     Section {
                         Text("This report and its coordinates will be visible to other signed-in users. Photos are available to you and responders.").font(.footnote)
@@ -122,9 +140,13 @@ struct ReportForm: View {
                         PrimaryButton(title: "Submit observation", icon: "paperplane", busy: busy, disabled: Coordinate.parse(lat, lon) == nil || photoBusy || note.count > 500) { Task { await submit() } }
                     }
                 }
-            }.navigationTitle("Share an observation").navigationBarTitleDisplayMode(.inline)
+            }.navigationTitle("Report blocked route").navigationBarTitleDisplayMode(.inline)
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() }.disabled(busy) } }
                 .disabled(busy)
+                .sheet(isPresented: $showPinPicker) { ReportPinPicker(latitude: $lat, longitude: $lon) }
+                .onChange(of: location.coordinate) { _, value in
+                    if !scenario.enabled, let value { lat = String(value.latitude); lon = String(value.longitude) }
+                }
                 .onAppear { if let c = journey.origin { lat = String(c.latitude); lon = String(c.longitude) } }
                 .onChange(of: note) { _, _ in requestId = UUID() }
                 .onChange(of: kind) { _, _ in requestId = UUID() }
@@ -152,7 +174,35 @@ struct ReportForm: View {
         defer { busy = false }
         do {
             let report = try await community.service.create(kind: kind, coordinate: coordinate, photo: photo, requestId: requestId, note: note)
-            savedId = report.id; journey.assessment = nil; await community.load()
+            savedId = report.id; await community.load(); await journey.refreshRoute()
         } catch { self.error = error.localizedDescription }
+    }
+}
+
+
+struct ReportPinPicker: View {
+    @Binding var latitude: String; @Binding var longitude: String
+    @Environment(\.dismiss) private var dismiss
+    @State private var position: MapCameraPosition = .automatic
+    @State private var point: CLLocationCoordinate2D?
+    var body: some View {
+        NavigationStack {
+            Map(position: $position).overlay { Image(systemName: "mappin.circle.fill").font(.largeTitle).foregroundStyle(.red).offset(y: -15) }
+                .onMapCameraChange(frequency: .onEnd) { camera in point = camera.region.center }
+                .safeAreaInset(edge: .bottom) {
+                    VStack(spacing: 12) {
+                        Text("Move the map until the pin is on the blockage.").font(.subheadline)
+                        PrimaryButton(title: "Use this location", icon: "mappin", disabled: point == nil) {
+                            if let point { latitude = String(point.latitude); longitude = String(point.longitude); dismiss() }
+                        }
+                    }.padding().background(.regularMaterial)
+                }.navigationTitle("Report location").navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+                .onAppear {
+                    if let start = Coordinate.parse(latitude, longitude) {
+                        point = start.location; position = .region(.init(center: start.location, span: .init(latitudeDelta: 0.012, longitudeDelta: 0.012)))
+                    }
+                }
+        }
     }
 }

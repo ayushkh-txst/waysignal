@@ -60,6 +60,7 @@ struct Workspace: View {
     @StateObject private var journey: JourneyStore
     @StateObject private var community: CommunityStore
     @StateObject private var assistance: AssistanceStore
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var guide: GuideStore
     @StateObject private var location = LocationProvider()
     @StateObject private var navigation = AppNavigation()
@@ -92,7 +93,7 @@ struct Workspace: View {
                     NavigationStack { JourneyView().modifier(DemoDataIndicator()) }.tabItem { Label("Map", systemImage: "map") }.tag("map")
                     NavigationStack { CommunityView().modifier(DemoDataIndicator()) }.tabItem { Label("Community", systemImage: "person.2") }.tag("community")
                     NavigationStack { AssistanceView(account: account).modifier(DemoDataIndicator()) }.tabItem { Label("Help", systemImage: "hand.raised") }.tag("help")
-                    NavigationStack { GuideView().modifier(DemoDataIndicator()) }.tabItem { Label("Guide", systemImage: "sparkles") }.tag("guide")
+                    NavigationStack { GuideView().modifier(DemoDataIndicator()) }.tabItem { Label("Nav AI", systemImage: "sparkles") }.tag("guide")
                 }
             }
           }
@@ -106,6 +107,16 @@ struct Workspace: View {
                 if account.role == "worker" { await operations.load() } else { await assistance.load() }
                 if let origin = journey.origin { await context.load(origin, includePlaces: account.role == "citizen") }
                 if scenario.enabled { await journey.assess() }
+            }
+            .task(id: scenePhase) {
+                guard scenePhase == .active else { return }
+                while !Task.isCancelled {
+                    do { try await Task.sleep(for: .seconds(8)) } catch { return }
+                    await community.load()
+                }
+            }
+            .onChange(of: community.mapState?.revision) { previous, current in
+                if previous != nil, previous != current { Task { await journey.refreshRoute() } }
             }
             .onChange(of: location.coordinate) { _, value in if !scenario.enabled, let value { journey.origin = value; Task { await context.load(value, includePlaces: account.role == "citizen") } } }
     }
@@ -132,7 +143,7 @@ struct AccountView: View {
             }
             Section("About this build") {
                 Text("Navigation × Social Media × Productivity")
-                Text("Community review is project review, not official road certification. The Guide summarizes records through MCP.").font(.footnote)
+                Text("Community review is project review, not official road certification. Nav AI summarizes records through MCP.").font(.footnote)
             }
             Button("Sign out", role: .destructive) { session.signOut() }
         }.navigationTitle("Your workspace")

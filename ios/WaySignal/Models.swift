@@ -31,6 +31,7 @@ struct RouteFinding: Decodable, Identifiable {
 struct RouteCandidate: Decodable, Identifiable {
     let id: String; let geometry: [[Double]]; let distanceM: Double; let durationS: Double
     let excluded: Bool; let findings: [RouteFinding]; let transportMode: String
+    let steps: [RouteStep]?
     var coordinates: [CLLocationCoordinate2D] {
         geometry.compactMap { $0.count == 2 ? .init(latitude: $0[0], longitude: $0[1]) : nil }
     }
@@ -119,3 +120,25 @@ struct OperationsReport: Decodable {
     struct Count: Decodable, Identifiable { let key: String; let count: Int; var id: String { key } }
     let generatedAt: String; let summary: Summary; let statuses: [Count]; let incidentTypes: [Count]
 }
+
+
+struct RouteStep: Decodable { let instruction: String; let distanceM: Double }
+struct RiskZone: Decodable, Identifiable {
+    let id: String; let name: String; let latitude: Double; let longitude: Double
+    let radiusM: Double; let level: String; let reviewState: String; let updatedAt: String
+    var coordinate: CLLocationCoordinate2D { .init(latitude: latitude, longitude: longitude) }
+}
+struct ShelterSite: Decodable, Identifiable {
+    let id: String; let name: String; let latitude: Double; let longitude: Double; let radiusM: Double
+    let available: Bool; let status: String; let note: String; let checkedAt: String; let expiresAt: String; let source: String
+    var coordinate: Coordinate { .init(latitude: latitude, longitude: longitude) }
+}
+struct MapSnapshot: Decodable {
+    let zones: [RiskZone]; let shelters: [ShelterSite]; let generatedAt: String; let isDemo: Bool; let notice: String
+    var revision: String {
+        zones.map { $0.id + $0.level + $0.reviewState + $0.updatedAt }.sorted().joined(separator: ":") +
+        shelters.map { $0.id + $0.status + $0.expiresAt }.sorted().joined(separator: ":")
+    }
+}
+struct ShelterRoute: Decodable { let shelter: ShelterSite; let assessment: RouteAssessment }
+struct ShelterInput: Encodable { let name: String; let latitude: Double; let longitude: Double; let note: String; let validHours: Int }

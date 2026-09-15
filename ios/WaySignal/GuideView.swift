@@ -10,7 +10,7 @@ struct GuideView: View {
     @State private var messages: [ConversationMessage] = []
     @State private var draft = ""; @State private var busy = false; @State private var error: String?
     @State private var readAloud = false
-    private let suggestions = ["Explain my route", "Rain and river forecast", "Find nearby facilities", "Summarize community reports", "Check my assistance requests"]
+    private let suggestions = ["Find a route to an open shelter", "Explain my route", "Rain and river forecast", "Find nearby facilities", "Summarize community reports", "Check my assistance requests"]
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
@@ -58,13 +58,13 @@ struct GuideView: View {
                         if voice.recording { Text("Listening… Tap the microphone to stop. Review the text before sending.").font(.caption).foregroundStyle(.secondary) }
                         HStack(alignment: .bottom, spacing: 12) {
                             Button { if voice.recording { voice.stop() } else { Task { await voice.start() } } } label: { Image(systemName: voice.recording ? "stop.circle.fill" : "mic.fill").font(.title3).frame(width: 36, height: 42) }.accessibilityLabel(voice.recording ? "Stop recording" : "Dictate a question")
-                            TextField("Ask WaySignal…", text: $draft, axis: .vertical).lineLimit(1...5).padding(11).background(.white, in: RoundedRectangle(cornerRadius: 14))
+                            TextField("Ask Nav AI…", text: $draft, axis: .vertical).lineLimit(1...5).padding(11).background(.white, in: RoundedRectangle(cornerRadius: 14))
                             Button { Task { await send() } } label: { Image(systemName: "arrow.up.circle.fill").font(.system(size: 34)) }.disabled(busy || draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || draft.count > 1500).accessibilityLabel("Send question")
                         }
                         if draft.count > 1500 { Text("Keep your question under 1,500 characters.").font(.caption).foregroundStyle(.red) }
                     }.padding(14).background(.regularMaterial)
                 }
-        }.navigationTitle("WaySignal Guide").navigationBarTitleDisplayMode(.inline)
+        }.navigationTitle("Nav AI").navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
@@ -117,6 +117,13 @@ struct SourceDetailView: View {
                     Text("Updated \(Wire.date(request.updatedAt ?? request.createdAt))")
                     if let name = request.responderName { Text("Responder: \(name)") }
                 }
+            } else if source.kind == "shelter", let site = community.mapState?.shelters.first(where: { $0.id == source.id }) {
+                Section(site.name) {
+                    Text(site.available ? "Recorded open" : site.status.replacingOccurrences(of: "_", with: " "))
+                    Text(site.note); Text(site.source)
+                    Text("Checked \(Wire.date(site.checkedAt))").font(.caption)
+                    Text("Expires \(Wire.date(site.expiresAt))").font(.caption)
+                }
             } else if source.kind == "conditions", let conditions = context.conditions {
                 ConditionsCard(conditions: conditions)
             } else if source.kind == "facility", let place = context.places?.facilities.first(where: { $0.id == source.id }) {
@@ -124,7 +131,7 @@ struct SourceDetailView: View {
             } else { Text("Refreshing this source. If it remains unavailable, return to Community or Help and refresh.") }
             ErrorNotice(message: source.kind == "report" ? community.error : assistance.error)
         }.navigationTitle("Source details").task {
-            if source.kind == "report" { await community.load() } else if source.kind == "assistance" { await assistance.load() }
+            if source.kind == "report" || source.kind == "shelter" { await community.load() } else if source.kind == "assistance" { await assistance.load() }
         }
     }
 }

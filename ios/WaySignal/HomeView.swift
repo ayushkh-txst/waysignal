@@ -38,7 +38,7 @@ struct HomeView: View {
                     SignalCard {
                         HStack(spacing: 14) {
                             Image(systemName: "sparkles").font(.title2).foregroundStyle(SignalStyle.gold)
-                            VStack(alignment: .leading, spacing: 4) { Text("Ask WaySignal Guide").font(.headline); Text("Weather, routes, reports and request updates.").font(.caption).foregroundStyle(.secondary) }
+                            VStack(alignment: .leading, spacing: 4) { Text("Ask Nav AI").font(.headline); Text("Weather, routes, reports and request updates.").font(.caption).foregroundStyle(.secondary) }
                             Spacer(); Image(systemName: "arrow.up.right")
                         }
                     }
@@ -52,7 +52,7 @@ struct HomeView: View {
                             SignalCard { HStack { Image(systemName: place.icon).foregroundStyle(SignalStyle.gold); VStack(alignment: .leading) { Text(place.name).font(.subheadline.bold()); Text("\(place.kind.capitalized) · availability unverified").font(.caption).foregroundStyle(.secondary) }; Spacer(); Image(systemName: "arrow.up.right") } }
                         }.buttonStyle(.plain)
                     }
-                    Text(places.notice).font(.caption).foregroundStyle(.secondary)
+
                 }
                 ErrorNotice(message: context.placesError)
             }.padding(20)

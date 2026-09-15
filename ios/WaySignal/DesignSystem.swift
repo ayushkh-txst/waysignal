@@ -1,4 +1,5 @@
 import SwiftUI
+import MapKit
 
 enum SignalStyle {
     static let blue = Color(red: 0.04, green: 0.14, blue: 0.25)
@@ -164,5 +165,30 @@ struct MetricTile: View {
             Text(title).font(.caption).foregroundStyle(.secondary)
         }.frame(maxWidth: .infinity, alignment: .leading).padding(16)
             .background(.white, in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+// One map layer and legend shared by both workspaces.
+struct MapRiskLayer: MapContent {
+    let snapshot: MapSnapshot?
+    var body: some MapContent {
+        ForEach(snapshot?.zones ?? []) { zone in
+            MapCircle(center: zone.coordinate, radius: zone.radiusM)
+                .foregroundStyle((zone.level == "critical" ? Color.red : .orange).opacity(0.22))
+                .stroke(zone.level == "critical" ? Color.red : .orange, lineWidth: 2)
+        }
+        ForEach((snapshot?.shelters ?? []).filter { $0.available }) { site in
+            MapCircle(center: site.coordinate.location, radius: site.radiusM)
+                .foregroundStyle(Color.green.opacity(0.25)).stroke(.green, lineWidth: 2)
+        }
+    }
+}
+struct MapRiskLegend: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Label("Critical · reviewed hazard", systemImage: "circle.fill").foregroundStyle(.red)
+            Label("Danger · awaiting review", systemImage: "circle.fill").foregroundStyle(.orange)
+            Label("Safe point · open shelter", systemImage: "circle.fill").foregroundStyle(.green)
+        }.font(.caption2.bold()).padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 }

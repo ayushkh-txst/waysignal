@@ -112,4 +112,12 @@ def build_mcp() -> FastMCP:
             return {"requests": [{"id": r.id, "status": r.status.value, "responder_name": r.responder_name,
                 "created_at": r.created_at.isoformat(), "updated_at": r.updated_at.isoformat() if r.updated_at else None,
                 "is_demo": r.is_demo} for r in rows]}
+    @server.tool()
+    async def find_shelter_route(latitude: float, longitude: float, ctx: Context) -> dict[str, Any]:
+        """Find a currently recorded open shelter and screen routes against reported floods and obstructions."""
+        from app.waysignal.map_state import MapStateService
+        actor = actor_from_context(ctx)
+        with database.SessionLocal() as db:
+            return await MapStateService(db, actor).route_to_shelter(Coordinate(latitude=latitude, longitude=longitude))
+
     return server
