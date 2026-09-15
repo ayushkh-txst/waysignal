@@ -1,84 +1,135 @@
 # WaySignal
 
+<img src="ios/WaySignal/Assets.xcassets/BrandMark.imageset/WaySignal.png" width="120" alt="WaySignal walking W logo">
+
 **Know the route. Share the signal.**
 
-Navigation × Social Media × Productivity: a community observation becomes a responder review, changes a route assessment, and connects people to recorded assistance progress.
+WaySignal is an iPhone prototype connecting community observations, route decisions and responder coordination. A reviewed road hazard changes a route assessment; an assistance request becomes a task with visible progress.
 
-This new local repository preserves the complete G-one source snapshot from `ayushkh-txst/jalrakshak-hackrice16` at `9e9ebb009ffcb9ee79f3e80da6bc8401df08f2aa`. The upstream commit history is not imported. The original README is preserved in [G_ONE_README.md](G_ONE_README.md).
+Built for TXST Shipaton using **SwiftUI, MapKit, FastAPI and authenticated MCP**, with the existing G-one web workspace available for responders.
 
-## Native app upgrade
+## The category fusion
 
-Read [the native update guide](docs/NATIVE-UPGRADE.md) for the new icon, welcome screen, citizen and responder workspaces, voice/chat Guide, installation and demo recording. Run `bash scripts/run-ios-demo.sh` for the local demo API and a signed iPhone Simulator build.
+**Navigation × Social Media**, supported by **Productivity**.
 
-## Run on your Mac
+Community posts are location-based observations with evidence and a review history. Navigation uses these observations to assess route candidates; the journey also determines which observations are relevant. Responder reviews change the next assessment. Assistance requests connect people on that journey to assignment and completion records.
 
-Requirements: Python 3.11+, Node.js 22.12+ (or 20.19+), and Xcode with the iOS 17+ SDK.
+The dependency is visible in the demo: **review report R104 → direct route excluded → alternative selected → Guide explains the source → responder updates assistance progress**.
+
+## Implemented experiences
+
+| Workspace | Flows |
+|---|---|
+| Citizen iPhone app | Branded welcome; Home; main Map with destination search, report/facility markers and route comparison; Community observations with optional photos; Help requests and progress; Guide chat and voice input |
+| Responder iPhone app | Overview; incident filtering and assignment; operations Map; community Review; Reports with CSV sharing |
+| Responder web app | Preserved G-one operations workspace, community review and a repeatable demo exercise |
+| Guide | Authenticated MCP retrieval, linked source records, optional generated answers, speech transcription and optional spoken replies |
+
+Account permissions come from server authentication. Selecting a role on the welcome screen does not grant that role.
+
+## Run the iPhone demo on a Mac
+
+Requirements: **Python 3.11+**, **Node.js 22.12+** (or 20.19+), and **Xcode with an installed iOS Simulator runtime**. The app targets iOS 17 or later.
+
+For a fresh checkout:
 
 ```bash
-# Terminal 1 — API, MCP and local SQLite
-bash scripts/start-backend.sh
+git clone https://github.com/ayushkh-txst/waysignal.git
+cd waysignal
+bash scripts/build-web.sh
+bash scripts/run-ios-demo.sh
+```
+
+The first script builds the companion web workspace. The second prepares Python dependencies, starts the isolated demo API, builds a signed simulator app and opens it on an available iPhone simulator. It retains local configuration and checks the owner of port 8000 before restarting this project's server.
+
+For subsequent runs, use `bash scripts/run-ios-demo.sh` from the updated project folder. Open `ios/WaySignal.xcodeproj` to inspect the SwiftUI source in Xcode.
+
+| Local demo role | Email | Password |
+|---|---|---|
+| Citizen | `citizen@example.com` | `CitizenDemo2026!` |
+| Responder | `worker@example.com` | `WorkerDemo2026!` |
+
+These are intentional development accounts, unless overridden locally. Native **Server connection** defaults to `http://localhost:8000` for the simulator. The companion web app is served at the same address with a separate sign-in session.
+
+Build log: `build/WaySignal-build.log`. API log: `build/WaySignal-backend.log`. Environment files, local databases and build products are excluded from Git.
+
+### Separate development servers
+
+```bash
+# Terminal 1: populated exercise API and MCP
+bash scripts/start-demo.sh
 ```
 
 ```bash
-# Terminal 2 — complete G-one web app + new responder review page
+# Terminal 2: web development server
 bash scripts/start-web.sh
 ```
 
-```bash
-# Open the native app; select an iPhone Simulator and press Run
-open ios/WaySignal.xcodeproj
-```
+Use the URL printed by Vite, normally `http://127.0.0.1:5173`. For normal development data, stop the demo API and run `bash scripts/start-backend.sh` instead. Demo mode uses a separate `backend/waysignal-demo.db`.
 
-The native login defaults to `http://localhost:8000`. The web app opens at `http://localhost:5173`. Use the inherited local demo accounts configured in `backend/app/core/config.py`. Do not use a production account for the demonstration.
+## Demonstration sequence
 
-The downloadable ZIP includes the built web application, which the API serves at `http://localhost:8000`. After editing web source, run `bash scripts/build-web.sh` to refresh that build. A source-only Git checkout needs this build before the native **Open full web application** link is available. The separate Vite development server on port 5173 is available without that build. Browser sign-in is separate from native sign-in.
+1. In the responder web workspace, open the exercise and reset the fixtures. Sign in to the iPhone app as the demo citizen.
+2. Show Home and Map. Assess the default demo journey and inspect observation **R104**.
+3. As responder, confirm R104 as an active hazard with a review note.
+4. Reassess the same journey as citizen: the direct candidate is excluded and the alternative is selected.
+5. Ask Guide why the route changed and open its linked report record.
+6. Submit a clearly marked demo assistance request. As responder, assign it, mark en route, then complete it. Show the matching citizen timeline.
 
-## What is included
+Keep the demo label visible: exercise reports, people, weather and route candidates are synthetic. Map tiles and some inherited integrations still require network access. See the [native guide](docs/NATIVE-UPGRADE.md) and [demo scenario](docs/DEMO-SCENARIO.md).
 
-- **All G-one modules** in the original frontend/backend layout: citizen maps, weather/flood context, alerts, facility lookup, hazard/photo reporting, AI/voice modules, emergency requests, responder maps, assignment, navigation, dispatch and operational reports.
-- **Native SwiftUI source:** branded welcome, citizen Home/Map/Community/Help/Guide, and responder Overview/Incidents/Map/Review/Reports; search, photo observations, review, assignments, timelines, voice/chat and CSV export.
-- **Responder Community Review:** evidence, notes, reviewed/rejected decisions, resolve/reopen, history and conflict handling.
-- **Shared backend services:** one route-assessment implementation behind REST and MCP, with independently injectable route providers, report sources and hazard policies.
-- **Real MCP:** six authenticated route, report, assistance, forecast and facility tools. Guide retrieves source records and optionally generates an answer using a configured server-side model.
-- **Figma handoff:** complete prompt, tokens, components, screen specifications, SVG reference boards and award presentation story.
+## Architecture and MCP
 
-All G-one functionality remains available on the web. The expanded native app covers the flows listed in the update guide. Additional legacy dispatch panels remain in the web workspace. Native Guide supports typed and voice input; generated answers require a configured server-side provider and otherwise show source summaries.
+SwiftUI views use focused stores and service clients. REST endpoints and MCP tools call shared domain services, so route decisions follow the same rules in the app and in Guide.
+
+- **Single responsibility:** community review, route assessment, assistance and Guide retrieval have separate services. Views present state rather than implementing route policy.
+- **Open/closed principle:** route providers, report sources and hazard policies are injected behind contracts. `DemoRouteProvider` supplies fixtures through the same contract as the live provider.
+- **MCP:** Guide uses a real authenticated client/server connection. Its six read-only tools are `assess_route`, `list_route_reports`, `get_assistance_status`, `get_local_conditions`, `find_nearby_facilities` and `list_assistance_requests`.
+- **Authorization:** citizens see their own private assistance records; responder access, photo access and review writes are checked by the backend.
+
+Source: [domain contracts](backend/app/waysignal/domain.py), [route service](backend/app/waysignal/routes.py), [MCP tools](backend/app/waysignal/mcp_server.py), [assistant](backend/app/waysignal/assistant.py). See the [architecture](design/WaySignal-System-Architecture.md) and [implementation handoff](docs/WAYSIGNAL-HANDOFF.md).
+
+### Generated answers and voice
+
+Without a model provider, Guide returns labeled **source summaries**. For generated answers, configure `OPENAI_API_KEY` and `GUIDE_AI_MODEL` in the backend's local `.env`, using a model available to your account, then restart the API. Keys stay on the server. Provider failures fall back to source summaries with links.
+
+Voice input requires microphone and speech permission; users review the transcript before sending. Guide reads records and does not submit requests or dispatch responders for the user. A live paid model call has not been verified in this development workspace.
+
+## Reused foundation, new work and future scope
+
+| Origin | Scope |
+|---|---|
+| G-one foundation | Complete web/backend source snapshot: authentication, maps, contextual data, reporting, requests and responder operations. Original documentation: [G_ONE_README.md](G_ONE_README.md). |
+| New WaySignal work | SwiftUI citizen/responder workspaces, walking W branding, reviewed community-to-route workflow, shared domain contracts, authenticated MCP/Guide, isolated populated demo, native voice/photo flows and build scripts. |
+| Future or incomplete | Native equivalents of every legacy dispatch panel, push notifications, offline synchronization, verified shelter capacity, navigation-grade turn-by-turn guidance and official emergency integrations. |
+
+The baseline is [G-one commit `9e9ebb0`](https://github.com/ayushkh-txst/jalrakshak-hackrice16/tree/9e9ebb009ffcb9ee79f3e80da6bc8401df08f2aa). This repository imports that source snapshot, not the original upstream Git history. Subsequent WaySignal commits separate the new implementation stages.
 
 ## Verification
 
-- Backend: **96 tests passed** (including new assistant and observation contracts).
-- Existing frontend hazard tests: **9 passed**.
-- TypeScript/Vite production build: **passed**.
-- Expanded iOS build and new-screen behavior: **requires verification on the Mac**. The earlier starter compiled and launched there; this development workspace has no Xcode.
+- Backend regression suite: **96 passed** before the final request-body guard; the **16 WaySignal integration tests** passed again after that guard.
+- Frontend hazard tests: **9 passed**; TypeScript/Vite production build passed.
+- Earlier native starter: compiled and launched on the developer's Mac. Expanded native UI: syntax checked; its new screens still require simulator and visual verification.
+- The [iOS workflow](.github/workflows/ios-build.yml) compiles the app on a macOS runner. Check [Actions](https://github.com/ayushkh-txst/waysignal/actions) for the actual result; compilation does not verify interactions or appearance.
 
 ```bash
+# From the repository root, after environment setup
+backend/.venv/bin/python -m pip install -r backend/requirements-dev.txt
 cd backend
-.venv/bin/python -m pip install -r requirements-dev.txt
 .venv/bin/python -m pytest -q
 ```
 
 ```bash
+# From the repository root
 cd frontend
 npm run test:hazards
 npm run build
 ```
 
-On your Mac:
+## Submission materials
 
-```bash
-xcodebuild -project ios/WaySignal.xcodeproj -scheme WaySignal \
-  -configuration Debug -destination 'generic/platform=iOS Simulator' \
-  CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- ENTITLEMENTS_REQUIRED=YES build
-```
+The source is here. The recorded native demo, final app screenshots and public Adobe Express presentation still need to be added to the submission. Use the supplied event template and identify inherited work, newly demonstrated functionality and future ideas separately.
 
-## Demo and submission
+Design references: [Figma prompt](design/WaySignal-Figma-Prompt.md), [design brief](design/WaySignal-Figma-Design-Brief.md), [mobile concept board](design/WaySignal-Mobile-Design.svg). These are references, not evidence of implemented screens.
 
-Read [the implementation handoff](docs/WAYSIGNAL-HANDOFF.md) for the demo sequence, API contracts, service boundaries and remaining work. Copy [the Figma prompt](design/WaySignal-Figma-Prompt.md) alongside the [complete design brief](design/WaySignal-Figma-Design-Brief.md). Assemble the storytelling submission in the supplied Adobe Express template.
-
-The core demonstration is **report → responder review → changed route assessment → assistance assignment → source-linked explanation**. Mark inherited work, new hackathon work and future features separately.
-
-This is a hackathon prototype. Reviews are project reviews, route screening uses reported points, and no route is certified safe. Prototype assistance requests go to the project dashboard, not emergency services. No public repository or deployment has been created yet.
-
-## Populated demo exercise
-
-Start `bash scripts/start-demo.sh` instead of the normal backend launcher, sign in, then click **Open exercise**. Read [the demo instructions](docs/DEMO-SCENARIO.md) for installation, default accounts, reset and the presentation sequence. The exercise adds isolated synthetic reports, assistance requests, weather and route candidates.
+WaySignal is a hackathon prototype. Route screening uses reported points and does not certify a route as safe. Assistance requests go to this project's dashboard, not emergency services. There is no verified production deployment in this repository.
