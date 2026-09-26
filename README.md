@@ -92,6 +92,10 @@ Account explains the active simulation; route and source details identify synthe
 
 ## Architecture and MCP
 
+![WaySignal system design](docs/diagrams/waysignal-system-design.svg)
+
+Request flows, design trade-offs and known gaps are in [docs/SYSTEM-DESIGN.md](docs/SYSTEM-DESIGN.md).
+
 SwiftUI views use focused stores and service clients. REST endpoints and MCP tools call shared domain services, so route decisions follow the same rules in the app and in Nav AI.
 
 - **Single responsibility:** community review, route assessment, assistance and Nav AI retrieval have separate services. Views present state rather than implementing route policy.

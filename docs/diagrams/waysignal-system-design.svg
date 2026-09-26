@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1640" viewBox="0 0 1600 1640" role="img" aria-labelledby="t d">
+<title id="t">WaySignal system design</title>
+<desc id="d">Citizen and responder SwiftUI apps and the G-one React web workspace call one FastAPI deployment over HTTPS with JWT bearer tokens. The deployment serves REST routers, the built web app, and a Streamable HTTP MCP server mounted at /mcp that only accepts localhost hosts. Nav AI runs inside the same process and calls /mcp over loopback with the caller's own token, so REST and MCP use the same CommunityService, RouteAssessmentService and MapStateService and the same authorization. Route assessment screens up to eight provider candidates against community reports through a HazardPolicy. Data lives in PostgreSQL on Render, or SQLite for the isolated demo. External providers are OSRM, Open-Meteo, Overpass, ArcGIS and an optional OpenAI Responses API. A multi-stage Dockerfile deploys to Render; GitHub Actions builds the iOS app on macOS.</desc>
+<defs>
+<marker id="gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L9 5L0 9" fill="none" stroke="#e0b95c" stroke-width="1.6"/></marker>
+<marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L9 5L0 9" fill="none" stroke="#86c6e6" stroke-width="1.6"/></marker>
+<marker id="green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L9 5L0 9" fill="none" stroke="#8dd4b0" stroke-width="1.6"/></marker>
+</defs>
+<rect width="1600" height="1640" rx="24" fill="#0f1416"/>
+<g font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+<text x="60" y="70" font-size="34" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">WaySignal — system design</text>
+<text x="60" y="102" font-size="16" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Implemented architecture at commit e2d58c6 · one FastAPI deployment · REST and MCP share one service layer</text>
+<text x="60" y="150" font-size="13" font-weight="700" fill="#7d8d92" text-anchor="start" xml:space="preserve" style="white-space:pre">CLIENTS</text>
+<line x1="60" y1="158" x2="1540" y2="158" stroke="#34424a" stroke-width="1"/>
+<rect x="60" y="172" width="470" height="218" rx="14" fill="#1f282b" stroke="#34424a" stroke-width="1.5"/>
+<text x="82" y="206" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Citizen iPhone app</text>
+<text x="82" y="228" font-size="13" font-weight="600" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">SwiftUI · iOS 17+</text>
+<text x="82" y="256" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">MapKit map, route comparison, shelters</text>
+<text x="82" y="278" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Community reports with photo + map pin</text>
+<text x="82" y="300" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Help requests and status timeline</text>
+<text x="82" y="322" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Nav AI chat · Speech in / AVSpeech out</text>
+<text x="82" y="344" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Vision OCR on-device for screenshots</text>
+<text x="82" y="366" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Polls /mobile/map-state every 8 s</text>
+<rect x="565" y="172" width="470" height="218" rx="14" fill="#1f282b" stroke="#34424a" stroke-width="1.5"/>
+<text x="587" y="206" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Responder iPhone app</text>
+<text x="587" y="228" font-size="13" font-weight="600" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">same binary · role=worker from JWT</text>
+<text x="587" y="256" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Overview counts → filtered request lists</text>
+<text x="587" y="278" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Review queue: confirm / reject reports</text>
+<text x="587" y="300" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Directions from device, pin or base</text>
+<text x="587" y="322" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Shelter confirm / close (expiring)</text>
+<text x="587" y="344" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Reports with CSV export</text>
+<text x="587" y="366" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Session token in Keychain (opt-in)</text>
+<rect x="1070" y="172" width="470" height="218" rx="14" fill="#1f282b" stroke="#34424a" stroke-width="1.5"/>
+<text x="1092" y="206" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Responder web workspace</text>
+<text x="1092" y="228" font-size="13" font-weight="600" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">React · Vite · Leaflet (G-one)</text>
+<text x="1092" y="256" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Operations map and incident queue</text>
+<text x="1092" y="278" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Dispatch review, notifications</text>
+<text x="1092" y="300" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Community review, demo exercise</text>
+<text x="1092" y="322" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Operational reports + CSV export</text>
+<text x="1092" y="344" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">OSM tiles loaded in the browser</text>
+<text x="1092" y="366" font-size="15" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Served from the API&#x27;s own origin</text>
+<path d="M500 390 V508" fill="none" stroke="#e0b95c" stroke-width="2" stroke-linejoin="round" marker-end="url(#gold)"/>
+<path d="M800 390 V508" fill="none" stroke="#e0b95c" stroke-width="2" stroke-linejoin="round" marker-end="url(#gold)"/>
+<path d="M1100 390 V508" fill="none" stroke="#e0b95c" stroke-width="2" stroke-linejoin="round" marker-end="url(#gold)"/>
+<rect x="514" y="431" width="573" height="22" rx="5" fill="#0f1416"/>
+<text x="800" y="446" font-size="13" font-weight="600" fill="#e0b95c" text-anchor="middle" xml:space="preserve" style="white-space:pre">HTTPS  ·  REST /api/v1  ·  Authorization: Bearer &lt;JWT HS256, 15 min&gt;  ·  JSON</text>
+<text x="60" y="470" font-size="13" font-weight="700" fill="#7d8d92" text-anchor="start" xml:space="preserve" style="white-space:pre">BACKEND  —  ONE PROCESS: UVICORN APP.MAIN:APP</text>
+<line x1="60" y1="478" x2="1540" y2="478" stroke="#34424a" stroke-width="1"/>
+<rect x="60" y="490" width="1480" height="660" rx="20" fill="#161d20" stroke="#48606b" stroke-width="2"/>
+<rect x="90" y="512" width="1420" height="62" rx="14" fill="#1a2327" stroke="#34424a" stroke-width="1.5"/>
+<text x="112" y="540" font-size="16" font-weight="700" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">Edge</text>
+<text x="168" y="540" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">CORS allow-list  ·  JWT verify (signed_reporter: sub, role ∈ {citizen, worker}, exp)  ·  bounded request bodies (4 MB for Nav AI)</text>
+<text x="168" y="562" font-size="14" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">/health  ·  /docs off in production  ·  SPA shell + static assets mounted at /  ·  /mcp mounted behind AuthenticatedMCP</text>
+<rect x="90" y="604" width="440" height="520" rx="14" fill="#1f282b" stroke="#34424a" stroke-width="1.5"/>
+<text x="112" y="638" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">REST routers</text>
+<text x="112" y="660" font-size="13" font-weight="600" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">thin transport adapters</text>
+<text x="112" y="690" font-size="15" font-weight="700" fill="#8dd4b0" text-anchor="start" xml:space="preserve" style="white-space:pre">WaySignal  /mobile/*</text>
+<text x="112" y="714" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">GET  map-state · community</text>
+<text x="112" y="735" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">POST community · community/{id}/review</text>
+<text x="112" y="756" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">GET  community/{id}/history</text>
+<text x="112" y="777" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">POST routes/assess · routes/shelter</text>
+<text x="112" y="798" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">POST shelters · shelters/{id}/close</text>
+<text x="112" y="819" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">POST incidents/{id}/route</text>
+<text x="112" y="840" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">POST assistant · guide</text>
+<text x="112" y="861" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">GET  scenario · POST scenario/reset</text>
+<text x="112" y="900" font-size="15" font-weight="700" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">Inherited G-one</text>
+<text x="112" y="924" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">/auth/login     /hazards     /emergencies</text>
+<text x="112" y="945" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">/routing        /safety      /citizen-map</text>
+<text x="112" y="966" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">/admin/dispatch /admin/reports(+/export)</text>
+<text x="112" y="1006" font-size="14" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Role checks live in the services, so a</text>
+<text x="112" y="1027" font-size="14" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">handler cannot forget them — and the MCP</text>
+<text x="112" y="1048" font-size="14" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">path cannot skip them.</text>
+<rect x="560" y="604" width="460" height="270" rx="14" fill="#1f282b" stroke="#34424a" stroke-width="1.5"/>
+<text x="582" y="638" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Nav AI host</text>
+<text x="582" y="660" font-size="13" font-weight="600" fill="#86c6e6" text-anchor="start" xml:space="preserve" style="white-space:pre">assistant.py · guide.py</text>
+<text x="582" y="688" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">1  Validate + re-encode image (strips metadata)</text>
+<text x="582" y="712" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">2  &quot;How do I…&quot; → canned app help, no tools</text>
+<text x="582" y="736" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">3  Regex intent → plan of ≤ 4 tool calls</text>
+<text x="582" y="760" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">4  MCP client dials /mcp with caller&#x27;s token</text>
+<text x="582" y="784" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">5  Summarise results + source record IDs</text>
+<text x="582" y="808" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">6  Optional LLM rewrite; on failure keep</text>
+<text x="582" y="832" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">   the source summary (never a 500)</text>
+<rect x="560" y="914" width="460" height="210" rx="14" fill="#1f282b" stroke="#86c6e6" stroke-width="1.5"/>
+<text x="582" y="948" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">MCP server  /mcp</text>
+<text x="582" y="970" font-size="13" font-weight="600" fill="#86c6e6" text-anchor="start" xml:space="preserve" style="white-space:pre">FastMCP · stateless Streamable HTTP · JSON</text>
+<text x="582" y="996" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">assess_route          find_shelter_route</text>
+<text x="582" y="1017" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">list_route_reports    get_local_conditions</text>
+<text x="582" y="1038" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">get_assistance_status find_nearby_facilities</text>
+<text x="582" y="1059" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">list_assistance_requests      (all read-only)</text>
+<text x="582" y="1100" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">Host allow-list: localhost only (DNS-rebinding guard)</text>
+<path d="M530 846 H556" fill="none" stroke="#e0b95c" stroke-width="2" stroke-linejoin="round" marker-end="url(#gold)"/>
+<path d="M790 874 V910" fill="none" stroke="#86c6e6" stroke-width="2" stroke-linejoin="round" marker-end="url(#blue)"/>
+<rect x="829" y="884" width="66" height="21" rx="5" fill="#0f1416"/>
+<text x="835" y="898" font-size="12" font-weight="600" fill="#86c6e6" text-anchor="start" xml:space="preserve" style="white-space:pre">loopback</text>
+<rect x="1050" y="604" width="460" height="290" rx="14" fill="#1f282b" stroke="#34424a" stroke-width="1.5"/>
+<text x="1072" y="638" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Shared domain services</text>
+<text x="1072" y="660" font-size="13" font-weight="600" fill="#8dd4b0" text-anchor="start" xml:space="preserve" style="white-space:pre">one implementation for REST, MCP, demo</text>
+<text x="1072" y="686" font-size="14" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">CommunityService</text>
+<text x="1072" y="706" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">review lifecycle, optimistic versioning, audit log</text>
+<text x="1072" y="736" font-size="14" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">RouteAssessmentService</text>
+<text x="1072" y="756" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">screen ≤ 8 candidates, exclude, rank; no fake route</text>
+<text x="1072" y="786" font-size="14" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">MapStateService</text>
+<text x="1072" y="806" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">hazard zones, expiring shelters, shelter routing</text>
+<text x="1072" y="836" font-size="14" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">AuthService</text>
+<text x="1072" y="856" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">argon2 hashes, env-configured demo accounts</text>
+<rect x="1050" y="914" width="460" height="210" rx="14" fill="#1f282b" stroke="#8dd4b0" stroke-width="1.5" stroke-dasharray="7 6"/>
+<text x="1072" y="948" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Contracts (typing.Protocol)</text>
+<text x="1072" y="970" font-size="13" font-weight="600" fill="#8dd4b0" text-anchor="start" xml:space="preserve" style="white-space:pre">open for extension</text>
+<text x="1072" y="994" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">RouteProvider  → GOneRouteProvider (OSRM)</text>
+<text x="1072" y="1016" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">                 DemoRouteProvider (fixtures)</text>
+<text x="1072" y="1038" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">                 ResponseBaseRouteProvider</text>
+<text x="1072" y="1060" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">HazardPolicy   → ReportedHazardPolicy</text>
+<text x="1072" y="1082" font-size="13" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">ReportSource   → CommunityService</text>
+<path d="M1020 1010 H1046" fill="none" stroke="#86c6e6" stroke-width="2" stroke-linejoin="round" marker-end="url(#blue)"/>
+<path d="M1280 894 V910" fill="none" stroke="#8dd4b0" stroke-width="2" stroke-linejoin="round" marker-end="url(#green)"/>
+<path d="M470 604 V590 H1250 V600" fill="none" stroke="#e0b95c" stroke-width="2" stroke-linejoin="round" marker-end="url(#gold)"/>
+<rect x="797" y="582" width="126" height="21" rx="5" fill="#0f1416"/>
+<text x="860" y="596" font-size="12" font-weight="600" fill="#e0b95c" text-anchor="middle" xml:space="preserve" style="white-space:pre">direct REST calls</text>
+<text x="60" y="1180" font-size="13" font-weight="700" fill="#7d8d92" text-anchor="start" xml:space="preserve" style="white-space:pre">STATE AND OUTSIDE SERVICES</text>
+<line x1="60" y1="1188" x2="1540" y2="1188" stroke="#34424a" stroke-width="1"/>
+<rect x="60" y="1200" width="700" height="250" rx="14" fill="#1f282b" stroke="#34424a" stroke-width="1.5"/>
+<text x="82" y="1234" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Relational store</text>
+<text x="82" y="1256" font-size="13" font-weight="600" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">SQLAlchemy 2 · psycopg 3 · create_all + additive column checks</text>
+<text x="82" y="1284" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">PostgreSQL on Render (production — never falls back)</text>
+<text x="82" y="1307" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">SQLite  backend/waysignal-demo.db  (isolated demo mode)</text>
+<text x="82" y="1330" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">SQLite  fallback in local dev if Postgres is down</text>
+<text x="82" y="1370" font-size="13" font-weight="700" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">G-one</text>
+<text x="140" y="1370" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">hazard_reports · emergencies · dispatch_reviews</text>
+<text x="82" y="1396" font-size="13" font-weight="700" fill="#8dd4b0" text-anchor="start" xml:space="preserve" style="white-space:pre">WaySignal</text>
+<text x="170" y="1396" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">waysignal_hazard_reviews · _review_events</text>
+<text x="170" y="1418" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace">waysignal_observations · waysignal_shelters</text>
+<rect x="790" y="1200" width="750" height="250" rx="14" fill="#1f282b" stroke="#34424a" stroke-width="1.5"/>
+<text x="812" y="1234" font-size="19" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">External providers</text>
+<text x="812" y="1256" font-size="13" font-weight="600" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">called server-side with httpx; keys never reach clients</text>
+<text x="812" y="1284" font-size="14" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">OSRM</text>
+<text x="975" y="1284" font-size="14" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">driving route candidates + turn steps</text>
+<text x="812" y="1313" font-size="14" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Open-Meteo</text>
+<text x="975" y="1313" font-size="14" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">precipitation forecast + river discharge</text>
+<text x="812" y="1342" font-size="14" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Overpass (OSM)</text>
+<text x="975" y="1342" font-size="14" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">nearby facilities for the citizen map</text>
+<text x="812" y="1371" font-size="14" font-weight="700" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">ArcGIS</text>
+<text x="975" y="1371" font-size="14" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">reverse geocoding for request locations</text>
+<text x="812" y="1400" font-size="14" font-weight="700" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">OpenAI Responses</text>
+<text x="975" y="1400" font-size="14" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">optional; store:false; off without a key</text>
+<text x="812" y="1440" font-size="13" font-weight="400" fill="#7d8d92" text-anchor="start" xml:space="preserve" style="white-space:pre">Apple MapKit tiles (iOS) and OSM tiles (web) load directly on the client.</text>
+<path d="M410 1150 V1196" fill="none" stroke="#e0b95c" stroke-width="2" stroke-linejoin="round" marker-end="url(#gold)"/>
+<rect x="414" y="1158" width="32" height="21" rx="5" fill="#0f1416"/>
+<text x="420" y="1172" font-size="12" font-weight="600" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">SQL</text>
+<path d="M1165 1150 V1196" fill="none" stroke="#e0b95c" stroke-width="2" stroke-linejoin="round" marker-end="url(#gold)"/>
+<rect x="1172" y="1158" width="294" height="21" rx="5" fill="#0f1416"/>
+<text x="1178" y="1172" font-size="12" font-weight="600" fill="#e0b95c" text-anchor="start" xml:space="preserve" style="white-space:pre">HTTPS + timeouts · failure → 502, no route</text>
+<text x="60" y="1480" font-size="13" font-weight="700" fill="#7d8d92" text-anchor="start" xml:space="preserve" style="white-space:pre">BUILD AND DEPLOY</text>
+<line x1="60" y1="1488" x2="1540" y2="1488" stroke="#34424a" stroke-width="1"/>
+<rect x="60" y="1500" width="1480" height="100" rx="14" fill="#1f282b" stroke="#34424a" stroke-width="1.5"/>
+<text x="82" y="1534" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">Dockerfile: node:24 builds frontend/dist → python:3.12-slim, runs as non-root uid 10001  ·  render.yaml: Render web service + managed Postgres, JWT_SECRET generated</text>
+<text x="82" y="1560" font-size="14" font-weight="400" fill="#f3f1ea" text-anchor="start" xml:space="preserve" style="white-space:pre">GitHub Actions (macos-15): signed iOS Simulator build  ·  Local: scripts/run-ios-demo.sh starts the demo API on :8000 and launches the simulator</text>
+<line x1="1070" y1="96" x2="1104" y2="96" stroke="#e0b95c" stroke-width="2"/>
+<text x="1112" y="101" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">REST / SQL / HTTPS</text>
+<line x1="1280" y1="96" x2="1314" y2="96" stroke="#86c6e6" stroke-width="2"/>
+<text x="1322" y="101" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">MCP</text>
+<line x1="1380" y1="96" x2="1414" y2="96" stroke="#8dd4b0" stroke-width="2"/>
+<text x="1422" y="101" font-size="13" font-weight="400" fill="#aebcc0" text-anchor="start" xml:space="preserve" style="white-space:pre">implements</text>
+</g></svg>
