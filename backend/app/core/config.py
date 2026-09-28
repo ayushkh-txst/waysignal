@@ -1,3 +1,4 @@
+"""Typed app settings loaded from environment variables (and .env in development)."""
 from functools import lru_cache
 
 from pydantic import SecretStr, field_validator
@@ -5,13 +6,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Each field maps to an env var of the same name (case-insensitive)."""
+
     app_name: str = "G-0ne API"
     environment: str = "development"
     database_url: str = "postgresql+psycopg://g0ne:g0ne@localhost:5432/g0ne"
     frontend_origin: str = "http://localhost:5173"
     frontend_dist: str = ""
+    # No default: the app refuses to start without a signing secret.
     jwt_secret: str
     jwt_algorithm: str = "HS256"
+    # Short-lived tokens limit the damage if one leaks.
     access_token_minutes: int = 15
     # Optional; keys stay on the backend. Alerts/contacts do not require AI.
     openai_api_key: SecretStr = SecretStr("")
@@ -23,6 +28,7 @@ class Settings(BaseSettings):
     # Configured demo accounts. Render supplies private passwords in production.
     # Use example.com so Pydantic EmailStr accepts the addresses during validation.
     demo_citizen_email: str = "citizen@example.com"
+    # NOTE: these defaults are public in the repo. Make sure production overrides them.
     demo_citizen_password: SecretStr = SecretStr("CitizenDemo2026!")
     demo_worker_email: str = "worker@example.com"
     demo_worker_password: SecretStr = SecretStr("WorkerDemo2026!")
@@ -34,6 +40,7 @@ class Settings(BaseSettings):
     @field_validator("demo_citizen_2_password", "demo_citizen_3_password", "demo_worker_2_password")
     @classmethod
     def extra_demo_password(cls, value: SecretStr) -> SecretStr:
+        """Empty disables the account; otherwise enforce 12-128 non-blank characters."""
         password = value.get_secret_value()
         if password and (not 12 <= len(password) <= 128 or not password.strip()):
             raise ValueError("Additional demo passwords must have 12–128 characters, or be empty to disable the account")
@@ -55,6 +62,7 @@ class Settings(BaseSettings):
     )
 
 
+# Cached so the environment is parsed once and every import shares one Settings object.
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

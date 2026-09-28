@@ -1,3 +1,4 @@
+"""In-memory user store seeded with the configured demo accounts."""
 from app.auth.interfaces import UserRecord
 from app.auth.schemas import UserRole
 from app.core.config import Settings, settings
@@ -5,6 +6,8 @@ from app.core.security import hash_password
 
 
 class InMemoryUserRepository:
+    """Demo-only store: accounts are rebuilt at startup and kept in a dict keyed by email."""
+
     def __init__(self, config: Settings | None = None) -> None:
         config = config or settings
         # Keep the original IDs: existing SOS records belong to these identities.
@@ -23,11 +26,13 @@ class InMemoryUserRepository:
         self._users: dict[str, UserRecord] = {}
         for user_id, name, email, role, secret in accounts:
             password = secret.get_secret_value()
+            # An empty password means the account is disabled -- skip it entirely.
             if not password:
                 continue
             email = email.lower().strip()
             if email in self._users:
                 raise ValueError("Demo account emails must be distinct")
+            # Hash once at startup; the plaintext is never stored.
             self._users[email] = UserRecord(
                 id=user_id, name=name, email=email, role=role,
                 password_hash=hash_password(password),

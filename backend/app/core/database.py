@@ -1,3 +1,4 @@
+"""SQLAlchemy engine/session setup plus lightweight startup schema upgrades."""
 from collections.abc import Generator
 
 from sqlalchemy import create_engine, inspect, text
@@ -8,18 +9,24 @@ from app.core.config import settings
 
 
 class Base(DeclarativeBase):
-    pass
+    """Parent class for all ORM models; its metadata drives create_all()."""
 
 
 def _build_engine(url: str):
+    # SQLite connections are thread-bound by default; FastAPI serves sync routes from a
+    # thread pool, so that check is turned off. pool_pre_ping drops stale connections.
     connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
     return create_engine(url, pool_pre_ping=True, connect_args=connect_args)
 
 
 engine = _build_engine(settings.database_url)
+# expire_on_commit=False keeps loaded objects usable after commit (e.g. when serializing responses).
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 active_database_url = settings.database_url
 
+# Columns added to `emergencies` after the table first shipped. create_all() never alters
+# existing tables, so _ensure_emergency_navigation_columns backfills them. Names/types here
+# are fixed constants, which is why building the ALTER statement with an f-string is safe.
 _NAVIGATION_COLUMNS = {
     "responder_latitude": "FLOAT",
     "responder_longitude": "FLOAT",
@@ -50,6 +57,7 @@ def _ensure_emergency_navigation_columns() -> None:
         return
     with engine.begin() as connection:
         for name, sql_type in missing:
+            # Store timezone-aware timestamps on Postgres.
             if sql_type == "TIMESTAMP" and engine.dialect.name == "postgresql":
                 sql_type = "TIMESTAMP WITH TIME ZONE"
             connection.execute(text(f"ALTER TABLE emergencies ADD COLUMN {name} {sql_type}"))
@@ -61,6 +69,8 @@ def initialize_database() -> str:
     In development only, fall back to a persistent local SQLite file when the
     configured Postgres service is unavailable. Production never falls back.
     """
+    # Rebinds module globals on fallback; code that imported SessionLocal directly
+    # before this ran would keep the old reference, so use database.SessionLocal.
     global engine, SessionLocal, active_database_url
 
     try:
@@ -85,6 +95,7 @@ def initialize_database() -> str:
 
 
 def get_db() -> Generator[Session, None, None]:
+    """FastAPI dependency: one session per request, always closed afterwards."""
     db = SessionLocal()
     try:
         yield db

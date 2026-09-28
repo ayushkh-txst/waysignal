@@ -1,3 +1,4 @@
+"""Aggregates every v1 feature router; main.py mounts this under /api/v1."""
 from fastapi import APIRouter
 
 from app.api.v1.auth import router as auth_router
@@ -11,12 +12,14 @@ from app.api.v1.dispatch import router as dispatch_router
 from app.waysignal.api import router as mobile_router
 
 api_router = APIRouter()
+# Each prefix becomes /api/v1/<prefix>; tags group endpoints in the /docs UI.
 api_router.include_router(mobile_router, prefix="/mobile", tags=["waysignal"])
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(safety_router, prefix="/safety", tags=["safety"])
 api_router.include_router(emergencies_router, prefix="/emergencies", tags=["emergencies"])
 api_router.include_router(routing_router, prefix="/routing", tags=["routing"])
 api_router.include_router(hazards_router, prefix="/hazards", tags=["hazards"])
+# Admin-facing routes live under /admin/*.
 api_router.include_router(reports_router, prefix="/admin/reports", tags=["reports"])
 api_router.include_router(citizen_map_router, prefix="/citizen-map", tags=["citizen-map"])
 api_router.include_router(dispatch_router, prefix="/admin/dispatch", tags=["dispatch"])
