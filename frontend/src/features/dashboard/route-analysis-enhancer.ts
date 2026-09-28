@@ -1,3 +1,6 @@
+/**
+ * Adds the route-analysis summary (analyzed / rejected / viable / recommended) to the citizen map.
+ */
 import './route-analysis-enhancer.css';
 
 type ScreenedRoute = {

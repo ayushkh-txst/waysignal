@@ -1,3 +1,9 @@
+/**
+ * Responder incident lifecycle controls: submitted -> assigned -> en route -> resolved.
+ *
+ * NOTE: not imported anywhere (main.tsx or another module), so this code never runs.
+ * Kept for reference; delete it or import it in main.tsx if it's still needed.
+ */
 import { authSession } from '../auth/auth-session';
 import { citizenSafetyApi, type EmergencyRecord, type EmergencyStatus } from './api/citizen-safety.api';
 

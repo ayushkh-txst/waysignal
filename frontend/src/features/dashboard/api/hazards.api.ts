@@ -1,3 +1,7 @@
+/**
+ * Shared hazard reports store. Polls the server, caches a snapshot, and notifies subscribers.
+ * The cache is for display only; route approval must use a fresh refresh() read.
+ */
 import { apiRequest } from '../../../lib/api-client';
 import { authSession } from '../../auth/auth-session';
 
@@ -24,6 +28,8 @@ let inflight: Promise<HazardReport[]> | null = null;
 let interval: number | null = null;
 const listeners = new Set<(state: HazardSnapshot) => void>();
 function notify() { listeners.forEach(listener => listener(snapshot)); }
+// If the signed-in user changed, wipe cached reports and bump `generation` so responses
+// started under the previous session are discarded instead of leaking into this one.
 function credentials() {
   const token = authSession.get()?.access_token ?? null;
   if (token !== sessionToken) {

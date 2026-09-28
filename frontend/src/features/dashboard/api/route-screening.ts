@@ -1,3 +1,7 @@
+/**
+ * Client-side route safety screening. Fetches road alternatives, then rejects any that cross a
+ * modeled flood polygon or pass within a user-reported hazard's radius, and ranks the rest.
+ */
 import type { EvacuationRoute, ScreenedRoute } from './citizen-safety.api';
 import { hazardsApi, type HazardReport as UserHazardReport } from './hazards.api';
 

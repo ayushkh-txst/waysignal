@@ -1,3 +1,8 @@
+/**
+ * NavCat's brain: classifies a message into an intent with regex rules (no LLM needed) and
+ * builds the reply plus follow-up actions (open map, emergency help, call a number).
+ * Rule-based on purpose so safety answers stay predictable and work offline from the AI backend.
+ */
 import { demoOrigin } from '../scenario/scenario-state';
 import { citizenSafetyApi, type EvacuationRoute, type SafetyContext } from './api/citizen-safety.api';
 

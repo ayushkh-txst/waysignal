@@ -1,3 +1,7 @@
+/**
+ * Citizen Leaflet map: hazards, incidents, facilities, responders and the recommended route as
+ * toggleable layers. Popups are built with textContent (not innerHTML) so server strings can't inject HTML.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { loadLeaflet } from '../../../lib/load-leaflet';
 import { citizenMapApi, type MapPlaces, type MapPoint, type MapPlaceLabel } from '../api/citizen-map.api';

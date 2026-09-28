@@ -1,3 +1,4 @@
+// Emergency numbers by area (Nepal, United States, San Marcos, Houston), each with its source link.
 import SwiftUI
 import CoreLocation
 import UIKit

@@ -1,3 +1,7 @@
+/**
+ * Responder live map: draws candidate routes handed off from the incident view (via sessionStorage),
+ * watches GPS, and reroutes when new hazards appear or the responder moves.
+ */
 import { citizenSafetyApi, type EvacuationRoute } from './api/citizen-safety.api';
 import { loadRecentUserHazards, screenEvacuationRoute } from './api/route-screening';
 import './responder-live-map-enhancer.css';

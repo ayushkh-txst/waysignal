@@ -1,3 +1,6 @@
+/**
+ * Responder review queue for community hazard reports (approve/reject with notes and history).
+ */
 import { useEffect, useState } from 'react';
 import { apiRequest } from '../../../lib/api-client';
 import './CommunityReview.css';

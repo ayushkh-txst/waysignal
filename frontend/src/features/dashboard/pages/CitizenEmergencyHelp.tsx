@@ -1,3 +1,6 @@
+/**
+ * SOS flow: pick emergency type and people count, confirm location, submit, then track status.
+ */
 import { useScenario } from '../../scenario/ScenarioContext';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { citizenSafetyApi, type EmergencyRecord, type EmergencyType, type SafetyContext } from '../api/citizen-safety.api';

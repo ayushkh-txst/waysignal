@@ -1,3 +1,7 @@
+/**
+ * Top-level routing. Login lives at "/", citizens at "/citizen", responders (role "worker")
+ * at "/responder". ScenarioProvider wraps everything so every screen knows if demo mode is on.
+ */
 import { useEffect, type ReactNode } from 'react';
 import {
   BrowserRouter,
@@ -14,6 +18,8 @@ import WorkerDashboard from './features/dashboard/pages/WorkerDashboard';
 import { ScenarioProvider } from './features/scenario/ScenarioContext';
 import ScenarioPage from './features/scenario/ScenarioPage';
 
+// LoginPage announces success with a window event instead of taking a callback prop;
+// this invisible component turns that event into a stored session + role-based redirect.
 function AuthRedirectBridge() {
   const navigate = useNavigate();
 
@@ -36,6 +42,8 @@ function AuthRedirectBridge() {
   return null;
 }
 
+// Client-side guard only: it controls what's shown, but the backend must still enforce roles
+// on every API call, because anyone can change front-end state.
 function ProtectedRoute({ role, children }: { role: 'citizen' | 'worker'; children: ReactNode }) {
   const session = authSession.get();
 

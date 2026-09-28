@@ -1,3 +1,7 @@
+/**
+ * Lazily loads the Leaflet map library from a CDN the first time a map is needed.
+ */
+// Shared in-flight promise so several maps mounting at once only inject the script once.
 let pending: Promise<any> | null = null;
 
 /** One loader shared by citizen and responder maps; failed loads can be retried. */
@@ -28,6 +32,7 @@ export function loadLeaflet(): Promise<any> {
       cleanup(); script.remove(); pending = null;
       reject(new Error('The interactive map could not load. Check your connection and retry.'));
     };
+    // Treat a hung CDN as a failure after 15 s. failed() resets `pending` so the next call retries.
     const timer = window.setTimeout(failed, 15_000);
     script.addEventListener('load', loaded, { once: true });
     script.addEventListener('error', failed, { once: true });

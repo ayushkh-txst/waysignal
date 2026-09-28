@@ -1,3 +1,4 @@
+// Help tab: request assistance, then track the request's status timeline or cancel it.
 import SwiftUI
 
 struct AssistanceView: View {

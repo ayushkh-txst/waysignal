@@ -1,3 +1,6 @@
+/**
+ * Dispatch assistant: notification bell, incident summary, local contacts, optional AI signal review.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { dispatchApi, type AIReview, type DispatchDetail, type DispatchItem } from '../api/dispatch.api';

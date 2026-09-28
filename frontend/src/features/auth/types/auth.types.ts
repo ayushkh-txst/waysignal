@@ -1,3 +1,6 @@
+/**
+ * Auth types. Keep in sync with backend/app/auth/schemas.py.
+ */
 export type UserRole = "citizen" | "worker";
 
 export interface AuthUser {

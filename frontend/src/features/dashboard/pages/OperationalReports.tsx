@@ -1,3 +1,6 @@
+/**
+ * Operational reports page: incident totals, response timings, trends, and location quality.
+ */
 import { useScenario } from '../../scenario/ScenarioContext';
 import { useEffect, useState } from 'react';
 import { reportsApi, type Measurement, type ReportFilters, type ReportsData } from '../api/reports.api';

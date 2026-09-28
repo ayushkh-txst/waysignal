@@ -1,3 +1,5 @@
+// Codable models that mirror the backend's JSON. The API uses snake_case; Wire converts it so
+// Swift can keep camelCase property names.
 import Foundation
 import CoreLocation
 
@@ -13,6 +15,7 @@ struct Coordinate: Codable, Equatable {
 }
 struct Account: Codable {
     let id: String; let name: String; let email: String; let role: String
+    // Maps demo account IDs to character names; real accounts just use `name`.
     var displayName: String {
         let characters = ["citizen-demo": ("Demo Citizen", "Arun Shrestha"), "worker-demo": ("Demo E-Worker", "Asha Karki"),
                           "citizen-demo-2": ("Demo Citizen 2", "Mira Tamang"), "citizen-demo-3": ("Demo Citizen 3", "Nisha Rai"),
@@ -70,6 +73,7 @@ struct GuideInput: Encodable {
     var routeGeometry: [Coordinate]? = nil; var requestId: String? = nil
 }
 
+// Central JSON encoder/decoder config so every request uses the same snake_case mapping.
 enum Wire {
     static func encode<T: Encodable>(_ value: T) throws -> Data {
         let encoder = JSONEncoder(); encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -147,6 +151,7 @@ struct ShelterSite: Decodable, Identifiable {
 }
 struct MapSnapshot: Decodable {
     let zones: [RiskZone]; let shelters: [ShelterSite]; let generatedAt: String; let isDemo: Bool; let notice: String
+    // Cheap change fingerprint. When it changes, WaySignalApp re-runs the active route assessment.
     var revision: String {
         zones.map { $0.id + $0.level + $0.reviewState + $0.updatedAt }.sorted().joined(separator: ":") +
         shelters.map { $0.id + $0.status + $0.expiresAt }.sorted().joined(separator: ":")

@@ -1,3 +1,9 @@
+/**
+ * Rewrites leftover Nepal place names in visible text to the Texas demo region.
+ *
+ * NOTE: not imported anywhere (main.tsx or another module), so this code never runs.
+ * Kept for reference; delete it or import it in main.tsx if it's still needed.
+ */
 const TEXAS_REPLACEMENTS: Array<[RegExp, string]> = [
   [/Bagmati Valley,?\s*Sindhupalchowk/gi, 'Houston, Harris County'],
   [/Bagmati Valley\s*·\s*Sindhupalchowk/gi, 'Houston · Harris County'],

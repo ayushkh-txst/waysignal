@@ -1,3 +1,7 @@
+/**
+ * Adds multiple chat sessions to NavCat (new chat, history list, restore) on top of the single
+ * history the assistant keeps in localStorage. Unsent drafts go to sessionStorage.
+ */
 type StoredMessage = { id?: string; role: 'assistant' | 'user'; text: string; createdAt?: number };
 type ChatSession = { id: string; title: string; messages: StoredMessage[]; updatedAt: number };
 

@@ -1,3 +1,5 @@
+// App entry point. Shows SignInView until there's a session, then Workspace, which builds every
+// store once per sign-in and switches between the citizen tabs and the responder workspace by role.
 import SwiftUI
 
 @main struct WaySignalApp: App {
@@ -6,6 +8,8 @@ import SwiftUI
         WindowGroup {
             Group {
                 if let client = session.client, let account = session.account?.user {
+                    // .id(token): a new sign-in gives Workspace a new identity, so SwiftUI rebuilds every
+                    // store instead of leaking the previous user's data.
                     Workspace(client: client, account: account).id(session.account?.accessToken)
                 } else { SignInView() }
             }.environmentObject(session).tint(SignalStyle.blue).preferredColorScheme(.light)
@@ -108,6 +112,7 @@ struct Workspace: View {
                 if let origin = journey.origin { await context.load(origin, includePlaces: account.role == "citizen") }
                 if scenario.enabled { await journey.assess() }
             }
+            // Poll every 8 s while the app is in the foreground; the task is cancelled when it backgrounds.
             .task(id: scenePhase) {
                 guard scenePhase == .active else { return }
                 while !Task.isCancelled {
@@ -116,6 +121,7 @@ struct Workspace: View {
                     if account.role == "worker" { await operations.load() } else { await assistance.load() }
                 }
             }
+            // Hazards or shelters changed on the server, so re-check the current route.
             .onChange(of: community.mapState?.revision) { previous, current in
                 if previous != nil, previous != current { Task { await journey.refreshRoute() } }
             }

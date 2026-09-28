@@ -1,3 +1,6 @@
+/**
+ * Responder dispatch assistant API: notifications, incident detail, contacts, AI review.
+ */
 import { apiRequest } from '../../../lib/api-client';
 import { authSession } from '../../auth/auth-session';
 

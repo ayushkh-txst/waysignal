@@ -1,3 +1,7 @@
+/**
+ * Responder incident view: computes and scores routes from the responder to the selected incident,
+ * screens them against hazards, and saves the result for the live map (sessionStorage handoff).
+ */
 import { citizenSafetyApi, type EmergencyRecord, type EvacuationRoute } from './api/citizen-safety.api';
 import { screenEvacuationRoute, loadRecentUserHazards } from './api/route-screening';
 import './responder-routing-enhancer.css';

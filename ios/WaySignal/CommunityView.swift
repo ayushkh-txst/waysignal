@@ -1,3 +1,5 @@
+// Community tab: browse and filter hazard reports, view details, and submit a new report with a
+// map pin and optional photo.
 import SwiftUI
 import PhotosUI
 import UIKit

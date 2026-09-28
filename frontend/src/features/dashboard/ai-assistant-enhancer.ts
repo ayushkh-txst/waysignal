@@ -1,3 +1,8 @@
+/**
+ * NavCat, the citizen AI assistant overlay: chat UI, voice input/output, and crisis mode.
+ * Messages are answered by navcat-action-engine.ts using the latest route/safety/emergency context.
+ * Chat history is saved to localStorage (last 80 messages), so it persists on shared devices.
+ */
 import { demoOrigin, isDemoScenario } from '../scenario/scenario-state';
 import { citizenSafetyApi, type EmergencyRecord, type EvacuationRoute, type SafetyContext } from './api/citizen-safety.api';
 import { runNavCatAction, type NavCatAction } from './navcat-action-engine';

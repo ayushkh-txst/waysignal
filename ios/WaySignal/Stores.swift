@@ -1,3 +1,5 @@
+// Observable view-model stores (one per feature). All are @MainActor so @Published updates always
+// happen on the main thread. Each store guards with `busy` to drop overlapping requests.
 import Foundation
 import Combine
 import CoreLocation
@@ -23,9 +25,12 @@ import CoreLocation
         guard !busy else { return }; busy = true; error = nil
         defer { busy = false }
         server = server.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        // Accept only a bare origin (scheme + host[:port]) so the base URL can't smuggle in
+        // credentials, a path, or a query string.
         guard let url = URL(string: server), ["http", "https"].contains(url.scheme ?? ""), url.host != nil,
               url.user == nil, url.password == nil, url.query == nil, url.fragment == nil,
               url.path.isEmpty || url.path == "/" else { error = "Enter the server origin, for example https://your-server.example."; return }
+        // Release builds refuse plain HTTP so tokens never travel unencrypted.
         #if !DEBUG
         guard url.scheme == "https" else { error = "Release builds require an HTTPS server."; return }
         #endif
@@ -50,6 +55,8 @@ import CoreLocation
     @Published var destinationName = "Selected destination" { didSet { if destinationName != oldValue { assessment = nil } } }
     @Published var assessment: RouteAssessment?; @Published var error: String?; @Published var busy = false
     @Published var shelter: ShelterSite?
+    // Set when hazards change mid-request; finishRouteRequest() then re-runs the assessment so the
+    // user never sees a route computed against outdated hazard data.
     private var refreshPending = false
     private var shelterRequested = false
     private var requestedShelterId: String?
@@ -65,6 +72,7 @@ import CoreLocation
         defer { finishRouteRequest() }
         do {
             let result = try await service.assess(input)
+            // Drop the result if the inputs changed or a refresh was queued while this call was in flight.
             guard !refreshPending, origin == input.origin, destination == input.destination else { return }
             assessment = result
         } catch { self.error = error.localizedDescription }
@@ -162,6 +170,7 @@ import CoreLocation
     }
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard requested else { return }
+        // Reject invalid (negative accuracy) or cached fixes older than 60 s.
         guard let last = locations.last, last.horizontalAccuracy >= 0, abs(last.timestamp.timeIntervalSinceNow) < 60 else {
             cancel(); error = "A recent location was not available. Choose a starting point or retry."; return
         }
@@ -172,6 +181,7 @@ import CoreLocation
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         guard requested else { return }
         let code = (error as? CLError)?.code
+        // locationUnknown is often transient right after launch; retry twice, one second apart.
         if code == .locationUnknown, retries < 2 {
             retries += 1
             retryTask = Task { [weak self] in

@@ -1,3 +1,4 @@
+// Citizen map tab: pick start/destination, compare assessed routes, and see hazard/shelter layers.
 import SwiftUI
 import MapKit
 

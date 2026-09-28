@@ -1,3 +1,6 @@
+/**
+ * Citizen map data: nearby places/facilities and incidents. Requires a signed-in session.
+ */
 import { apiRequest } from '../../../lib/api-client';
 import { authSession } from '../../auth/auth-session';
 import type { EmergencyRecord } from './citizen-safety.api';

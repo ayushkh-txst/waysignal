@@ -1,3 +1,9 @@
+/**
+ * App bootstrap. Mounts <App /> and loads the dashboard "enhancer" modules.
+ *
+ * Enhancers are side-effect imports: each one watches the DOM (MutationObserver/events)
+ * and patches or extends screens rendered by React. Import order matters for CSS overrides.
+ */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';

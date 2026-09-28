@@ -1,3 +1,7 @@
+/**
+ * Citizen Alerts screen: groups alerts into critical / route / responder / system tabs, built
+ * from the latest safety context, route analysis, and the user's own emergency requests.
+ */
 import { demoOrigin, isDemoScenario } from '../scenario/scenario-state';
 import { citizenSafetyApi, type EmergencyRecord, type SafetyContext } from './api/citizen-safety.api';
 

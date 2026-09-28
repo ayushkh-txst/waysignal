@@ -1,3 +1,4 @@
+// Speech-to-text for Nav AI using on-device recognition, including mic/speech permission handling.
 import Foundation
 import Combine
 import Speech

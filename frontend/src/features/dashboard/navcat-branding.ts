@@ -1,3 +1,6 @@
+/**
+ * Renames the old "JalRakshak Safety Assistant" copy to NavCat and adds its icon.
+ */
 const NAVCAT_NAME = 'NavCat';
 
 function catIcon() {

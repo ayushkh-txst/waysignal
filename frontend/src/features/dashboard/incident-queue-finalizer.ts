@@ -1,3 +1,9 @@
+/**
+ * Responder queue: keeps a card selected after filtering and shows an empty state.
+ *
+ * NOTE: not imported anywhere (main.tsx or another module), so this code never runs.
+ * Kept for reference; delete it or import it in main.tsx if it's still needed.
+ */
 import { citizenSafetyApi, type EmergencyRecord } from './api/citizen-safety.api';
 
 let records: EmergencyRecord[] = [];

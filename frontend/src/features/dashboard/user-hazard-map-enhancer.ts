@@ -1,3 +1,7 @@
+/**
+ * Draws shared user-reported hazards on any Leaflet map (markers + buffer circles) and keeps them
+ * in sync with hazardsApi. attachSharedHazards() is the entry point the map pages call.
+ */
 import { hazardsApi, type HazardKind, type HazardReport as UserHazardReport } from './api/hazards.api';
 import { authSession } from '../auth/auth-session';
 

@@ -1,3 +1,5 @@
+// Networking layer. APIClient does the HTTP; each *Service wraps one feature's endpoints behind a
+// protocol so stores can be tested with fakes. Also holds Keychain session storage and screenshot OCR.
 import Foundation
 import Security
 
@@ -10,6 +12,7 @@ struct APIClient {
     var token: String? = nil
     func request<T: Decodable>(_ path: String, method: String = "GET", body: Data? = nil) async throws -> T {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/v1/" + path))
+        // The AI assistant endpoint gets a longer timeout because model responses are slow.
         request.httpMethod = method; request.httpBody = body; request.timeoutInterval = path == "mobile/assistant" ? 75 : 35
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if body != nil { request.setValue("application/json", forHTTPHeaderField: "Content-Type") }
@@ -17,6 +20,7 @@ struct APIClient {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw APIError(message: "The server did not return a response.") }
         guard (200..<300).contains(http.statusCode) else {
+            // Tokens are short-lived (15 min by default), so 401 usually means expired.
             if http.statusCode == 401 { throw APIError(message: "Your session expired. Sign out and sign in again.") }
             let value = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
             let detail = value?["detail"] as? String
@@ -86,11 +90,14 @@ struct GuideService: GuideServing {
     }
 }
 
+// Stores the sign-in in the Keychain (not UserDefaults), keyed by server host.
+// WhenUnlockedThisDeviceOnly: readable only while unlocked and never synced or restored to another device.
 enum SessionVault {
     private static func query(_ host: String) -> [String: Any] {
         [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "org.waysignal.session", kSecAttrAccount as String: host]
     }
     static func save(_ data: Data, host: String) throws {
+        // Delete first because SecItemAdd fails if the item already exists.
         let item = query(host); SecItemDelete(item as CFDictionary)
         var insertion = item; insertion[kSecValueData as String] = data
         insertion[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
@@ -166,6 +173,7 @@ enum ScreenshotReader {
     static func prepare(_ data: Data) throws -> PreparedScreenshot {
         guard data.count <= 25_000_000, let image = UIImage(data: data),
               image.size.width > 0, image.size.height > 0 else { throw APIError(message: "Choose an image smaller than 25 MB.") }
+        // Downscale to at most 1600 px and flatten onto white (drops transparency) before JPEG encoding.
         let scale = min(1, 1600 / max(image.size.width, image.size.height))
         let size = CGSize(width: image.size.width * scale, height: image.size.height * scale)
         let format = UIGraphicsImageRendererFormat(); format.scale = 1; format.opaque = true
@@ -176,6 +184,7 @@ enum ScreenshotReader {
         guard let jpeg = normalized.jpegData(compressionQuality: 0.75), jpeg.count <= 2_000_000 else {
             throw APIError(message: "Choose a smaller screenshot.")
         }
+        // OCR runs on-device with Vision; the text helps the guide understand the screenshot.
         let recognition = VNRecognizeTextRequest()
         recognition.recognitionLevel = .accurate; recognition.usesLanguageCorrection = true
         try? VNImageRequestHandler(data: jpeg, options: [:]).perform([recognition])

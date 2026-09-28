@@ -1,3 +1,4 @@
+// Read by the DOM enhancers, which live outside React and can't use the ScenarioContext hook.
 // Server-confirmed scenario state for inherited non-React adapters.
 import type { Scenario } from './ScenarioContext';
 let current: Scenario | null = null;

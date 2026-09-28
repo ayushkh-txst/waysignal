@@ -1,3 +1,4 @@
+// Nav AI tab: chat with the guide (text, voice, screenshots). Answers cite the records they used.
 import SwiftUI
 import PhotosUI
 import UIKit

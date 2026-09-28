@@ -1,3 +1,6 @@
+/**
+ * Login call: POST /auth/login.
+ */
 import { apiRequest } from "../../../lib/api-client";
 import type { LoginRequest, LoginResponse } from "../types/auth.types";
 

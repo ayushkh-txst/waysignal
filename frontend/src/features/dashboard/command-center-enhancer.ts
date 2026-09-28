@@ -1,3 +1,7 @@
+/**
+ * Responder command center: priority scoring for the incident queue plus summary and context panels.
+ * priorityScore() weights type, risk score, people count, age and status; thresholds map it to bands.
+ */
 import { citizenSafetyApi, type EmergencyRecord } from './api/citizen-safety.api';
 
 let latestRecords: EmergencyRecord[] = [];
@@ -18,6 +22,8 @@ function riskBand(record: EmergencyRecord) {
   return 'low';
 }
 
+// Heuristic 0-100ish score: base by type (medical > rescue > evacuation), plus capped bonuses
+// for risk, headcount and waiting time, plus a status bump so unassigned requests float up.
 function priorityScore(record: EmergencyRecord) {
   let score = record.emergency_type === 'medical' ? 36 : record.emergency_type === 'rescue' ? 30 : 18;
   score += Math.min(35, Math.max(0, Number(record.risk_score ?? 0)) * 0.35);

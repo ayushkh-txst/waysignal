@@ -1,3 +1,6 @@
+/**
+ * Route analysis summary card (counts of analyzed/rejected/viable/recommended routes).
+ */
 import type { EvacuationRoute } from '../api/citizen-safety.api';
 
 export default function CitizenRouteAnalysis({ route, loading }: { route: EvacuationRoute | null; loading: boolean }) {

@@ -1,3 +1,7 @@
+/**
+ * Admin dashboard data. Merges live emergency records into seeded ("hybrid") county data,
+ * so the dashboard has content even with few real incidents.
+ */
 import { apiRequest } from '../../../lib/api-client';
 import { citizenSafetyApi, type EmergencyRecord } from './citizen-safety.api';
 

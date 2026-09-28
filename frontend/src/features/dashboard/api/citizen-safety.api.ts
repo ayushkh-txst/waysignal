@@ -1,3 +1,7 @@
+/**
+ * Core citizen API: safety context (weather/river risk), evacuation routes, emergency requests.
+ * Route requests are de-duplicated per ~100 m grid cell so repeated renders don't refetch.
+ */
 import { apiRequest } from '../../../lib/api-client';
 import { screenEvacuationRoute } from './route-screening';
 import { authSession } from '../../auth/auth-session';

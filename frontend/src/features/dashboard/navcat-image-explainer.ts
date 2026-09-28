@@ -1,3 +1,6 @@
+/**
+ * Explains an app screenshot: detects which screen it shows and returns step-by-step help.
+ */
 type ScreenKind='live_map'|'alerts'|'ai'|'emergency'|'overview'|'responder'|'unknown';
 
 type ScreenExplanation={title:string;summary:string;steps:string[]};

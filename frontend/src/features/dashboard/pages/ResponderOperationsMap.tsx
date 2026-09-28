@@ -1,3 +1,6 @@
+/**
+ * Responder map of all incidents and shared hazards; clicking a marker selects the incident.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { loadLeaflet } from '../../../lib/load-leaflet';
 import type { EmergencyRecord } from '../api/citizen-safety.api';

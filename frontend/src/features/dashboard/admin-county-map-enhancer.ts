@@ -1,3 +1,7 @@
+/**
+ * Admin district view: swaps the static district drawing for an embedded Google Map of the
+ * selected Texas county, re-drawing the existing markers on top with layer toggles.
+ */
 const COUNTY_QUERIES: Record<string, string> = {
   'Harris County': 'Harris County, Texas',
   'Fort Bend County': 'Fort Bend County, Texas',
@@ -20,6 +24,8 @@ function googleMapUrl(name: string) {
   return `https://www.google.com/maps?q=${encodeURIComponent(query)}&z=11&output=embed`;
 }
 
+// NOTE: `label` is inserted as raw HTML and `title` only escapes quotes. Both come from
+// existing DOM text today, but escaping them (or building nodes with textContent) would be safer.
 function markerHtml(stage: HTMLElement, selector: string, cls: string) {
   return Array.from(stage.querySelectorAll<HTMLElement>(selector)).map((node, index) => {
     const label = node.textContent?.trim() || '•';

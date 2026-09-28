@@ -1,3 +1,6 @@
+/**
+ * Responder (worker) app shell: incident queue, detail pane, map, dashboard, reports, community review.
+ */
 import { useScenario } from '../../scenario/ScenarioContext';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { authSession } from '../../auth/auth-session';

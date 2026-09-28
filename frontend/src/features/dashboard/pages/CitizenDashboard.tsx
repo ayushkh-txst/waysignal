@@ -1,3 +1,7 @@
+/**
+ * Citizen app shell: sidebar nav (Overview, Live Map, Alerts, AI Assistant, Emergency Help),
+ * location handling, and evacuation route loading.
+ */
 import { useScenario } from '../../scenario/ScenarioContext';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import CitizenSafetyMap from './CitizenSafetyMap';

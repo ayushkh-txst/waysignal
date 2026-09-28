@@ -1,3 +1,7 @@
+/**
+ * Client-side login validation (zod). Mirrors the backend LoginRequest limits so users get
+ * instant feedback; the server still validates independently.
+ */
 import { z } from "zod";
 
 export const loginSchema = z.object({

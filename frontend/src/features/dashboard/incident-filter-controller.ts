@@ -1,3 +1,9 @@
+/**
+ * Responder queue filters (All/New/Assigned/En route/Resolved/Live/Demo) with live counts.
+ *
+ * NOTE: not imported anywhere (main.tsx or another module), so this code never runs.
+ * Kept for reference; delete it or import it in main.tsx if it's still needed.
+ */
 import { citizenSafetyApi, type EmergencyListFilters, type EmergencyRecord } from './api/citizen-safety.api';
 
 type FilterKey = 'all' | 'new' | 'assigned' | 'en_route' | 'resolved' | 'live' | 'demo';

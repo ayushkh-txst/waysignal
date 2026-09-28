@@ -1,3 +1,4 @@
+// Responder workspace tabs: overview, incident list/detail, operations map, shelters, review queue, reports.
 import SwiftUI
 import MapKit
 

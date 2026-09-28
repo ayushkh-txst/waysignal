@@ -1,3 +1,4 @@
+// Shared colors, buttons, cards and map layers used across both workspaces.
 import SwiftUI
 import MapKit
 

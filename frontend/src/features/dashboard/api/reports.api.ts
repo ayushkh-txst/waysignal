@@ -1,3 +1,6 @@
+/**
+ * Operational reports API (admin analytics with filters and CSV export).
+ */
 import { apiRequest, ApiError, API_BASE_URL } from '../../../lib/api-client';
 import { authSession } from '../../auth/auth-session';
 

@@ -1,3 +1,4 @@
+// Citizen home tab: local conditions, route status, quick actions.
 import SwiftUI
 
 struct HomeView: View {

@@ -1,3 +1,9 @@
+/**
+ * Removes the retired "All Incidents" nav item and view on the responder page.
+ *
+ * NOTE: not imported anywhere (main.tsx or another module), so this code never runs.
+ * Kept for reference; delete it or import it in main.tsx if it's still needed.
+ */
 function removeAllIncidentsNav() {
   if (!window.location.pathname.includes('/responder')) return;
 

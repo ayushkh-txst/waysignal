@@ -1,3 +1,7 @@
+/**
+ * Login screen. On success it dispatches a "g0ne:authenticated" event that App.tsx listens for
+ * to store the session and redirect by role.
+ */
 import { FormEvent, useState } from 'react';
 import { authApi } from '../api/auth.api';
 import { ApiError } from '../../../lib/api-client';

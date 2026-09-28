@@ -1,3 +1,9 @@
+/**
+ * Keeps the responder queue clickable and auto-selects the first visible card after filtering.
+ *
+ * NOTE: not imported anywhere (main.tsx or another module), so this code never runs.
+ * Kept for reference; delete it or import it in main.tsx if it's still needed.
+ */
 const FILTER_SELECTOR='[data-command-center-filters] [data-incident-filter]';
 const CARD_SELECTOR='.ops-queue-list > button';
 let selecting=false;

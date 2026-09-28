@@ -1,3 +1,7 @@
+/**
+ * Lets citizens report a hazard (blocked/flooded road, debris) from NavCat with GPS and an optional
+ * photo. Photos are type/size checked client-side (JPEG/PNG/WebP, 8 MB) before upload.
+ */
 import { citizenSafetyApi, type EvacuationRoute } from './api/citizen-safety.api';
 import { hazardsApi, type HazardKind, type HazardReport, type HazardSubmission } from './api/hazards.api';
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;

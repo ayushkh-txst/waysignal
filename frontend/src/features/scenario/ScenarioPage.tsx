@@ -1,3 +1,6 @@
+/**
+ * /scenario: walkthrough of the demo exercise (reports, requests, route assessment, AI guide).
+ */
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { authSession } from '../auth/auth-session';

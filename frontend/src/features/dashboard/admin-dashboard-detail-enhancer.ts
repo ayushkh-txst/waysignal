@@ -1,3 +1,6 @@
+/**
+ * Admin dashboard: renders the county risk overview (SVG map + stats) and a per-county drill-down.
+ */
 import { adminDashboardApi, type AdminDashboardOverview, type DistrictId, type DistrictOperations, type RiskBand } from './api/admin-dashboard.api';
 
 let overview: AdminDashboardOverview | null = null;
