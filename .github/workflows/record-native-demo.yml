@@ -1,0 +1,111 @@
+name: Record native WaySignal walkthrough
+on:
+  pull_request:
+    paths:
+      - 'ios/Recording/**'
+      - '.github/workflows/record-native-demo.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  record:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install recording dependencies
+        run: |
+          command -v xcodegen || brew install xcodegen
+          python -m pip install -r backend/requirements.txt
+      - name: Start isolated scenario backend
+        env:
+          WAYSIGNAL_DEMO_MODE: 'true'
+          ENVIRONMENT: development
+          DATABASE_URL: sqlite:///./waysignal-demo.db
+          MCP_INTERNAL_URL: http://127.0.0.1:8000/mcp/
+        run: |
+          mkdir -p artifacts
+          cd backend
+          export JWT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          nohup python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../artifacts/backend.log 2>&1 &
+          for n in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/health; then exit 0; fi
+            sleep 2
+          done
+          cat ../artifacts/backend.log
+          exit 1
+      - name: Prepare simulator and app
+        run: |
+          xcodebuild -version
+          xcodegen generate --spec ios/Recording/project.yml --project ios/Recording
+          xcrun simctl list devices available -j > artifacts/devices.json
+          python - <<'PY'
+          import json, os
+          devices=json.load(open('artifacts/devices.json'))['devices']
+          choices=[d for runtime,ds in devices.items() if 'iOS' in runtime for d in ds if 'iPhone' in d['name'] and d.get('isAvailable')]
+          choices.sort(key=lambda d: ('Pro' not in d['name'], 'Max' in d['name']))
+          selected=choices[0]
+          with open(os.environ['GITHUB_ENV'],'a') as f: f.write('DEMO_DEVICE='+selected['udid']+'\n')
+          open('artifacts/device-name.txt','w').write(selected['name'])
+          PY
+      - name: Build walkthrough
+        run: |
+          xcrun simctl boot "$DEMO_DEVICE" || true
+          xcrun simctl bootstatus "$DEMO_DEVICE" -b
+          xcrun simctl status_bar "$DEMO_DEVICE" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
+          xcodebuild -project ios/Recording/WaySignalRecording.xcodeproj -scheme WaySignalRecording \
+            -destination "platform=iOS Simulator,id=$DEMO_DEVICE" -derivedDataPath build-recording \
+            -parallel-testing-enabled NO build-for-testing > artifacts/build.log 2>&1
+      - name: Add sample attachment
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageDraw, ImageFont
+          im=Image.new('RGB',(1000,700),'#faf7f2'); d=ImageDraw.Draw(im)
+          d.rounded_rectangle((40,40,960,660),30,fill='#ffffff',outline='#0a2440',width=5)
+          font='/System/Library/Fonts/Supplemental/Arial.ttf'
+          f=lambda n:ImageFont.truetype(font,n)
+          d.text((85,100),'RIVERSIDE OBSERVATION',font=f(43),fill='#0a2440')
+          d.text((85,220),'Water reported on the',font=f(40),fill='#0a2440')
+          d.text((85,275),'northern corridor.',font=f(40),fill='#0a2440')
+          d.text((85,405),'Scenario attachment for the app walkthrough.',font=f(28),fill='#695e42')
+          d.text((85,490),'27.7206, 85.3270',font=f(32),fill='#0a2440')
+          im.save('artifacts/sample-attachment.png')
+          PY
+          xcrun simctl addmedia "$DEMO_DEVICE" artifacts/sample-attachment.png
+          xcrun simctl install "$DEMO_DEVICE" build-recording/Build/Products/Debug-iphonesimulator/WaySignal.app
+          xcrun simctl privacy "$DEMO_DEVICE" grant photos org.waysignal.ios || true
+      - name: Record actual app interactions
+        run: |
+          python -c 'import time; open("artifacts/recording-start.txt","w").write(str(time.time()))'
+          xcrun simctl io "$DEMO_DEVICE" recordVideo --codec=h264 artifacts/WaySignal-Native-Raw.mov > artifacts/recorder.log 2>&1 &
+          recorder=$!
+          finish() { kill -INT "$recorder" 2>/dev/null || true; wait "$recorder" || true; }
+          trap finish EXIT
+          set +e
+          xcodebuild -project ios/Recording/WaySignalRecording.xcodeproj -scheme WaySignalRecording \
+            -destination "platform=iOS Simulator,id=$DEMO_DEVICE" -derivedDataPath build-recording \
+            -parallel-testing-enabled NO -resultBundlePath artifacts/Walkthrough.xcresult \
+            test-without-building > artifacts/walkthrough.log 2>&1
+          result=$?
+          cat artifacts/walkthrough.log
+          exit "$result"
+      - name: Extract frames and timestamps
+        if: always()
+        run: |
+          python - <<'PY'
+          import re,json,pathlib
+          p=pathlib.Path('artifacts/walkthrough.log')
+          if p.exists():
+              scenes=re.findall(r'WS_SCENE:([\w-]+):([\d.]+)',p.read_text())
+              pathlib.Path('artifacts/scenes.json').write_text(json.dumps([{'scene':n,'epoch':float(t)} for n,t in scenes],indent=2))
+          PY
+          xcrun xcresulttool export attachments --path artifacts/Walkthrough.xcresult --output-path artifacts/screenshots || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: WaySignal-native-walkthrough
+          path: artifacts/
+          retention-days: 7
